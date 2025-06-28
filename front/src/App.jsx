@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5"; // Importamos el icono de cerrar
 import logo from '/turnify.png' // Asegúrate de que esta ruta sea correcta para tu logo
