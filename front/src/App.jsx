@@ -1,15 +1,13 @@
-// src/App.js
-
 import React, { useState, useEffect } from 'react';
-import { Header } from './Header'; // Asegúrate de que este componente exista
-import { Footer } from './Footer'; // Asegúrate de que este componente exista
-import Steps from './Layouts/Steps'; // Asegúrate de que este componente exista
-import Benefits from './Layouts/Benefits'; // Asegúrate de que este componente exista
-import FAQS from './Layouts/FAQS'; // Asegúrate de que este componente exista
-import Testimonials from './Layouts/Testimonials'; // Asegúrate de que este componente exista
+import { Header } from './Header';
+import { Footer } from './Footer';
+import Steps from './Layouts/Steps';
+import Benefits from './Layouts/Benefits';
+import FAQS from './Layouts/FAQS';
+import Testimonials from './Layouts/Testimonials';
 
-// Importa los datos dummy de doctores
-import { dummyDoctors } from './dummyData'; // Asegúrate de que este archivo exista y contenga dummyDoctors
+// IMPORTACION DE CUSTOM HOOKS
+import useAllProfesionals from '../customHooks/useAllProfesionals';
 
 // Lista dummy de Obras Sociales/Prepagas
 const dummyInsurances = [
@@ -25,9 +23,12 @@ const dummyInsurances = [
 
 // Componente principal de la aplicación
 const App = () => {
-    // Estados para doctores y la lista filtrada de doctores (búsqueda principal)
-    const [doctors] = useState(dummyDoctors);
-    const [filteredDoctors, setFilteredDoctors] = useState(dummyDoctors);
+    // CARGA DE CUSTOM HOOKS
+    const { profesionales, isLoading, error } = useAllProfesionals();
+
+    // Estados para la lista filtrada de doctores (búsqueda principal)
+    // Inicializamos con un array vacío para evitar errores antes de que los datos carguen
+    const [filteredDoctors, setFilteredDoctors] = useState([]);
 
     // Estados para los inputs del formulario de búsqueda principal
     const [specialty, setSpecialty] = useState('');
@@ -50,28 +51,29 @@ const App = () => {
     const [patientInsurance, setPatientInsurance] = useState('Particular'); // Nuevo estado para obra social, por defecto 'Particular'
     const [message, setMessage] = useState(''); // Mensajes de usuario (éxito/error)
 
-    // useEffect para la búsqueda principal: filtra solo doctores
+    // useEffect para inicializar filteredDoctors y para la búsqueda principal
     useEffect(() => {
-        let currentFilteredDoctors = doctors;
+        // Solo actualizamos filteredDoctors una vez que 'profesionales' tenga datos
+        if (profesionales && profesionales.length > 0) {
+            let currentFilteredDoctors = profesionales;
 
-        if (specialty) {
-            currentFilteredDoctors = currentFilteredDoctors.filter(doc => doc.specialty === specialty);
-        }
-        if (doctorName) {
-            currentFilteredDoctors = currentFilteredDoctors.filter(doc =>
-                doc.name.toLowerCase().includes(doctorName.toLowerCase())
-            );
-        }
-        if (date) {
-            currentFilteredDoctors = currentFilteredDoctors.map(doc => ({
-                ...doc,
-                // Asegúrate de filtrar los turnos por fecha para cada doctor
-                availableSlots: doc.availableSlots.filter(slot => slot.date === date)
-            })).filter(doc => doc.availableSlots.length > 0);
-        }
-        setFilteredDoctors(currentFilteredDoctors);
-    }, [specialty, doctorName, date, doctors]);
+            if (specialty) {
+                currentFilteredDoctors = currentFilteredDoctors.filter(doc => doc.especialidad === specialty);
+            }
+            if (doctorName) {
+                currentFilteredDoctors = currentFilteredDoctors.filter(doc =>
+                    doc.name.toLowerCase().includes(doctorName.toLowerCase())
+                );
+            }
+            // Si 'date' fuera a filtrar doctores (no turnos), la lógica iría aquí.
+            // Actualmente, 'date' solo se usa para la búsqueda inicial en el Hero.
 
+            setFilteredDoctors(currentFilteredDoctors);
+        } else if (!isLoading && !error) {
+            // Si no hay profesionales y la carga ha terminado sin error, significa que no hay data.
+            setFilteredDoctors([]);
+        }
+    }, [specialty, doctorName, profesionales, isLoading, error]); // Dependencias: profesionales para re-renderizar cuando los datos llegan
 
     // useEffect para filtrar turnos *dentro del Modal de Ver Turnos/Reservar*
     useEffect(() => {
@@ -238,12 +240,12 @@ const App = () => {
                             >
                                 <option value="">Todas las especialidades</option>
                                 {/* Obtener especialidades únicas de todos los doctores */}
-                                {[...new Set(doctors.map(doc => doc.specialty))].sort().map(spec => (
+                                {[...new Set(profesionales?.map(doc => doc.especialidad))].sort().map(spec => (
                                     <option key={spec} value={spec}>{spec}</option>
                                 ))}
                             </select>
                         </div>
-                        <div className="flex flex-col items-start w-full md:w-1/3">
+                        {/* <div className="flex flex-col items-start w-full md:w-1/3">
                             <label htmlFor="doctor-name" className="block text-base font-semibold text-gray-700 mb-2">Nombre del médico (opcional)</label>
                             <input
                                 type="text"
@@ -253,7 +255,7 @@ const App = () => {
                                 value={doctorName}
                                 onChange={(e) => setDoctorName(e.target.value)}
                             />
-                        </div>
+                        </div> */}
                         <div className="flex flex-col items-start w-full md:w-1/3">
                             <label htmlFor="date" className="block text-base font-semibold text-gray-700 mb-2">Fecha (opcional)</label>
                             <input
@@ -287,52 +289,64 @@ const App = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredDoctors.length > 0 ? (
-                            filteredDoctors.map(doctor => (
-                                <div key={doctor.id} className="
-                                    bg-white rounded-2xl shadow-xl p-6 border border-gray-100
-                                    transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300
-                                    group
-                                ">
-                                    <div className="flex flex-col sm:flex-row items-center sm:items-start mb-6 text-center sm:text-left">
-                                        <img
-                                            src={`https://placehold.co/96x96/007bff/ffffff?text=${doctor.name.split(' ').map(n => n[0]).join('')}`}
-                                            alt={`Foto de ${doctor.name}`}
-                                            className="w-24 h-24 rounded-full mb-4 sm:mb-0 sm:mr-6 object-cover border-4 border-blue-400 group-hover:border-purple-400 transition-colors duration-300"
-                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/cccccc/000000?text=MD"; }}
-                                        />
-                                        <div>
-                                            <h3 className="text-2xl font-bold text-gray-900 leading-tight">{doctor.name}</h3>
-                                            <p className="text-blue-600 font-semibold text-lg mt-1">{doctor.specialty}</p>
-                                            {/* Muestra la ubicación del doctor si está definida */}
-                                            {doctor.location ?
-                                            (
-                                                <p className="text-gray-500 text-sm mt-1">
-                                                    {doctor.location}
-                                                </p>
-                                            ) : (
-                                                <p className="text-gray-500 text-sm mt-1">Ubicación no especificada.</p>
-                                            )}
+                    {/* Muestra mensajes de carga, error o si no hay médicos */}
+                    {isLoading && (
+                        <p className="text-center text-blue-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-blue-100">Cargando profesionales...</p>
+                    )}
+
+                    {error && (
+                        <p className="text-center text-red-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-red-100">Error: {error.message || "No se pudo cargar la información de los profesionales."}</p>
+                    )}
+
+                    {!isLoading && !error && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {filteredDoctors?.length > 0 ? (
+                                filteredDoctors.map(doctor => (
+                                    <div key={doctor.id} className="
+                                        bg-white rounded-2xl shadow-xl p-6 border border-gray-100
+                                        transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300
+                                        group
+                                    ">
+                                        <div className="flex flex-col sm:flex-row items-center sm:items-start mb-6 text-center sm:text-left">
+                                            <img
+                                                // Corregido: Agregado ?. y || para manejar doctor.name indefinido
+                                                src={`https://placehold.co/96x96/007bff/ffffff?text=${doctor.name?.split(' ').map(n => n[0]).join('') || 'MD'}`}
+                                                alt={`Foto de ${doctor.name || 'Médico'}`}
+                                                className="w-24 h-24 rounded-full mb-4 sm:mb-0 sm:mr-6 object-cover border-4 border-blue-400 group-hover:border-purple-400 transition-colors duration-300"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/cccccc/000000?text=MD"; }}
+                                            />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-gray-900 leading-tight">Dr. {doctor.apellido}, {doctor.nombre}</h3>
+                                                <p className="text-blue-600 font-semibold text-lg mt-1">{doctor.especialidad}</p>
+                                                {/* Muestra la ubicación del doctor si está definida */}
+                                                {doctor.direccion ?
+                                                (
+                                                    <p className="text-gray-500 text-sm mt-1">
+                                                        {doctor.direccion}
+                                                    </p>
+                                                ) : (
+                                                    <p className="text-gray-500 text-sm mt-1">Ubicación no especificada.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-700 mb-6 text-base leading-relaxed">{doctor.bio}</p>
+                                        <div className="mt-4">
+                                            <button
+                                                onClick={() => openDoctorSlotsModal(doctor)}
+                                                className="w-full px-5 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition-all duration-300 shadow-md"
+                                            >
+                                                Ver Turnos
+                                            </button>
                                         </div>
                                     </div>
-                                    <p className="text-gray-700 mb-6 text-base leading-relaxed">{doctor.bio}</p>
-                                    <div className="mt-4">
-                                        <button
-                                            onClick={() => openDoctorSlotsModal(doctor)}
-                                            className="w-full px-5 py-2 bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition-all duration-300 shadow-md"
-                                        >
-                                            Ver Turnos
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-gray-100">
-                                No se encontraron médicos con los criterios de búsqueda. Por favor, intenta con otra especialidad, nombre o fecha.
-                            </p>
-                        )}
-                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center text-gray-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-gray-100">
+                                    No se encontraron médicos con los criterios de búsqueda. Por favor, intenta con otra especialidad, nombre o fecha.
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </section>
 
                 <hr className="my-16 border-gray-200 border-t-2" />
@@ -419,19 +433,19 @@ const App = () => {
                                 </div>
                                 <div className="max-h-[40vh] overflow-y-auto pr-2">
                                     {filteredSlotsForDoctor.length > 0 ? (
-                                        <div className="flex flex-wrap gap-3 justify-center"> {/* Added justify-center for better layout on small screens */}
+                                        <div className="flex flex-wrap gap-3 justify-center">
                                             {filteredSlotsForDoctor.map((slot, index) => (
                                                 <button
                                                     key={`${selectedDoctorForSlots.id}-${slot.date}-${slot.time}-${index}`}
                                                     className="
-                                                        px-4 py-2 text-sm md:px-5 md:py-2 md:text-base /* Adjusted padding and text size for responsiveness */
+                                                        px-4 py-2 text-sm md:px-5 md:py-2 md:text-base
                                                         bg-blue-100 text-blue-800 rounded-full font-medium
                                                         hover:bg-blue-200 hover:text-blue-900 transition-all duration-200
                                                         shadow-sm hover:shadow-md
                                                     "
                                                     onClick={() => selectSlotAndShowBookingForm(selectedDoctorForSlots, slot)}
                                                 >
-                                                    {slot.time} 
+                                                    {slot.time}
                                                 </button>
                                             ))}
                                         </div>
@@ -444,7 +458,7 @@ const App = () => {
                             // Formulario de Confirmación de Reserva (cuando se selecciona un turno)
                             selectedAppointment && (
                                 <>
-                                    <div id="modal-details" className="mb-6 text-gray-700 leading-relaxed text-sm sm:text-base"> {/* Adjusted text size */}
+                                    <div id="modal-details" className="mb-6 text-gray-700 leading-relaxed text-sm sm:text-base">
                                         <p className="mb-2"><span className="font-semibold text-gray-800">Médico:</span> {selectedAppointment.doctor.name}</p>
                                         <p className="mb-2"><span className="font-semibold text-gray-800">Especialidad:</span> {selectedAppointment.doctor.specialty}</p>
                                         <p className="mb-2"><span className="font-semibold text-gray-800">Fecha:</span> {selectedAppointment.slot.date}</p>
@@ -452,16 +466,16 @@ const App = () => {
                                         {/* Muestra la ubicación completa del turno seleccionado aquí */}
                                         <p className="mb-4"><span className="font-semibold text-gray-800">Ubicación:</span> {selectedAppointment.slot.location}</p>
                                     </div>
-                                    <form onSubmit={handleConfirmBooking} className="space-y-4 sm:space-y-5"> {/* Adjusted vertical spacing */}
+                                    <form onSubmit={handleConfirmBooking} className="space-y-4 sm:space-y-5">
                                         <div>
                                             <label htmlFor="patient-name" className="block text-gray-700 text-sm font-bold mb-2">Nombre Completo</label>
                                             <input
                                                 type="text"
                                                 id="patient-name"
                                                 className="
-                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700 /* Adjusted padding for smaller screens */
+                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                                    shadow-sm text-sm sm:text-base /* Adjusted text size */
+                                                    shadow-sm text-sm sm:text-base
                                                 "
                                                 value={patientName}
                                                 onChange={(e) => setPatientName(e.target.value)}
@@ -474,9 +488,9 @@ const App = () => {
                                                 type="email"
                                                 id="patient-email"
                                                 className="
-                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700 /* Adjusted padding for smaller screens */
+                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                                    shadow-sm text-sm sm:text-base /* Adjusted text size */
+                                                    shadow-sm text-sm sm:text-base
                                                 "
                                                 value={patientEmail}
                                                 onChange={(e) => setPatientEmail(e.target.value)}
@@ -489,9 +503,9 @@ const App = () => {
                                                 type="tel"
                                                 id="patient-phone"
                                                 className="
-                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700 /* Adjusted padding for smaller screens */
+                                                    w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700
                                                     focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                                    shadow-sm text-sm sm:text-base /* Adjusted text size */
+                                                    shadow-sm text-sm sm:text-base
                                                 "
                                                 value={patientPhone}
                                                 onChange={(e) => setPatientPhone(e.target.value)}
@@ -504,9 +518,9 @@ const App = () => {
                                                <select
                                                    id="patient-insurance"
                                                    className="
-                                                       w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700 /* Adjusted padding for smaller screens */
+                                                       w-full py-2 px-3 sm:py-3 sm:px-4 border border-gray-300 rounded-lg text-gray-700
                                                        focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                                       shadow-sm text-sm sm:text-base /* Adjusted text size */
+                                                       shadow-sm text-sm sm:text-base
                                                    "
                                                    value={patientInsurance}
                                                    onChange={(e) => setPatientInsurance(e.target.value)}
@@ -521,9 +535,9 @@ const App = () => {
                                         <button
                                             type="submit"
                                             className="
-                                                w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 sm:py-3 sm:px-4 rounded-lg /* Adjusted padding and text size */
+                                                w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 sm:py-3 sm:px-4 rounded-lg
                                                 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200
-                                                shadow-md hover:shadow-lg text-base sm:text-lg /* Adjusted text size */
+                                                shadow-md hover:shadow-lg text-base sm:text-lg
                                             "
                                         >
                                             Confirmar Reserva
@@ -532,9 +546,9 @@ const App = () => {
                                             type="button"
                                             onClick={goBackToSlotSelection}
                                             className="
-                                                w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-3 sm:py-3 sm:px-4 rounded-lg mt-2 /* Adjusted padding and text size */
+                                                w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-3 sm:py-3 sm:px-4 rounded-lg mt-2
                                                 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200
-                                                shadow-md hover:shadow-lg text-base sm:text-lg /* Adjusted text size */
+                                                shadow-md hover:shadow-lg text-base sm:text-lg
                                             "
                                         >
                                             Volver a elegir turno
