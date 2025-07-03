@@ -24,6 +24,51 @@ app.get("/api/profesionales", async (req, res) => {
   }
 })
 
+//OBTENER TURNOS DE UN PROFESIONAL POR ID //
+
+app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res) => {
+  const { profesionalId, consultorioId } = req.params;
+
+  // La validación sigue siendo importante
+  if (isNaN(profesionalId) || isNaN(consultorioId)) {
+      return res.status(400).json({ message: "IDs de profesional o consultorio inválidos. Deben ser números." });
+  }
+
+  // Tu consulta SQL para obtener los turnos del profesional
+  const query = `
+      SELECT
+          CONCAT(p.apellido, ', ', p.nombre) AS medico,
+          p.especialidad AS especialidad,
+          c.direccion,
+          t.fecha,
+          t.estado
+      FROM
+          turnos AS t
+      JOIN
+          profesional_consultorio AS pc
+          ON t.profesional_id = pc.profesional_id
+          AND t.consultorio_id = pc.consultorio_id
+      JOIN
+          profesionales AS p ON pc.profesional_id = p.id
+      JOIN
+          consultorios AS c ON pc.consultorio_id = c.id
+      WHERE p.id = ? AND c.id = ?
+  `;
+
+  try {
+      // Ejecuta la consulta, pasando los IDs como parámetros
+      // El pool.execute se encarga de escapar el valor para prevenir inyecciones SQL
+      const [resultado] = await pool.execute(query, [profesionalId, consultorioId]);
+      res.json(resultado); // Envía los resultados como JSON
+  } catch (error) {
+      console.error(`Error al obtener turnos para el profesional ${profesionalId} y consultorio ${consultorioId}:`, error);
+      res.status(500).send("Error interno del servidor al obtener turnos del profesional.");
+  }
+});
+
+
+
+//OBTENER PROFESIONAL POR ID //
 
 app.get("/api/consultorios/:id", async (req, res) => {
   const { id } = req.params;

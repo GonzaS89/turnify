@@ -9,13 +9,40 @@ import ConsultorioInfo from './Layouts/components/ConsultorioInfo';
 
 // IMPORTACION DE CUSTOM HOOKS
 import useAllProfesionals from '../customHooks/useAllProfesionals';
-import useProfessionalConsultorios from '../customHooks/useProfessionalConsultorios';
-
+import useProfessionalConsultorioTurnos from '../customHooks/useProfessionalConsultorioTurnos';
 // Componente principal de la aplicación
 const App = () => {
+
+    const [idConsultorio, setIdConsultorio] = useState(null);
+
+    const recibirIdConsultorio = (id) => {
+        setIdConsultorio(id);
+    };
+
+    const [idProfesional, setIdProfesional] = useState(null);
+
+    const recibirIdProfesional = (id) => {
+        setIdProfesional(id);
+    }
+
     // CARGA DE CUSTOM HOOKS
     const { profesionales, isLoading, error } = useAllProfesionals();
-    
+    const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);
+
+    console.log(turnos)
+
+    const [fechaSeleccionada, setFechaSeleccionada] = useState(''); // Fecha seleccionada para ver turnos   
+
+    const handleFechaChange = (event) => {
+        setFechaSeleccionada(event.target.value);
+        console.log("Fecha seleccionada:", event.target.value);
+      };
+
+     const turnosFiltrados = 
+     fechaSeleccionada ? turnos.filter(turno => turno.fecha === fechaSeleccionada)
+        : turnos;  
+
+        console.log(turnosFiltrados)
 
     // Estado para la lista filtrada de doctores (búsqueda principal)
     const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -25,19 +52,10 @@ const App = () => {
     const [date, setDate] = useState(''); // Fecha para la búsqueda principal
 
     // Estados para el Modal REUTILIZABLE de "Reservar/Ver Turnos"
-    const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedDoctorForSlots, setSelectedDoctorForSlots] = useState(null); // El doctor cuyos turnos estamos viendo
-    const [filteredSlotsForDoctor, setFilteredSlotsForDoctor] = useState([]); // Turnos para el doctor seleccionado, filtrados por fecha
+ // Turnos para el doctor seleccionado, filtrados por fecha
     const [bookingDateFilter, setBookingDateFilter] = useState(''); // Filtro de fecha dentro del modal de turnos
-    const [selectedSlotForBooking, setSelectedSlotForBooking] = useState(null); // El turno específico elegido para reservar
 
-    const [selectedAppointment, setSelectedAppointment] = useState(null); // El objeto de la cita para la confirmación
-
-    // Estados para la información del paciente (solo al confirmar la reserva)
-    const [patientName, setPatientName] = useState('');
-    const [patientEmail, setPatientEmail] = useState('');
-    const [patientPhone, setPatientPhone] = useState('');
-    const [patientInsurance, setPatientInsurance] = useState(''); // Estado para obra social
     const [message, setMessage] = useState(''); // Mensajes de usuario (éxito/error)
 
     // useEffect para inicializar filteredDoctors y para la búsqueda principal
@@ -60,17 +78,6 @@ const App = () => {
     }, [specialty, profesionales, isLoading, error]); // Dependencias: profesionales para re-renderizar cuando los datos llegan
 
     // useEffect para filtrar turnos *dentro del Modal de Ver Turnos/Reservar*
-    useEffect(() => {
-        if (selectedDoctorForSlots) {
-            let currentSlots = selectedDoctorForSlots.availableSlots;
-
-            // Filtrar por la fecha seleccionada en el modal
-            if (bookingDateFilter) {
-                currentSlots = currentSlots.filter(slot => slot.date === bookingDateFilter);
-            }
-            setFilteredSlotsForDoctor(currentSlots);
-        }
-    }, [selectedDoctorForSlots, bookingDateFilter]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -84,7 +91,7 @@ const App = () => {
 
     // Abre el modal para ver los turnos de un doctor específico
     const openDoctorSlotsModal = (doctor) => {
-        
+
 
         setSelectedSlotForBooking(null); // Asegura que no haya un turno pre-seleccionado para el formulario de reserva
         setShowBookingModal(true);
@@ -121,63 +128,28 @@ const App = () => {
         setMessage('');
     };
 
-    const handleConfirmBooking = (e) => {
-        e.preventDefault();
-        // Verifica que selectedAppointment tenga propiedades antes de acceder a ellas
-        if (!selectedAppointment || !selectedAppointment.doctor || !selectedAppointment.slot) {
-            setMessage("Error: Datos de reserva incompletos o no seleccionados.");
-            return;
-        }
+    //    function formatearFechaSQL (fecha) {
+    //     const date = new Date(fecha);
 
-        console.log("Reserva confirmada (simulada):", {
-            doctorId: selectedAppointment.doctor.id,
-            doctorName: selectedAppointment.doctor.name,
-            specialty: selectedAppointment.doctor.specialty,
-            appointmentDate: selectedAppointment.slot.date,
-            appointmentTime: selectedAppointment.slot.time,
-            appointmentLocation: selectedAppointment.slot.location, // Incluye la ubicación específica del turno
-            patientName: patientName,
-            patientEmail: patientEmail,
-            patientPhone: patientPhone,
-            patientInsurance: patientInsurance, // Incluye la obra social seleccionada
-            timestamp: new Date()
-        });
+    //     // Get the day, month, and year in UTC
+    //     const day = String(date.getUTCDate()).padStart(2, '0');
+    //     const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    //     const year = date.getUTCFullYear();
+    //     const formattedDate = `${day}/${month}/${year}`;
 
-        // --- Aquí iría la integración real con Mercado Pago Checkout Pro ---
-        // Esto implicaría hacer una llamada a tu backend para crear la preferencia de pago
-        // y luego redirigir al usuario a la URL de Checkout Pro de Mercado Pago.
-        // Ejemplo conceptual (NO FUNCIONARÁ SIN UN BACKEND):
-        /*
-        fetch('/api/create-mercadopago-preference', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                doctor: selectedAppointment.doctor,
-                slot: selectedAppointment.slot,
-                patient: { name: patientName, email: patientEmail, phone: patientPhone, insurance: patientInsurance }
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.checkoutProUrl) {
-                window.location.href = data.checkoutProUrl; // Redirigir al Checkout Pro
-            } else {
-                setMessage("Error al iniciar el pago. Intenta de nuevo.");
-            }
-        })
-        .catch(error => {
-            console.error("Error al crear preferencia de pago:", error);
-            setMessage("Error de conexión al procesar el pago.");
-        });
-        */
+    //     return formattedDate;
+    //     }   
 
-        setMessage("¡Tu turno ha sido reservado con éxito!");
+    const fechasUnicas = [...new Set(turnos.map(turno => turno.fecha))];
 
-        // Simula el cierre del modal después de un tiempo
-        setTimeout(() => {
-            closeBookingModal();
-        }, 2000);
-    };
+    const formatearFechaSQL = (fecha) => {
+        const date = new Date(fecha);
+        // Obtener el día, mes y año en UTC
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
+        const year = date.getUTCFullYear();
+        return `${day}/${month}/${year}`;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 font-sans text-gray-800">
@@ -282,14 +254,14 @@ const App = () => {
                                             <div>
                                                 <h3 className="text-2xl font-bold text-gray-900 leading-tight">Dr. {doctor.apellido}, {doctor.nombre}</h3>
                                                 <p className="text-blue-600 font-semibold text-lg mt-1">{doctor.especialidad}</p>
-                                               
+
                                             </div>
-                                          
+
                                         </div>
-                                        
+
                                         <p className="text-gray-700 mb-6 text-base leading-relaxed">{doctor.bio}</p>
-                                        <ConsultorioInfo professionalId={doctor.id} />
-                                        
+                                        <ConsultorioInfo professionalId={doctor.id} enviarIdConsultorio={recibirIdConsultorio} enviarIdProfesional={recibirIdProfesional} />
+
                                     </div>
                                 ))
                             ) : (
@@ -330,12 +302,60 @@ const App = () => {
                         ¡Encuentra tu médico ahora!
                     </button>
                 </section>
+                //MODAL DE ELECCION DE TURNOS //
+                {idConsultorio && idProfesional && (
+                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl flex flex-col">
+                      <h2 className="text-2xl font-bold mb-4">Turnos Disponibles</h2>
+                      {isLoadingTurnos ? (
+                          <p className="text-blue-600">Cargando turnos...</p>
+                      ) : errorTurnos ? (
+                          <p className="text-red-600">Error al cargar los turnos: {errorTurnos.message}</p>
+                      ) : (
+                          <>
+                              <select name="" id="" onChange={handleFechaChange} className="p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                                  <option value="">Selecciona una fecha</option>
+                                  {fechasUnicas.map((fecha, index) => (
+                                      <option key={index} value={fecha}>{formatearFechaSQL(fecha)}</option>
+                                  ))}
+                              </select>
+              
+                          </>
+                      )}
+              
+                      <div>
+                          {fechaSeleccionada ? (
+                              <div className="mt-4 space-y-4">
+                                  {turnosFiltrados.map(turno => (
+                                      <div key={turno.id} className="p-4 bg-gray-100 rounded-lg shadow hover:shadow-md transition-shadow">
+              
+                                          <button
+                                              onClick={() => selectSlotAndShowBookingForm(turno)}
+                                              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                          >
+                                              Reservar
+                                          </button>
+                                      </div>
+                                  ))}
+                              </div>
+                          ) : (
+                              <p className="text-gray-600">No hay turnos disponibles para esta fecha.</p>
+                          )}
+                      </div>
+                      <button onClick={closeBookingModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                          Cerrar
+                      </button>
+                  </div>
+              </div>
+                )}
+
+
             </main>
 
             <Footer />
 
             {/* Modal de Reservar/Ver Turnos (REUTILIZADO tanto para ver turnos como para confirmar la reserva) */}
-           
+
         </div>
     );
 };

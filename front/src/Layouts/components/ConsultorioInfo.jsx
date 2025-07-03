@@ -2,8 +2,13 @@
 import React from 'react';
 import useProfessionalConsultorios from '../../../customHooks/useProfessionalConsultorios'; // Asegúrate que la ruta sea correcta
 
-const ConsultorioInfo = ({ professionalId }) => {
+const ConsultorioInfo = ({ professionalId, enviarIdConsultorio, enviarIdProfesional }) => {
     const { consultorios, isLoading, error } = useProfessionalConsultorios(professionalId);
+
+    const tapButton = (id) => {
+        enviarIdConsultorio(id);
+        enviarIdProfesional(professionalId); // Enviar también el ID del profesional
+    }   
 
     // --- Estados de Carga y Error ---
     if (isLoading) {
@@ -49,6 +54,7 @@ const ConsultorioInfo = ({ professionalId }) => {
                             text-center transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg
                             flex flex-col items-center justify-center w-full
                         "
+                        onClick={()=>tapButton(consultorio.id)}
                     >
                         {/* Tipo de consultorio */}
                         <p className="text-lg font-bold capitalize mb-1 leading-tight">
