@@ -6,213 +6,147 @@ import cors from "cors";
 dotenv.config()
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3006;
 
 app.use(cors({ origin: "*" }));
 
-app.use(express.json())/
+app.use(express.json()) /
 
-app.get("/api/canchas", async (req, res) => {
-  try {
-    const [resultado] = await pool.execute("SELECT * FROM canchas");
-    res.json(resultado);
-  } catch {
-    console.error("Error al obtener canchas");
-    res.status(500).send("Error al obtener canchas");
-  }
-})
+    //OBTENER TODOS LOS PROFESIONALES //
 
-app.get("/api/propietarios", async (req, res) => {
-  try {
-    const [resultado] = await pool.execute("SELECT * FROM propietarios");
-    res.json(resultado);
-  } catch {
-    console.error("Error al obtener propietarios");
-    res.status(500).send("Error al obtener propietarios");
-  }
-})
+    app.get("/api/profesionales", async (req, res) => {
+        try {
+            const [resultado] = await pool.execute("SELECT * FROM profesionales");
+            res.json(resultado);
+        } catch {
+            console.error("Error al obtener canchas");
+            res.status(500).send("Error al obtener canchas");
+        }
+    })
 
-app.get("/api/turnos_canchas", async (req, res) => {
-  try {
-    const [resultado] = await pool.execute("SELECT * FROM turnos_canchas");
-    res.json(resultado);
-  } catch {
-    console.error("Error al obtener canchas");
-    res.status(500).send("Error al obtener canchas");
-  }
-})
+//OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
-app.get("/api/turnos_canchas/canchas", async (req, res) => {
-  const { id } = req.query;
+app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res) => {
+    const { profesionalId, consultorioId } = req.params;
 
-  try {
-    const query = "SELECT * FROM turnos_canchas WHERE cancha_id = ?"
-    const [resultado] = await pool.execute(query, [id]);
-    res.json(resultado)
-  } catch {
-    console.error("Error al filtrar turnos");
-    res.status(500).send("Error al filtrar turnos")
-  }
-})
-
-app.put("/api/turnos/:turnoId", async (req, res) => {
-  const { nombre, telefono, dni } = req.body;
-  const { turnoId : idTurno } = req.params; // Obtenemos el turno_id de los parámetros de la ruta
-
-  try {
-    const [resultado] = await pool.execute(
-      `UPDATE turnos_canchas
-       SET nombre = ?, telefono = ?, dni =  ?, estado = "pendiente"
-       WHERE id = ?`,
-      [nombre, telefono, dni, idTurno]
-    );
-
-    if (resultado.affectedRows > 0) {
-      res.json({ mensaje: "Turno reservado correctamente" });
-    } else {
-      res.status(404).json({ error: "Turno no encontrado" });
-    }
-  } catch (error) {
-    console.error("Error al actualizar turno:", error);
-    res.status(500).json({ error: "Error al reservar turno" });
-  }
-});
-
-
-/* CONFIRMAR TURNO QUE ESTABA EN PENDIENTE */
-
-app.put("/api/turnos/confirmar/:turnoId", async (req, res) => {
-  const { turnoId } = req.params;
-
-  try {
-    const [resultado] = await pool.execute(
-      `UPDATE turnos_canchas
-       SET estado = "reservado"
-       WHERE id = ?`,
-      [turnoId]
-    );
-
-    if (resultado.affectedRows > 0) {
-      res.json({ mensaje: "Turno reservado correctamente" });
-    } else {
-      res.status(404).json({ error: "Turno no encontrado" });
-    }
-  } catch (error) {
-    console.error("Error al actualizar turno:", error);
-    res.status(500).json({ error: "Error al reservar turno" });
-  }
-});
-
-
-// Suponiendo que la tabla se llama turnos_canchas
-app.get("/api/turnos_canchas/canchas", async (req, res) => {
-  const { id } = req.query;
-
-  try {
-    const [turnos] = await pool.execute(
-      "SELECT * FROM turnos_canchas WHERE cancha_id = ?",
-      [id]
-    );
-
-    res.json(turnos);
-  } catch (error) {
-    console.error("Error al obtener turnos:", error);
-    res.status(500).json({ error: "Error al obtener turnos" });
-  }
-});
-
-
-/* LIBERAR TURNO */
-
-app.put("/api/turnos/liberar/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const [resultado] = await pool.execute(
-      `UPDATE turnos_canchas 
-       SET estado = "disponible", nombre = NULL, dni = NULL , telefono = NULL 
-       WHERE id = ?`,
-      [id]
-    );
-
-    if (resultado.affectedRows > 0) {
-      res.json({ mensaje: "Turno liberado correctamente" });
-    } else {
-      res.status(404).json({ error: "Turno no encontrado" });
-    }
-  } catch (error) {
-    console.error("Error al liberar turno:", error);
-    res.status(500).json({ error: "Error al liberar turno" });
-  }
-});
-
-/* CODIGO PARA CREAR TURNOS */
-
-app.post("/api/turnos_canchas", async (req, res) => {
-  const { hora, cancha_id, estado, precio, fecha } = req.body;
-
-  try {
-    const [resultado] = await pool.execute(
-      "INSERT INTO turnos_canchas (hora, cancha_id, estado, precio, fecha) VALUES (?, ?, ?, ?, ?)",
-      [hora, cancha_id, estado, precio, fecha]
-    );
-
-    res.status(201).json({ mensaje: "Turno creado", id: resultado.insertId });
-  } catch (error) {
-    console.error("Error al crear turno:", error);
-    res.status(500).json({ error: "Error al crear turno" });
-  }
-});
-
-/* BORRAR TURNO */
-
-app.delete("/api/turnos_canchas/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const [resultado] = await pool.execute("DELETE FROM turnos_canchas WHERE id = ?", [id]);
-
-    if (resultado.affectedRows > 0) {
-      res.json({ mensaje: "Turno eliminado correctamente" });
-    } else {
-      res.status(404).json({ error: "Turno no encontrado" });
-    }
-  } catch (error) {
-    console.error("Error al eliminar turno:", error);
-    res.status(500).json({ error: "Error al eliminar turno" });
-  }
-});
-
-/* { ACTUALIZACION DE TIPO DE PAGO } */
-
-app.put("/api/turnos/pagar/:id", async (req, res) => {
-  const { id } = req.params;
-  const { tipoPago, condicion } = req.body;
-
-  console.log("Datos recibidos:", { id, tipoPago });
-
-  if (!id || isNaN(id) || !tipoPago) {
-    return res.status(400).json({ error: "Datos inválidos" });
-  }
-
-  try {
-    const [result] = await pool.execute(
-      "UPDATE turnos_canchas SET tipo_pago = ?, condicion = ? WHERE id = ?",
-      [tipoPago,condicion, id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Turno no encontrado" });
+    // La validación sigue siendo importante
+    if (isNaN(profesionalId) || isNaN(consultorioId)) {
+        return res.status(400).json({ message: "IDs de profesional o consultorio inválidos. Deben ser números." });
     }
 
-    res.sendStatus(200);
-  } catch (err) {
-    console.error("Error SQL:", err.message);
-    res.status(500).json({ error: "Error al actualizar el pago", detalle: err.message });
-  }
+    // Tu consulta SQL para obtener los turnos del profesional
+    const query = `
+      SELECT
+          CONCAT(p.apellido, ', ', p.nombre) AS medico,
+          p.especialidad AS especialidad,
+          c.direccion,
+          t.fecha,
+          t.estado
+      FROM
+          turnos AS t
+      JOIN
+          profesional_consultorio AS pc
+          ON t.profesional_id = pc.profesional_id
+          AND t.consultorio_id = pc.consultorio_id
+      JOIN
+          profesionales AS p ON pc.profesional_id = p.id
+      JOIN
+          consultorios AS c ON pc.consultorio_id = c.id
+      WHERE p.id = ? AND c.id = ?
+  `;
+
+    try {
+        // Ejecuta la consulta, pasando los IDs como parámetros
+        // El pool.execute se encarga de escapar el valor para prevenir inyecciones SQL
+        const [resultado] = await pool.execute(query, [profesionalId, consultorioId]);
+        res.json(resultado); // Envía los resultados como JSON
+    } catch (error) {
+        console.error(`Error al obtener turnos para el profesional ${profesionalId} y consultorio ${consultorioId}:`, error);
+        res.status(500).send("Error interno del servidor al obtener turnos del profesional.");
+    }
+});
+
+
+
+//OBTENER PROFESIONAL POR ID //
+
+app.get("/api/consultorios/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = `
+  SELECT
+      c.id,
+      c.tipo,
+      c.direccion,
+      c.nombre,
+      c.localidad
+  FROM profesional_consultorio AS pc -- Alias para la tabla intermedia
+  JOIN consultorios AS c ON c.id = pc.consultorio_id
+  JOIN profesionales AS p ON p.id = pc.profesional_id -- Asegúrate de usar el alias correcto aquí también
+  WHERE p.id = ?
+  `;
+    try {
+        const [resultados] = await pool.execute(query, [id]);
+        if (resultados.length === 0) {
+            return res.status(200).json([]);
+
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener consultorios del profesional:", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener consultorios.");
+    }
+});
+
+// OBTENER CONSULTORIOS POR ID //
+
+app.get("/api/consultorio/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = `
+    SELECT 
+c.nombre,
+c.direccion,
+c.localidad,
+c.tipo,
+c.hora_inicio AS inicio,
+c.hora_cierre AS cierre
+FROM consultorios AS c
+WHERE id = ?
+    `;
+    try {
+        const [resultados] = await pool.execute(query, [id]);
+        if (resultados.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener consultorios del profesional:", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener consultorios.");
+    }
+});
+
+app.get("/api/profesional/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = `
+    SELECT 
+p.nombre,
+p.apellido,
+p.especialidad,
+p.matricula
+FROM profesionales AS p
+WHERE id = ?
+    `;
+    try {
+        const [resultados] = await pool.execute(query, [id]);
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener profesional:", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener profesional");
+    }
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
+    console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
 });
 

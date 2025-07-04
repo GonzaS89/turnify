@@ -1,184 +1,201 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from './Header'; // Asegúrate de que Header tenga estilos modernos
-import { Footer } from './Footer'; // Asegúrate de que Footer tenga estilos modernos
-import Steps from './Layouts/Steps'; // Asume que estos ya están estilizados internamente
-import Benefits from './Layouts/Benefits'; // Asume que estos ya están estilizados internamente
-import FAQS from './Layouts/FAQS'; // Asume que estos ya están estilizados internamente
-import Testimonials from './Layouts/Testimonials'; // Asume que estos ya están estilizados internamente
+import { Header } from './Header';
+import { Footer } from './Footer';
+import Steps from './Layouts/Steps';
+import Benefits from './Layouts/Benefits';
+import FAQS from './Layouts/FAQS';
+import Testimonials from './Layouts/Testimonials';
+import ConsultorioInfo from './Layouts/components/ConsultorioInfo';
 
-// Dummy data to replace Firestore calls
-const dummyDoctors = [
-    {
-        id: "doc-1",
-        name: "Dr. Ana García",
-        specialty: "Cardiología",
-        location: "Av. Corrientes 123, CABA",
-        bio: "Especialista en cardiología clínica y ecocardiografía con más de 15 años de experiencia, brindando atención integral y personalizada a sus pacientes.",
-        availableSlots: [
-            { date: "2025-07-01", time: "09:00" },
-            { date: "2025-07-01", time: "10:00" },
-            { date: "2025-07-02", time: "11:00" },
-            { date: "2025-07-03", time: "14:00" },
-        ]
-    },
-    {
-        id: "doc-2",
-        name: "Dr. Juan Pérez",
-        specialty: "Odontología",
-        location: "Calle Falsa 123, CABA",
-        bio: "Odontólogo general con enfoque en estética dental y tratamientos de blanqueamiento. Comprometido con la salud bucal y la sonrisa de sus pacientes.",
-        availableSlots: [
-            { date: "2025-07-01", time: "14:00" },
-            { date: "2025-07-02", time: "09:30" },
-            { date: "2025-07-02", time: "10:30" },
-            { date: "2025-07-04", time: "16:00" },
-        ]
-    },
-    {
-        id: "doc-3",
-        name: "Dra. Laura Sánchez",
-        specialty: "Pediatría",
-        location: "Rivadavia 456, CABA",
-        bio: "Pediatra con amplia experiencia en atención infantil y vacunación. Atiende a niños de todas las edades con un enfoque cariñoso y preventivo.",
-        availableSlots: [
-            { date: "2025-07-03", time: "09:00" },
-            { date: "2025-07-03", time: "10:00" },
-            { date: "2025-07-04", time: "11:00" },
-            { date: "2025-07-05", time: "12:00" },
-        ]
-    },
-    {
-        id: "doc-4",
-        name: "Dr. Roberto Gómez",
-        specialty: "Dermatología",
-        location: "Av. Libertador 789, CABA",
-        bio: "Dermatólogo especialista en acné, rosácea y tratamientos estéticos de la piel. Ofrece soluciones personalizadas para cada tipo de piel.",
-        availableSlots: [
-            { date: "2025-07-01", time: "15:00" },
-            { date: "2025-07-05", time: "09:00" },
-            { date: "2025-07-05", time: "10:00" },
-        ]
-    },
-];
+// IMPORTACION DE ICONOS // 
 
+import { PiCalendarCheckBold, PiCalendarXBold } from "react-icons/pi";
 
-// Main App component
+// IMPORTACION DE CUSTOM HOOKS
+import useAllProfesionals from '../customHooks/useAllProfesionals';
+import useProfessionalConsultorioTurnos from '../customHooks/useProfessionalConsultorioTurnos';
+import useConsultorioxId from '../customHooks/useConsultorioxId';
+import useProfesionalxId from '../customHooks/useProfesionalxId';
+
+// Componente principal de la aplicación
 const App = () => {
-    // State for doctors and filtered doctors
-    const [doctors, setDoctors] = useState(dummyDoctors);
-    const [filteredDoctors, setFilteredDoctors] = useState(dummyDoctors);
 
-    // State for search form inputs
-    const [specialty, setSpecialty] = useState('');
-    const [doctorName, setDoctorName] = useState('');
-    const [date, setDate] = useState('');
+    const [idConsultorio, setIdConsultorio] = useState(null);
 
+    const recibirIdConsultorio = (id) => {
+        setIdConsultorio(id);
+    };
 
-    const [showBookingModal, setShowBookingModal] = useState(false);
-    const [selectedAppointment, setSelectedAppointment] = useState(null);
-    const [patientName, setPatientName] = useState('');
-    const [patientEmail, setPatientEmail] = useState('');
-    const [patientPhone, setPatientPhone] = useState('');
-    const [message, setMessage] = useState('');
+    const [idProfesional, setIdProfesional] = useState(null);
 
-    // Use useEffect to trigger filtering whenever a search input changes
+    const recibirIdProfesional = (id) => {
+        setIdProfesional(id);
+    }
+
+    // CARGA DE CUSTOM HOOKS
+    const { profesionales, isLoading, error } = useAllProfesionals();
+    const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);
+    const { consultorio, isLoading: isLoadingConsultorio, error: errorConsultorio } = useConsultorioxId(idConsultorio);
+    const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(idProfesional);
+
+    const prof = profesional[0];
+    const consult = consultorio[0];
+
+    console.log(consult);
+    const [fechaSeleccionada, setFechaSeleccionada] = useState(''); // Fecha seleccionada para ver turnos   
+
+    const handleFechaChange = (event) => {
+        setFechaSeleccionada(event.target.value);
+        console.log("Fecha seleccionada:", event.target.value);
+    };
+
+    const turnosFiltrados =
+        fechaSeleccionada ? turnos.filter(turno => turno.fecha === fechaSeleccionada)
+            : turnos;
+
+    const [showModalTurnos, setShowModalTurnos] = useState(null); // Estado para mostrar el modal de turnos
+
     useEffect(() => {
-        let currentFilteredDoctors = doctors;
-
-        if (specialty) {
-            currentFilteredDoctors = currentFilteredDoctors.filter(doc => doc.specialty === specialty);
+        // Si hay un profesional seleccionado, mostramos el modal de turnos
+        if (idConsultorio) {
+            setShowModalTurnos(true);
+        } else {
+            setShowModalTurnos(false);
         }
+    }, [idConsultorio]);
 
-        if (doctorName) {
-            currentFilteredDoctors = currentFilteredDoctors.filter(doc =>
-                doc.name.toLowerCase().includes(doctorName.toLowerCase())
-            );
+    const cerrarModalTurnos = () => {
+        setShowModalTurnos(false);
+        setFechaSeleccionada(''); // Limpia la fecha seleccionada al cerrar el modal
+        setIdConsultorio(null); // Limpia el ID del consultorio al cerrar el modal
+        setIdProfesional(null); // Limpia el ID del profesional al cerrar el modal
+    }
+
+    const {idTurno, setIdTurno} = useState(null); // Estado para el turno seleccionado
+    const [idTurnoSelec, setIdTurnoSelec] = useState(idTurno); // Estado para el turno seleccionado
+
+    // Estado para la lista filtrada de doctores (búsqueda principal)
+    const [filteredDoctors, setFilteredDoctors] = useState([]);
+
+    // Estados para los inputs del formulario de búsqueda principal
+    const [specialty, setSpecialty] = useState('');
+    const [date, setDate] = useState(''); // Fecha para la búsqueda principal
+
+    // Estados para el Modal REUTILIZABLE de "Reservar/Ver Turnos"
+    const [selectedDoctorForSlots, setSelectedDoctorForSlots] = useState(null); // El doctor cuyos turnos estamos viendo
+    // Turnos para el doctor seleccionado, filtrados por fecha
+    const [bookingDateFilter, setBookingDateFilter] = useState(''); // Filtro de fecha dentro del modal de turnos
+
+    const [message, setMessage] = useState(''); // Mensajes de usuario (éxito/error)
+
+    // useEffect para inicializar filteredDoctors y para la búsqueda principal
+    useEffect(() => {
+        // Solo actualizamos filteredDoctors una vez que 'profesionales' tenga datos
+        if (profesionales && profesionales.length > 0) {
+            let currentFilteredDoctors = profesionales;
+
+            if (specialty) {
+                currentFilteredDoctors = currentFilteredDoctors.filter(doc => doc.especialidad === specialty);
+            }
+            // Si 'date' fuera a filtrar doctores (no turnos), la lógica iría aquí.
+            // Actualmente, 'date' solo se usa para la búsqueda inicial en el Hero.
+
+            setFilteredDoctors(currentFilteredDoctors);
+        } else if (!isLoading && !error) {
+            // Si no hay profesionales y la carga ha terminado sin error, significa que no hay data.
+            setFilteredDoctors([]);
         }
+    }, [specialty, profesionales, isLoading, error]); // Dependencias: profesionales para re-renderizar cuando los datos llegan
 
-        if (date) {
-            currentFilteredDoctors = currentFilteredDoctors.map(doc => ({
-                ...doc,
-                availableSlots: doc.availableSlots.filter(slot => slot.date === date)
-            })).filter(doc => doc.availableSlots.length > 0);
-        }
+    // useEffect para filtrar turnos *dentro del Modal de Ver Turnos/Reservar*
 
-        setFilteredDoctors(currentFilteredDoctors);
-    }, [specialty, doctorName, date, doctors]);
-
-    // This function is now only used to prevent form submission and can display a message
     const handleSearch = (e) => {
         e.preventDefault();
         setMessage("Búsqueda actualizada.");
         setTimeout(() => setMessage(''), 2000);
-        // Also scroll to the doctors list after searching
-        // Implementar desplazamiento suave a la sección 'medicos-disponibles' si lo necesitas
-        const doctorsSection = document.getElementById('medicos-disponibles');
-        if (doctorsSection) {
-          doctorsSection.scrollIntoView({ behavior: 'smooth' });
+        const resultsSection = document.getElementById('resultados-busqueda');
+        if (resultsSection) {
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
-    // Open booking modal
-    const openBookingModal = (doctor, slot) => {
-        setSelectedAppointment({ doctor, slot });
+    // Abre el modal para ver los turnos de un doctor específico
+    const openDoctorSlotsModal = (doctor) => {
+
+
+        setSelectedSlotForBooking(null); // Asegura que no haya un turno pre-seleccionado para el formulario de reserva
         setShowBookingModal(true);
     };
 
-    // Close booking modal
+    // Función para seleccionar un turno específico y mostrar el formulario de reserva (dentro del mismo modal)
+    const selectSlotAndShowBookingForm = (doctor, slot) => {
+        setSelectedAppointment({ doctor, slot }); // Establece los detalles de la cita para la confirmación
+        setSelectedSlotForBooking(slot); // Esto activa el renderizado condicional dentro del modal
+        setPatientInsurance(''); // Limpia la obra social al seleccionar un turno
+    };
+
+    // Función para volver del formulario de reserva a la selección de turnos
+    const goBackToSlotSelection = () => {
+        setSelectedSlotForBooking(null);
+        setSelectedAppointment(null); // También limpia la cita seleccionada al volver
+        setPatientName(''); // Limpia los datos del paciente al volver
+        setPatientEmail('');
+        setPatientPhone('');
+        setPatientInsurance(''); // Reinicia la obra social al volver
+    };
+
     const closeBookingModal = () => {
         setShowBookingModal(false);
-        setSelectedAppointment(null);
+        setSelectedDoctorForSlots(null);
+        setFilteredSlotsForDoctor([]);
+        setBookingDateFilter('');
+        setSelectedSlotForBooking(null);
+        setSelectedAppointment(null); // Asegura que se borre al cerrar completamente el modal
         setPatientName('');
         setPatientEmail('');
         setPatientPhone('');
+        setPatientInsurance(''); // Reinicia la obra social al cerrar
         setMessage('');
     };
-    
-    // Handle appointment booking confirmation (simulated)
-    const handleConfirmBooking = (e) => {
-        e.preventDefault();
-        if (!selectedAppointment) {
-            setMessage("Error: Datos de reserva incompletos.");
-            return;
-        }
 
-        console.log("Reserva confirmada:", {
-            doctorId: selectedAppointment.doctor.id,
-            doctorName: selectedAppointment.doctor.name,
-            specialty: selectedAppointment.doctor.specialty,
-            appointmentDate: selectedAppointment.slot.date,
-            appointmentTime: selectedAppointment.slot.time,
-            patientName: patientName,
-            patientEmail: patientEmail,
-            patientPhone: patientPhone,
-            timestamp: new Date()
-        });
+    //    function formatearFechaSQL (fecha) {
+    //     const date = new Date(fecha);
 
-        setMessage("¡Tu turno ha sido reservado con éxito!");
-        
-        setTimeout(() => {
-            closeBookingModal();
-        }, 2000);
-    };
+    //     // Get the day, month, and year in UTC
+    //     const day = String(date.getUTCDate()).padStart(2, '0');
+    //     const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    //     const year = date.getUTCFullYear();
+    //     const formattedDate = `${day}/${month}/${year}`;
+
+    //     return formattedDate;
+    //     }   
+
+    const fechasUnicas = [...new Set(turnos.map(turno => turno.fecha))];
+
+    const formatearFechaSQL = (fecha) => {
+        const date = new Date(fecha);
+        // Obtener el día, mes y año en UTC
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
+        const year = date.getUTCFullYear();
+        return `${day}/${month}/${year}`;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 font-sans text-gray-800">
-            {/* Header - Se asume que este componente ya está estilizado para que coincida con el tema */}
             <Header />
-            
-            {/* Main Content - Added pt-24 to prevent content from being hidden behind the fixed header */}
-            <main className="container mx-auto px-4 pt-24 mt-8">
-                {/* Hero Section */}
+
+            <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 mt-8">
+                {/* Sección Hero */}
                 <section id="hero-section" className="
                     bg-gradient-to-r from-blue-500 to-purple-600
                     text-center py-16 sm:py-24 rounded-3xl shadow-xl px-4 mb-16
                     relative overflow-hidden
                 ">
-                    {/* Elementos decorativos de fondo */}
                     <div className="absolute top-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -translate-x-24 -translate-y-24"></div>
                     <div className="absolute bottom-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full translate-x-16 translate-y-16"></div>
 
-                    <h1 className="text-4xl sm:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-md">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-md">
                         Reserva tu turno médico de forma <span className="text-blue-200">rápida y sencilla</span>
                     </h1>
                     <p className="text-lg sm:text-xl text-blue-100 max-w-3xl mx-auto mb-12 drop-shadow-sm">
@@ -186,8 +203,8 @@ const App = () => {
                     </p>
 
                     <form onSubmit={handleSearch} className="
-                        flex flex-col md:flex-row justify-center items-end gap-6
-                        bg-white bg-opacity-90 p-8 rounded-2xl shadow-xl max-w-4xl mx-auto
+                        flex flex-col md:flex-row justify-center items-end gap-4 md:gap-6
+                        bg-white bg-opacity-90 p-6 sm:p-8 rounded-2xl shadow-xl max-w-4xl mx-auto
                         transform translate-y-16 relative z-10 mb-24 md:mb-0
                     ">
                         <div className="flex flex-col items-start w-full md:w-1/3">
@@ -200,40 +217,38 @@ const App = () => {
                                 onChange={(e) => setSpecialty(e.target.value)}
                             >
                                 <option value="">Todas las especialidades</option>
-                                <option value="Cardiología">Cardiología</option>
-                                <option value="Odontología">Odontología</option>
-                                <option value="Pediatría">Pediatría</option>
-                                <option value="Dermatología">Dermatología</option>
-                                <option value="Nutrición">Nutrición</option>
-                                {/* Agrega más especialidades aquí */}
+                                {/* Obtener especialidades únicas de todos los doctores */}
+                                {[...new Set(profesionales?.map(doc => doc.especialidad))].sort().map(spec => (
+                                    <option key={spec} value={spec}>{spec}</option>
+                                ))}
                             </select>
                         </div>
                         <div className="flex flex-col items-start w-full md:w-1/3">
-                            <label htmlFor="doctor-name" className="block text-base font-semibold text-gray-700 mb-2">Nombre del médico (opcional)</label>
+                            <label htmlFor="date" className="block text-base font-semibold text-gray-700 mb-2">Fecha (opcional)</label>
                             <input
-                                type="text"
-                                id="doctor-name"
-                                placeholder="Ej: Dr. Juan Pérez"
+                                type="date"
+                                id="date"
                                 className="p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                value={doctorName}
-                                onChange={(e) => setDoctorName(e.target.value)}
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
                             />
                         </div>
-                       
                         <button type="submit" className="
                             w-full md:w-auto px-8 py-3
                             bg-green-500 text-white rounded-lg font-bold text-lg
                             hover:bg-green-600 transition-all duration-300 transform hover:scale-105
                             shadow-md hover:shadow-lg
                         ">
-                            Buscar Turno
+                            Buscar médicos
                         </button>
                     </form>
                 </section>
 
-                {/* Sección de Médicos Disponibles */}
-                <section id="medicos-disponibles" className="mt-28 mb-16"> {/* Ajustado el margen superior */}
-                    <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">Médicos Disponibles</h2>
+                {/* Sección de Resultados de Búsqueda: Solo para doctores ahora */}
+                <section id="resultados-busqueda" className="mt-28 mb-16">
+                    <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">
+                        Médicos Disponibles
+                    </h2>
 
                     {message && (
                         <div className={`p-4 mb-8 rounded-lg text-white text-center font-semibold transition-all duration-300 ${message.includes('éxito') ? 'bg-green-500 shadow-md' : 'bg-red-500 shadow-md'}`}>
@@ -241,90 +256,65 @@ const App = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredDoctors.length > 0 ? (
-                            filteredDoctors.map(doctor => (
-                                <div key={doctor.id} className="
-                                    bg-white rounded-2xl shadow-xl p-6 border border-gray-100
-                                    transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300
-                                    group
-                                ">
-                                    <div className="flex flex-col sm:flex-row items-center sm:items-start mb-6 text-center sm:text-left">
-                                        <img
-                                            src={`https://placehold.co/96x96/007bff/ffffff?text=${doctor.name.split(' ').map(n => n[0]).join('')}`}
-                                            alt={`Foto de ${doctor.name}`}
-                                            className="w-24 h-24 rounded-full mb-4 sm:mb-0 sm:mr-6 object-cover border-4 border-blue-400 group-hover:border-purple-400 transition-colors duration-300"
-                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/cccccc/000000?text=MD"; }}
-                                        />
-                                        <div>
-                                            <h3 className="text-2xl font-bold text-gray-900 leading-tight">{doctor.name}</h3>
-                                            <p className="text-blue-600 font-semibold text-lg mt-1">{doctor.specialty}</p>
-                                            <p className="text-gray-500 text-sm mt-1">{doctor.location}</p>
+                    {/* Muestra mensajes de carga, error o si no hay médicos */}
+                    {isLoading && (
+                        <p className="text-center text-blue-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-blue-100">Cargando profesionales...</p>
+                    )}
+
+                    {error && (
+                        <p className="text-center text-red-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-red-100">Error: {error.message || "No se pudo cargar la información de los profesionales."}</p>
+                    )}
+
+                    {!isLoading && !error && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {filteredDoctors?.length > 0 ? (
+                                filteredDoctors.map(doctor => (
+                                    <div key={doctor.id} className="
+                                        bg-white rounded-2xl shadow-xl p-6 border border-gray-100
+                                        transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300
+                                        group flex flex-col justify-between h-full
+                                    ">
+                                        <div className="flex flex-col sm:flex-row items-center sm:items-start mb-6 text-center sm:text-left">
+                                            <img
+                                                src={`https://placehold.co/96x96/007bff/ffffff?text=${doctor.name?.split(' ').map(n => n[0]).join('') || 'MD'}`}
+                                                alt={`Foto de ${doctor.name || 'Médico'}`}
+                                                className="w-24 h-24 rounded-full mb-4 sm:mb-0 sm:mr-6 object-cover border-4 border-blue-400 group-hover:border-purple-400 transition-colors duration-300"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/96x96/cccccc/000000?text=MD"; }}
+                                            />
+                                            <div>
+                                                <h3 className="text-2xl font-bold text-gray-900 leading-tight">Dr. {doctor.apellido}, {doctor.nombre}</h3>
+                                                <p className="text-blue-600 font-semibold text-lg mt-1">{doctor.especialidad}</p>
+
+                                            </div>
+
                                         </div>
+
+                                        <p className="text-gray-700 mb-6 text-base leading-relaxed">{doctor.bio}</p>
+                                        <ConsultorioInfo professionalId={doctor.id} enviarIdConsultorio={recibirIdConsultorio} enviarIdProfesional={recibirIdProfesional} />
+
                                     </div>
-                                    <p className="text-gray-700 mb-6 text-base leading-relaxed">{doctor.bio}</p>
-                                    <div className="mt-4">
-                                        <h4 className="font-bold text-gray-800 mb-3">Horarios disponibles:</h4>
-                                        <div className="flex flex-wrap gap-3">
-                                            {doctor.availableSlots && doctor.availableSlots.length > 0 ? (
-                                                doctor.availableSlots.map((slot, index) => (
-                                                    <button
-                                                        key={index}
-                                                        className="
-                                                            px-5 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium
-                                                            hover:bg-blue-200 hover:text-blue-900 transition-all duration-200
-                                                            shadow-sm hover:shadow-md
-                                                        "
-                                                        onClick={() => openBookingModal(doctor, slot)}
-                                                    >
-                                                        {slot.date} - {slot.time}
-                                                    </button>
-                                                ))
-                                            ) : (
-                                                <p className="text-gray-500 text-sm italic">No hay turnos disponibles para la fecha seleccionada.</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-gray-100">
-                                No se encontraron médicos con los criterios de búsqueda. Por favor, intenta con otra especialidad, nombre o fecha.
-                            </p>
-                        )}
-                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center text-gray-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-md border border-gray-100">
+                                    No se encontraron médicos con los criterios de búsqueda. Por favor, intenta con otra especialidad, nombre o fecha.
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </section>
 
-                {/* Separador */}
                 <hr className="my-16 border-gray-200 border-t-2" />
-
-                {/* How it Works Section - Se asume que este componente ya está estilizado */}
                 <Steps />
-
-                {/* Separador */}
                 <hr className="my-16 border-gray-200 border-t-2" />
-
-                {/* Benefits Section - Se asume que este componente ya está estilizado */}
                 <Benefits />
-
-                {/* Separador */}
                 <hr className="my-16 border-gray-200 border-t-2" />
-
-                {/* Testimonials Section - Se asume que este componente ya está estilizado */}
                 <Testimonials />
-
-                {/* Separador */}
                 <hr className="my-16 border-gray-200 border-t-2" />
-                
-                {/* FAQ Section - Se asume que este componente ya está estilizado */}
                 <FAQS />
-
-                {/* Separador */}
                 <hr className="my-16 border-gray-200 border-t-2" />
-                
-                {/* Call to Action (CTA) Section */}
+
+                {/* Sección de Llamada a la Acción (CTA) */}
                 <section className="text-center py-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl shadow-xl mb-16 relative overflow-hidden">
-                    {/* Elementos decorativos */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full translate-x-16 -translate-y-16"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -translate-x-24 translate-y-24"></div>
 
@@ -341,108 +331,136 @@ const App = () => {
                     ">
                         ¡Encuentra tu médico ahora!
                     </button>
-                </section>
+                </section>S
+                //MODAL DE ELECCION DE TURNOS //
+                {showModalTurnos && (
+                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6">
+                    
+                 <div className={`${!idTurnoSelec ? 'flex' : 'hidden'} bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl flex-col gap-6`}>
+                     {/* Información del Consultorio - Nueva Sección */}
+                     {consult && (
+                         <div className="text-center pb-4 border-b border-gray-200">
+                             <p className="text-xl sm:text-2xl font-extrabold text-blue-700">
+                                 {consult.tipo === 'propio' ? 'Consultorio particular' : `Centro médico ${consult.nombre}`}
+                             </p>
+                             <p className="text-sm sm:text-base text-gray-600 mt-1">
+                                 {consult.direccion || 'Dirección no disponible'}
+                             </p>
+                             <p className="text-sm sm:text-base text-gray-600 mt-1">
+                                 {consult.localidad || 'Dirección no disponible'}
+                             </p>
+                         </div>
+                     )}
+                     {/* Fin de la Nueva Sección */}
+     
+                     <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center mb-2">Elegí una fecha</h2>
+     
+                     {isLoadingTurnos ? (
+                         <p className="text-blue-600 text-base sm:text-lg text-center font-medium animate-pulse">Cargando turnos...</p>
+                     ) : errorTurnos ? (
+                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center text-sm sm:text-base">
+                             <p className="font-semibold">Error al cargar los turnos:</p>
+                             <p>{errorTurnos.message}</p>
+                         </div>
+                     ) : (
+                         <>
+                             <div className="relative">
+                                 <select
+                                     name="fecha"
+                                     id="fecha-select"
+                                     onChange={handleFechaChange}
+                                     className="block w-full p-2 sm:p-3 border border-gray-300 rounded-lg text-base sm:text-lg text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer pr-10"
+                                     defaultValue=""
+                                 >
+                                     <option value="" disabled>Selecciona una fecha disponible</option>
+                                     {fechasUnicas.map((fecha, index) => (
+                                         <option key={index} value={fecha}>
+                                             {formatearFechaSQL(fecha)}
+                                         </option>
+                                     ))}
+                                 </select>
+                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                     </svg>
+                                 </div>
+                             </div>
+                         </>
+                     )}
+     
+                     {fechaSeleccionada && (
+                         <h3 className="text-xl sm:text-2xl font-bold text-gray-700 text-center mt-2 sm:mt-4 border-b pb-2">
+                             Turnos para el {formatearFechaSQL(fechaSeleccionada)}
+                         </h3>
+                     )}
+     
+                     <div className="flex-grow overflow-y-auto max-h-[250px] sm:max-h-[350px] pr-2">
+                         {fechaSeleccionada ? (
+                             turnosFiltrados.length > 0 ? (
+                                 <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 justify-items-center mt-4">
+                                     {turnosFiltrados.map((turno, index) => (
+                                         <div key={turno.id} className="w-full flex justify-center">
+                                             <button
+                                                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg shadow-md transition-all duration-200 ease-in-out w-full
+                                                     ${turno.estado === 'disponible'
+                                                         ? 'bg-green-50 hover:bg-green-100 border-2 border-green-300 text-green-700 cursor-pointer transform hover:scale-105'
+                                                         : 'bg-gray-100 border-2 border-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                                                     }`}
+                                                 disabled={turno.estado !== 'disponible'}
+                                             >
+                                                 {turno.estado === 'disponible' ? (
+                                                     <PiCalendarCheckBold className="text-5xl sm:text-6xl text-green-600 mb-1 sm:mb-2" />
+                                                 ) : (
+                                                     <PiCalendarXBold className="text-5xl sm:text-6xl text-gray-500 mb-1 sm:mb-2" />
+                                                 )}
+                                                 <p className="text-base sm:text-lg font-bold">Turno #{index + 1}</p>
+                                                 <p className={`text-xs sm:text-sm ${turno.estado === 'disponible' ? 'text-green-600 font-semibold' : 'text-gray-500'}`}>
+                                                     {turno.estado === 'disponible' ? 'Disponible' : 'Reservado'}
+                                                 </p>
+                                             </button>
+                                         </div>
+                                     ))}
+                                 </div>
+                             ) : (
+                                 <p className="text-gray-600 text-base sm:text-lg text-center mt-6 sm:mt-8">
+                                     No hay turnos disponibles para esta fecha. ¡Intentá con otra!
+                                 </p>
+                             )
+                         ) : (
+                             <p className="text-gray-600 text-base sm:text-lg text-center mt-6 sm:mt-8">
+                                 Por favor, selecciona una fecha para ver los turnos disponibles.
+                             </p>
+                         )}
+                     </div>
+     
+                     {fechaSeleccionada && (
+                         <p className="text-xs sm:text-sm text-yellow-800 text-center mt-4 sm:mt-6 p-2 sm:p-3 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mx-auto max-w-xs sm:max-w-md">
+                             <span className="font-bold">¡Importante! Horario de atención:</span> Los turnos se llevan a cabo entre {consult?.inicio} y {consult?.cierre} hs.
+                             <br />
+                             <span className="block mt-1 italic text-2xs sm:text-xs text-yellow-700">
+                                 (Tiempo estimado por turno: 20 minutos, sujeto a cambios.)
+                             </span>
+                         </p>
+                     )}
+     
+                     <button
+                         onClick={() => cerrarModalTurnos()}
+                         className="mt-4 sm:mt-6 w-full py-2 sm:py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 text-base sm:text-lg"
+                     >
+                         Cerrar
+                     </button>
+                 </div>
+             </div>
+                
+                )}
+
+
             </main>
 
-            {/* Footer - Se asume que este componente ya está estilizado */}
             <Footer />
 
-            {/* Booking Modal (Estilizado) */}
-            {showBookingModal && selectedAppointment && (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-                    <div className="
-                        bg-white rounded-2xl shadow-3xl p-8 w-full max-w-lg
-                        transform scale-95 opacity-0 animate-scale-in
-                        relative
-                    ">
-                        <div className="flex justify-between items-center mb-6 border-b pb-4 border-gray-100">
-                            <h3 className="text-3xl font-extrabold text-gray-900">Confirmar Reserva</h3>
-                            <button
-                                onClick={closeBookingModal}
-                                className="
-                                    text-gray-500 hover:text-gray-700 text-4xl leading-none
-                                    p-1 rounded-full hover:bg-gray-100 transition-colors duration-200
-                                "
-                            >
-                                &times;
-                            </button>
-                        </div>
-                        {message && (
-                            <div className={`
-                                p-4 mb-6 rounded-lg text-white text-center font-semibold text-lg
-                                transition-all duration-300 shadow-md
-                                ${message.includes('éxito') ? 'bg-green-500' : 'bg-red-500'}
-                            `}>
-                                {message}
-                            </div>
-                        )}
-                        <div id="modal-details" className="mb-6 text-gray-700 leading-relaxed">
-                            <p className="mb-2"><span className="font-semibold text-gray-800">Médico:</span> {selectedAppointment.doctor.name}</p>
-                            <p className="mb-2"><span className="font-semibold text-gray-800">Especialidad:</span> {selectedAppointment.doctor.specialty}</p>
-                            <p className="mb-2"><span className="font-semibold text-gray-800">Fecha:</span> {selectedAppointment.slot.date}</p>
-                            <p className="mb-2"><span className="font-semibold text-gray-800">Hora:</span> {selectedAppointment.slot.time}</p>
-                            <p className="mb-4"><span className="font-semibold text-gray-800">Ubicación:</span> {selectedAppointment.doctor.location}</p>
-                        </div>
-                        <form onSubmit={handleConfirmBooking} className="space-y-5">
-                            <div>
-                                <label htmlFor="patient-name" className="block text-gray-700 text-sm font-bold mb-2">Nombre Completo</label>
-                                <input
-                                    type="text"
-                                    id="patient-name"
-                                    className="
-                                        w-full py-3 px-4 border border-gray-300 rounded-lg text-gray-700
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                        shadow-sm
-                                    "
-                                    value={patientName}
-                                    onChange={(e) => setPatientName(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="patient-email" className="block text-gray-700 text-sm font-bold mb-2">Correo Electrónico</label>
-                                <input
-                                    type="email"
-                                    id="patient-email"
-                                    className="
-                                        w-full py-3 px-4 border border-gray-300 rounded-lg text-gray-700
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                        shadow-sm
-                                    "
-                                    value={patientEmail}
-                                    onChange={(e) => setPatientEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="patient-phone" className="block text-gray-700 text-sm font-bold mb-2">Teléfono</label>
-                                <input
-                                    type="tel"
-                                    id="patient-phone"
-                                    className="
-                                        w-full py-3 px-4 border border-gray-300 rounded-lg text-gray-700
-                                        focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200
-                                        shadow-sm
-                                    "
-                                    value={patientPhone}
-                                    onChange={(e) => setPatientPhone(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="
-                                    w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg
-                                    focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200
-                                    shadow-md hover:shadow-lg
-                                "
-                            >
-                                Confirmar Reserva
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Modal de Reservar/Ver Turnos (REUTILIZADO tanto para ver turnos como para confirmar la reserva) */}
+
         </div>
     );
 };
