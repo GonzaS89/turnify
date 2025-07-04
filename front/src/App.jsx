@@ -7,9 +7,16 @@ import FAQS from './Layouts/FAQS';
 import Testimonials from './Layouts/Testimonials';
 import ConsultorioInfo from './Layouts/components/ConsultorioInfo';
 
+// IMPORTACION DE ICONOS // 
+
+import { PiCalendarCheckBold, PiCalendarXBold } from "react-icons/pi";
+
 // IMPORTACION DE CUSTOM HOOKS
 import useAllProfesionals from '../customHooks/useAllProfesionals';
 import useProfessionalConsultorioTurnos from '../customHooks/useProfessionalConsultorioTurnos';
+import useConsultorioxId from '../customHooks/useConsultorioxId';
+import useProfesionalxId from '../customHooks/useProfesionalxId';
+
 // Componente principal de la aplicación
 const App = () => {
 
@@ -28,21 +35,44 @@ const App = () => {
     // CARGA DE CUSTOM HOOKS
     const { profesionales, isLoading, error } = useAllProfesionals();
     const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);
+    const { consultorio, isLoading: isLoadingConsultorio, error: errorConsultorio } = useConsultorioxId(idConsultorio);
+    const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(idProfesional);
 
-    console.log(turnos)
+    const prof = profesional[0];
+    const consult = consultorio[0];
 
+    console.log(consult);
     const [fechaSeleccionada, setFechaSeleccionada] = useState(''); // Fecha seleccionada para ver turnos   
 
     const handleFechaChange = (event) => {
         setFechaSeleccionada(event.target.value);
         console.log("Fecha seleccionada:", event.target.value);
-      };
+    };
 
-     const turnosFiltrados = 
-     fechaSeleccionada ? turnos.filter(turno => turno.fecha === fechaSeleccionada)
-        : turnos;  
+    const turnosFiltrados =
+        fechaSeleccionada ? turnos.filter(turno => turno.fecha === fechaSeleccionada)
+            : turnos;
 
-        console.log(turnosFiltrados)
+    const [showModalTurnos, setShowModalTurnos] = useState(null); // Estado para mostrar el modal de turnos
+
+    useEffect(() => {
+        // Si hay un profesional seleccionado, mostramos el modal de turnos
+        if (idConsultorio) {
+            setShowModalTurnos(true);
+        } else {
+            setShowModalTurnos(false);
+        }
+    }, [idConsultorio]);
+
+    const cerrarModalTurnos = () => {
+        setShowModalTurnos(false);
+        setFechaSeleccionada(''); // Limpia la fecha seleccionada al cerrar el modal
+        setIdConsultorio(null); // Limpia el ID del consultorio al cerrar el modal
+        setIdProfesional(null); // Limpia el ID del profesional al cerrar el modal
+    }
+
+    const {idTurno, setIdTurno} = useState(null); // Estado para el turno seleccionado
+    const [idTurnoSelec, setIdTurnoSelec] = useState(idTurno); // Estado para el turno seleccionado
 
     // Estado para la lista filtrada de doctores (búsqueda principal)
     const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -53,7 +83,7 @@ const App = () => {
 
     // Estados para el Modal REUTILIZABLE de "Reservar/Ver Turnos"
     const [selectedDoctorForSlots, setSelectedDoctorForSlots] = useState(null); // El doctor cuyos turnos estamos viendo
- // Turnos para el doctor seleccionado, filtrados por fecha
+    // Turnos para el doctor seleccionado, filtrados por fecha
     const [bookingDateFilter, setBookingDateFilter] = useState(''); // Filtro de fecha dentro del modal de turnos
 
     const [message, setMessage] = useState(''); // Mensajes de usuario (éxito/error)
@@ -301,52 +331,127 @@ const App = () => {
                     ">
                         ¡Encuentra tu médico ahora!
                     </button>
-                </section>
+                </section>S
                 //MODAL DE ELECCION DE TURNOS //
-                {idConsultorio && idProfesional && (
-                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm">
-                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl flex flex-col">
-                      <h2 className="text-2xl font-bold mb-4">Turnos Disponibles</h2>
-                      {isLoadingTurnos ? (
-                          <p className="text-blue-600">Cargando turnos...</p>
-                      ) : errorTurnos ? (
-                          <p className="text-red-600">Error al cargar los turnos: {errorTurnos.message}</p>
-                      ) : (
-                          <>
-                              <select name="" id="" onChange={handleFechaChange} className="p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
-                                  <option value="">Selecciona una fecha</option>
-                                  {fechasUnicas.map((fecha, index) => (
-                                      <option key={index} value={fecha}>{formatearFechaSQL(fecha)}</option>
-                                  ))}
-                              </select>
-              
-                          </>
-                      )}
-              
-                      <div>
-                          {fechaSeleccionada ? (
-                              <div className="mt-4 space-y-4">
-                                  {turnosFiltrados.map(turno => (
-                                      <div key={turno.id} className="p-4 bg-gray-100 rounded-lg shadow hover:shadow-md transition-shadow">
-              
-                                          <button
-                                              onClick={() => selectSlotAndShowBookingForm(turno)}
-                                              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                                          >
-                                              Reservar
-                                          </button>
-                                      </div>
-                                  ))}
-                              </div>
-                          ) : (
-                              <p className="text-gray-600">No hay turnos disponibles para esta fecha.</p>
-                          )}
-                      </div>
-                      <button onClick={closeBookingModal} className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                          Cerrar
-                      </button>
-                  </div>
-              </div>
+                {showModalTurnos && (
+                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6">
+                    
+                 <div className={`${!idTurnoSelec ? 'flex' : 'hidden'} bg-white rounded-xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl flex-col gap-6`}>
+                     {/* Información del Consultorio - Nueva Sección */}
+                     {consult && (
+                         <div className="text-center pb-4 border-b border-gray-200">
+                             <p className="text-xl sm:text-2xl font-extrabold text-blue-700">
+                                 {consult.tipo === 'propio' ? 'Consultorio particular' : `Centro médico ${consult.nombre}`}
+                             </p>
+                             <p className="text-sm sm:text-base text-gray-600 mt-1">
+                                 {consult.direccion || 'Dirección no disponible'}
+                             </p>
+                             <p className="text-sm sm:text-base text-gray-600 mt-1">
+                                 {consult.localidad || 'Dirección no disponible'}
+                             </p>
+                         </div>
+                     )}
+                     {/* Fin de la Nueva Sección */}
+     
+                     <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center mb-2">Elegí una fecha</h2>
+     
+                     {isLoadingTurnos ? (
+                         <p className="text-blue-600 text-base sm:text-lg text-center font-medium animate-pulse">Cargando turnos...</p>
+                     ) : errorTurnos ? (
+                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center text-sm sm:text-base">
+                             <p className="font-semibold">Error al cargar los turnos:</p>
+                             <p>{errorTurnos.message}</p>
+                         </div>
+                     ) : (
+                         <>
+                             <div className="relative">
+                                 <select
+                                     name="fecha"
+                                     id="fecha-select"
+                                     onChange={handleFechaChange}
+                                     className="block w-full p-2 sm:p-3 border border-gray-300 rounded-lg text-base sm:text-lg text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer pr-10"
+                                     defaultValue=""
+                                 >
+                                     <option value="" disabled>Selecciona una fecha disponible</option>
+                                     {fechasUnicas.map((fecha, index) => (
+                                         <option key={index} value={fecha}>
+                                             {formatearFechaSQL(fecha)}
+                                         </option>
+                                     ))}
+                                 </select>
+                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                     </svg>
+                                 </div>
+                             </div>
+                         </>
+                     )}
+     
+                     {fechaSeleccionada && (
+                         <h3 className="text-xl sm:text-2xl font-bold text-gray-700 text-center mt-2 sm:mt-4 border-b pb-2">
+                             Turnos para el {formatearFechaSQL(fechaSeleccionada)}
+                         </h3>
+                     )}
+     
+                     <div className="flex-grow overflow-y-auto max-h-[250px] sm:max-h-[350px] pr-2">
+                         {fechaSeleccionada ? (
+                             turnosFiltrados.length > 0 ? (
+                                 <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 justify-items-center mt-4">
+                                     {turnosFiltrados.map((turno, index) => (
+                                         <div key={turno.id} className="w-full flex justify-center">
+                                             <button
+                                                 className={`flex flex-col items-center p-3 sm:p-4 rounded-lg shadow-md transition-all duration-200 ease-in-out w-full
+                                                     ${turno.estado === 'disponible'
+                                                         ? 'bg-green-50 hover:bg-green-100 border-2 border-green-300 text-green-700 cursor-pointer transform hover:scale-105'
+                                                         : 'bg-gray-100 border-2 border-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                                                     }`}
+                                                 disabled={turno.estado !== 'disponible'}
+                                             >
+                                                 {turno.estado === 'disponible' ? (
+                                                     <PiCalendarCheckBold className="text-5xl sm:text-6xl text-green-600 mb-1 sm:mb-2" />
+                                                 ) : (
+                                                     <PiCalendarXBold className="text-5xl sm:text-6xl text-gray-500 mb-1 sm:mb-2" />
+                                                 )}
+                                                 <p className="text-base sm:text-lg font-bold">Turno #{index + 1}</p>
+                                                 <p className={`text-xs sm:text-sm ${turno.estado === 'disponible' ? 'text-green-600 font-semibold' : 'text-gray-500'}`}>
+                                                     {turno.estado === 'disponible' ? 'Disponible' : 'Reservado'}
+                                                 </p>
+                                             </button>
+                                         </div>
+                                     ))}
+                                 </div>
+                             ) : (
+                                 <p className="text-gray-600 text-base sm:text-lg text-center mt-6 sm:mt-8">
+                                     No hay turnos disponibles para esta fecha. ¡Intentá con otra!
+                                 </p>
+                             )
+                         ) : (
+                             <p className="text-gray-600 text-base sm:text-lg text-center mt-6 sm:mt-8">
+                                 Por favor, selecciona una fecha para ver los turnos disponibles.
+                             </p>
+                         )}
+                     </div>
+     
+                     {fechaSeleccionada && (
+                         <p className="text-xs sm:text-sm text-yellow-800 text-center mt-4 sm:mt-6 p-2 sm:p-3 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm mx-auto max-w-xs sm:max-w-md">
+                             <span className="font-bold">¡Importante! Horario de atención:</span> Los turnos se llevan a cabo entre {consult?.inicio} y {consult?.cierre} hs.
+                             <br />
+                             <span className="block mt-1 italic text-2xs sm:text-xs text-yellow-700">
+                                 (Tiempo estimado por turno: 20 minutos, sujeto a cambios.)
+                             </span>
+                         </p>
+                     )}
+     
+                     <button
+                         onClick={() => cerrarModalTurnos()}
+                         className="mt-4 sm:mt-6 w-full py-2 sm:py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 text-base sm:text-lg"
+                     >
+                         Cerrar
+                     </button>
+                 </div>
+             </div>
+                
                 )}
 
 
