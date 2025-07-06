@@ -67,7 +67,6 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
 });
 
 
-
 //OBTENER PROFESIONAL POR ID //
 
 app.get("/api/consultorios/:id", async (req, res) => {
@@ -95,6 +94,35 @@ app.get("/api/consultorios/:id", async (req, res) => {
     } catch (error) {
         console.error("Error al obtener consultorios del profesional:", error); // Mensaje más específico
         res.status(500).send("Error interno del servidor al obtener consultorios.");
+    }
+});
+
+// OBTENER OBRAS SOCIALES Y PREPAGAS POR ID DE PROFESIONAL //
+
+app.get("/api/coberturas/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = `
+    SELECT 
+    cm.nombre AS cobertura,
+    cm.siglas AS siglas
+    FROM consultorio_cobertura AS cc
+    JOIN 
+    consultorios AS c ON c.id = cc.consultorio_id
+    JOIN
+    cobertura_medica AS cm ON cm.id = cc.cobertura_medica_id
+    WHERE c.id = ?
+  `;
+    try {
+        const [resultados] = await pool.execute(query, [id]);
+        if (resultados.length === 0) {
+            return res.status(200).json([]);
+
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener coberturas", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener coberturas.");
     }
 });
 
