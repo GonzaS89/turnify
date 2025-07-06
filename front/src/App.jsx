@@ -331,8 +331,8 @@ const App = () => {
                     ">
                         ¡Encuentra tu médico ahora!
                     </button>
-                </section>S
-                //MODAL DE ELECCION DE TURNOS //
+                </section>
+                {/*MODAL DE ELECCION DE TURNOS */}
                 {showModalTurnos && (
                  <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6">
                     
