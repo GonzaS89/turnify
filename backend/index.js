@@ -37,6 +37,7 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
     // Tu consulta SQL para obtener los turnos del profesional
     const query = `
       SELECT
+            t.id AS turno_id,
           CONCAT(p.apellido, ', ', p.nombre) AS medico,
           p.especialidad AS especialidad,
           c.direccion,
@@ -67,7 +68,7 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
 });
 
 
-//OBTENER PROFESIONAL POR ID //
+// OBTENER CONSULTORIOS POR ID PROFESIONAL //
 
 app.get("/api/consultorios/:id", async (req, res) => {
     const { id } = req.params;
@@ -154,6 +155,8 @@ WHERE id = ?
     }
 });
 
+// OBTENER PROFESIONAL POR ID //
+
 app.get("/api/profesional/:id", async (req, res) => {
     const { id } = req.params;
     const query = `
@@ -173,6 +176,52 @@ WHERE id = ?
         res.status(500).send("Error interno del servidor al obtener profesional");
     }
 });
+
+// RESERVAR TURNO //
+
+app.put('/api/reservarturno/:turnoId', async (req, res) => {
+    const { turnoId } = req.params; 
+    const { nombre_paciente, apellido_paciente, DNI, cobertura, telefono, estado } = req.body; 
+
+    if (!nombre_paciente || !apellido_paciente || !DNI || !cobertura || !telefono || !estado) {
+        return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
+    }
+
+    
+    const query = `
+        UPDATE turnos
+        SET
+            nombre_paciente = ?,
+            apellido_paciente = ?,
+            DNI = ?,
+            cobertura = ?,
+            telefono = ?,
+            estado = ?
+        WHERE id = ?;
+    `;
+
+    // Los valores se pasan como un array para la consulta preparada
+    const values = [nombre_paciente, apellido_paciente, DNI, cobertura, telefono, estado, turnoId];
+
+    try {
+        const [result] = await pool.query(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
+        }
+
+        res.status(200).json({
+            message: 'Turno actualizado exitosamente.',
+            updatedId: turnoId,
+            changes: result.affectedRows
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar el turno:', error);
+        res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
+    }
+});
+
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
