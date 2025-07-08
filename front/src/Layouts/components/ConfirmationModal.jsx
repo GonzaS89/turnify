@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 
-const ConfirmationModal = ({ isOpen, turnoReservado, onEdit, formData, coberturasOptions, selectedTurno, profesional, consultorio, ordenTurno }) => {
+const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOptions, selectedTurno, profesional, consultorio, ordenTurno }) => {
     // Estados internos para la lógica de la API y la UI
     const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
     const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
@@ -58,7 +58,9 @@ const ConfirmationModal = ({ isOpen, turnoReservado, onEdit, formData, cobertura
             // Opcional: Cerrar el modal de éxito automáticamente después de unos segundos
             setTimeout(() => {
                 onCloseAndReset(); // Llama a la función de cierre y reseteo
-                turnoReservado(true)
+                onClose()
+                window.location.reload(); // Recarga la página para reflejar los cambios
+                window.scrollTo(0, 0); // Vuelve al inicio de la página
             }, 3000); // Cierra después de 3 segundos
 
         } catch (error) {

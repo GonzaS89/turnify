@@ -12,10 +12,6 @@ const Hero = ( { enviarIds }) => {
     const [filteredDoctors, setFilteredDoctors] = useState([]);
     const [message, setMessage] = useState("");
 
-    // CARGA DE ESTADOS //
-
-   
-
 
     // FUNCIONES //
 
