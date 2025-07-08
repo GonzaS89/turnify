@@ -1,13 +1,11 @@
 // src/components/ConsultorioInfo.jsx
-import React from 'react';
 import useProfessionalConsultorios from '../../../customHooks/useProfessionalConsultorios'; // Asegúrate que la ruta sea correcta
 
-const ConsultorioInfo = ({ professionalId, enviarIdConsultorio, enviarIdProfesional }) => {
+const ConsultorioInfo = ({ professionalId, enviarIds }) => {
     const { consultorios, isLoading, error } = useProfessionalConsultorios(professionalId);
 
     const tapButton = (id) => {
-        enviarIdConsultorio(id);
-        enviarIdProfesional(professionalId); // Enviar también el ID del profesional
+        enviarIds(id,professionalId);
     }   
 
     // --- Estados de Carga y Error ---
