@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 
@@ -25,17 +25,9 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
         setSubmitError(null); // Limpia cualquier error previo
         setIsSuccess(false); // Reinicia el estado de éxito
 
-        // Asegúrate de usar la propiedad correcta del ID del turno (selectedTurno.id o selectedTurno.turno_id)
-        // Basado en tu código, estás usando selectedTurno.turno_id, pero en App.js pasamos selectedTurnoForBooking.id
-        // Lo más seguro es usar selectedTurno.id si selectedTurnoForBooking tiene esa propiedad.
+    
         const turnoId = selectedTurno?.turno_id; 
 
-        // Validación básica antes de enviar la API (descomentar si necesitas validación en frontend)
-        // if (!turnoId || !formData || !formData.nombre || !formData.apellido || !formData.dni || !formData.selectedOption || !formData.telefono) {
-        //     setSubmitError('Faltan datos esenciales para completar la reserva.');
-        //     setIsSubmitting(false);
-        //     return;
-        // }
 
         try {
             const response = await axios.put(`http://localhost:3006/api/reservarturno/${turnoId}`, {
