@@ -19,8 +19,20 @@ app.use(express.json()) /
             const [resultado] = await pool.execute("SELECT * FROM profesionales");
             res.json(resultado);
         } catch {
-            console.error("Error al obtener canchas");
-            res.status(500).send("Error al obtener canchas");
+            console.error("Error al obtener profesionales");
+            res.status(500).send("Error al obtener profesionales");
+        }
+    })
+
+    //OBTENER TODOS LOS CONSULTORIOS //
+
+    app.get("/api/consultorios", async (req, res) => {
+        try {
+            const [resultado] = await pool.execute("SELECT * FROM consultorios");
+            res.json(resultado);
+        } catch {
+            console.error("Error al obtener consultorios");
+            res.status(500).send("Error al obtener consultorios");
         }
     })
 
@@ -83,6 +95,39 @@ app.get("/api/consultorios/:id", async (req, res) => {
   JOIN consultorios AS c ON c.id = pc.consultorio_id
   JOIN profesionales AS p ON p.id = pc.profesional_id -- Asegúrate de usar el alias correcto aquí también
   WHERE p.id = ?
+  `;
+    try {
+        const [resultados] = await pool.execute(query, [id]);
+        if (resultados.length === 0) {
+            return res.status(200).json([]);
+
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener consultorios del profesional:", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener consultorios.");
+    }
+});
+
+
+// OBTENER PROFESIONAL X ID CONSULTORIO //
+
+app.get("/api/profesionalxidconsultorio/:id", async (req, res) => {
+    const { id } = req.params;
+    const query = `
+    SELECT 
+    p.id AS id,
+    p.nombre AS nombre,
+    p.apellido AS apellido,
+    p.especialidad AS especialidad,
+    p.matricula AS matricula
+     FROM profesional_consultorio AS pc
+     JOIN 
+     profesionales AS p ON p.id = pc.profesional_id
+     JOIN
+     consultorios AS c ON c.id = pc.consultorio_id
+    WHERE pc.consultorio_id = ?
   `;
     try {
         const [resultados] = await pool.execute(query, [id]);
@@ -221,6 +266,48 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
     }
 });
+
+// HABILITAR TURNOS //
+
+app.post('/api/habilitarturnos', async (req, res) => {
+    const { consultorioId, profesionalId, fecha, cantidadTurnos } = req.body;
+
+    // Validación básica
+    if (!consultorioId || !profesionalId || !fecha || !cantidadTurnos || cantidadTurnos <= 0) {
+        return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection(); // Obtener una conexión del pool
+        await connection.beginTransaction(); // Iniciar una transacción
+
+        const insertQuery = `
+            INSERT INTO turnos (consultorio_id, profesional_id, fecha)
+            VALUES (?, ?, ?)
+        `;
+
+        // Ejecutar la consulta de inserción 'cantidadTurnos' veces
+        for (let i = 0; i < cantidadTurnos; i++) {
+            await connection.execute(insertQuery, [consultorioId, profesionalId, fecha]);
+        }
+
+        await connection.commit(); // Confirmar la transacción
+        res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
+
+    } catch (error) {
+        if (connection) {
+            await connection.rollback(); // Deshacer la transacción en caso de error
+        }
+        console.error('Error al habilitar turnos en la base de datos:', error);
+        res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
+    } finally {
+        if (connection) {
+            connection.release(); // Liberar la conexión de vuelta al pool
+        }
+    }
+});
+
 
 
 app.listen(PORT, "0.0.0.0", () => {

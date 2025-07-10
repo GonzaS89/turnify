@@ -10,7 +10,7 @@ import Main from "./Layouts/Main";
 
 
 const App = () => {
-  const [openLoginModal, setOpenLoginModal] = useState(false); // State to control login modal visibility
+  const [openLoginModal, setOpenLoginModal] = useState(false); 
 
   // Function to close the login modal
   const closeLogin = () => {
@@ -21,6 +21,9 @@ const App = () => {
   const openLogin = (value) => {
     setOpenLoginModal(value);
   };
+
+
+
 
   return (
     <BrowserRouter>
