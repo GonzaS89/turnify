@@ -85,7 +85,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
     try {
       const response = await fetch('http://localhost:3006/api/habilitarturnos', {
-      const response = await fetch('http://localhost:3006/api/habilitarturnos', {
+    
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={() => setShowModal(true)}
-            className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+            className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
           >
             Habilitar Turnos
           </button>
@@ -212,74 +212,60 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
       {/* Modal para Habilitar Turnos */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 flex justify-center items-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-auto transform transition-all duration-300 scale-95 opacity-0 animate-scaleIn border border-gray-200">
-            <div className="flex justify-between items-center pb-4 mb-6 border-b border-gray-200">
-              <h3 className="text-2xl font-semibold text-gray-800">Habilitar Nuevos Turnos</h3>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedDate('');
-                  setNumberOfTurns('');
-                }}
-                className="text-3xl text-gray-500 hover:text-gray-700 font-light transition-transform transform hover:rotate-90 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
-                aria-label="Cerrar"
-              >
-                &times;
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">Habilitar Turnos para una Fecha</h3>
+            <p className="text-gray-600 mb-4">Selecciona la fecha y la cantidad de turnos a habilitar.</p>
 
-            <p className="text-gray-600 mb-6 text-base">Selecciona la fecha y la cantidad de turnos disponibles.</p>
-
-            <div className="mb-5">
+            <div className="mb-4">
               <label htmlFor="turn-date" className="block text-gray-700 font-semibold mb-2">
-                Fecha del Turno:
+                Selecciona una fecha:
               </label>
               <input
                 type="date"
                 id="turn-date"
                 value={selectedDate}
                 onChange={handleDateChange}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                min={new Date().toISOString().split('T')[0]} // Establecer fecha mínima a hoy
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
-            {selectedDate && (
+            {selectedDate && ( // Mostrar este input solo si se ha seleccionado una fecha
               <div className="mb-6">
                 <label htmlFor="num-turns" className="block text-gray-700 font-semibold mb-2">
-                  Cantidad de Turnos a Habilitar:
+                  ¿Cuántos turnos quieres habilitar?
                 </label>
                 <input
                   type="number"
                   id="num-turns"
                   value={numberOfTurns}
                   onChange={handleNumberOfTurnsChange}
-                  min="1"
+                  min="1" // Mínimo 1 turno
                   placeholder="Ej: 10"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowModal(false);
                   setSelectedDate('');
-                  setNumberOfTurns('');
+                  setNumberOfTurns(''); // Limpiar al cancelar
                 }}
-                className="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors duration-200 shadow-sm"
-                disabled={isSubmitting}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors duration-200"
+                disabled={isSubmitting} // Deshabilitar mientras se envía
               >
                 Cancelar
               </button>
               <button
                 onClick={handleEnableTurns}
-                className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200 shadow-md"
-                disabled={isSubmitting}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
+                disabled={isSubmitting} // Deshabilitar mientras se envía
               >
-                {isSubmitting ? 'Habilitando...' : 'Habilitar Turnos'}
+                {isSubmitting ? 'Habilitando...' : 'Habilitar'}
               </button>
             </div>
           </div>
@@ -361,15 +347,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
             Cerrar Agenda
           </button>
         </div>
-      )}
-
-      {/* Componente TurnosList */}
-      {showTurnosList && medico && consultorio && (
-        <TurnList
-          profesionalId={medico.id}
-          consultorioId={consultorio.id}
-          onClose={() => setShowTurnosList(false)}
-        />
       )}
     </div>
   );
