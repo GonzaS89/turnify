@@ -351,5 +351,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     </div>
   );
 };
+}
 
 export default PanelConsultorioPropio;
