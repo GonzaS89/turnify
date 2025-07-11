@@ -49,17 +49,21 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
     // Tu consulta SQL para obtener los turnos del profesional
     const query = `
       SELECT
-            t.id AS turno_id,
+          t.id AS turno_id,
           CONCAT(p.apellido, ', ', p.nombre) AS medico,
           p.especialidad AS especialidad,
           c.direccion,
           t.fecha,
           t.estado,
           t.nombre_paciente,
+<<<<<<< HEAD
           t.apellido_paciente,
           t.DNI,
           t.cobertura,
           t.telefono
+=======
+          t.apellido_paciente
+>>>>>>> 88cbc2d4ed7275911aca03366c40c2f06a383cbc
       FROM
           turnos AS t
       JOIN
