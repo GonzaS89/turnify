@@ -54,7 +54,12 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
           p.especialidad AS especialidad,
           c.direccion,
           t.fecha,
-          t.estado
+          t.estado,
+          t.nombre_paciente,
+          t.apellido_paciente,
+          t.DNI,
+          t.cobertura,
+          t.telefono
       FROM
           turnos AS t
       JOIN
