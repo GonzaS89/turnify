@@ -3,6 +3,7 @@ import { useState } from "react";
 // IMPORTACION DE CUSTOM HOOKS //
 
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
+import useProfesionalxId from "../../../customHooks/useProfesionalxId";
 
 // IMPORTACION DE ICONOS //
 
@@ -23,13 +24,10 @@ const TurnSelectModal = ({
     error: errorTurnos,
   } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);
 
-  // Para depuración, puedes ver los IDs en la consola
-  console.log(
-    "ID Consultorio:",
-    idConsultorio,
-    "ID Profesional:",
-    idProfesional
-  );
+  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(idProfesional);
+
+  const medico = profesional[0]
+
 
   // DECLARACION DE ESTADOS
   // `fechaSeleccionada` almacenará la fecha elegida por el usuario en el selector.
@@ -83,27 +81,42 @@ const TurnSelectModal = ({
       >
         {/* Sección de Información del Consultorio */}
         {consultorio && (
-          <div class="text-center pb-4 border-b border-blue-200 mb-4 px-2">
-            <p class="text-xl sm:text-2xl font-extrabold text-blue-700 leading-tight">
-              {consultorio.tipo === "propio"
-                ? "Consultorio particular"
-                : `Centro médico ${consultorio.nombre}`}
-            </p>
-            <p class="text-sm sm:text-base text-gray-700 mt-2">
-              <span class="font-medium">
-                {consultorio.direccion || "Dirección no disponible"}
-              </span>
-              ,
-              <span class="font-medium">
-                {" "}
-                {consultorio.localidad || "Localidad no disponible"}
-              </span>
-            </p>
-            <p class="text-sm sm:text-base text-gray-700 mt-1">
-              Horario: <span class="font-medium">{consultorio.inicio}</span> a{" "}
-              <span class="font-medium">{consultorio.cierre}</span> Hs.
-            </p>
-          </div>
+        <div class="text-center pb-4 border-b border-blue-200 mb-4 px-2">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-indigo-800 mb-2">
+          {isLoadingProfesional ? (
+          <span class="animate-pulse text-indigo-600">Cargando...</span>
+          ) : errorProfesional ? (
+          <span class="text-red-600">
+            Error al cargar el profesional
+          </span>
+          ) : (
+          <span class="text-indigo-700">
+            Dr/a {""}
+            {medico?.nombre || "Nombre no disponible"}{" "}
+            {medico?.apellido || "Apellido no disponible"}
+          </span>
+          )}
+        </h1>
+        <p class="text-2xl sm:text-3xl font-semibold text-gray-700 leading-tight">
+          {consultorio.tipo === "propio"
+          ? "Consultorio particular"
+          : `Centro médico ${consultorio.nombre}`}
+        </p>
+        <p class="text-base sm:text-lg text-gray-600 mt-2">
+          <span class="font-medium">
+            {consultorio.direccion || "Dirección no disponible"}
+          </span>
+          ,
+          <span class="font-medium">
+            {" "}
+            {consultorio.localidad || "Localidad no disponible"}
+          </span>
+        </p>
+        <p class="text-base sm:text-lg text-gray-600 mt-1">
+          Horario: <span class="font-semibold">{consultorio.inicio}</span> a{" "}
+          <span class="font-semibold">{consultorio.cierre}</span> Hs.
+        </p>
+      </div>
         )}
 
         <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center mb-6">

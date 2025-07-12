@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FaCalendarAlt, FaUserMd, FaDollarSign } from 'react-icons/fa'; // Agregamos FaDollarSign
+import { FaCalendarAlt, FaUserMd, FaDollarSign, FaClock } from 'react-icons/fa'; // Added FaClock for the new button
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import TurnList from './TurnList';
@@ -19,12 +19,11 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     consultorio?.id
   );
 
-  // Calcula los turnos reservados para hoy utilizando useMemo para optimización
+  // Calculate reserved turns for today using useMemo for optimization
   const turnsToday = useMemo(() => {
     if (!turnos || turnos.length === 0) return 0;
 
     const today = new Date();
-    // Formatea la fecha de hoy a 'YYYY-MM-DD' para compararla con `turno.fecha`
     const todayFormatted = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
 
     return turnos.filter(turno =>
@@ -33,13 +32,10 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     ).length;
   }, [turnos]);
 
-  // Calcula un valor simulado para "ingresos del mes" (puedes reemplazarlo con datos reales)
+  // Calculate a simulated value for "monthly income" (you can replace it with real data)
   const simulatedMonthlyIncome = useMemo(() => {
-    // En un caso real, esto vendría de una API o de datos más complejos
-    // Por ahora, un valor fijo o una simulación simple.
-    // Podría ser: turnos completados * precio promedio de consulta
-    const completedTurns = turnos.filter(turno => turno.estado === 'completado').length; // Suponiendo un estado 'completado'
-    const averagePrice = 2500; // Simulación: $2500 por consulta
+    const completedTurns = turnos ? turnos.filter(turno => turno.estado === 'completado').length : 0;
+    const averagePrice = 2500;
     return (completedTurns * averagePrice).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
   }, [turnos]);
 
@@ -56,20 +52,17 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     return <p className="text-red-500 text-center py-4">Error al cargar datos del médico: {error.message}</p>;
   }
 
-  // --- Funciones para el modal de Habilitar Turnos ---
+  // --- Functions for the Enable Turns Modal ---
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
-    setNumberOfTurns('');
     setNumberOfTurns('');
   };
 
   const handleNumberOfTurnsChange = (e) => {
     const value = Math.max(0, parseInt(e.target.value) || 0);
     setNumberOfTurns(value.toString());
-    setNumberOfTurns(value.toString());
   };
 
-  const handleEnableTurns = async () => {
   const handleEnableTurns = async () => {
     if (!selectedDate) {
       alert("Por favor, selecciona una fecha.");
@@ -81,11 +74,9 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     }
 
     setIsSubmitting(true);
-    setIsSubmitting(true);
 
     try {
       const response = await fetch('http://localhost:3006/api/habilitarturnos', {
-    
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +100,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
       setShowModal(false);
       setSelectedDate('');
       setNumberOfTurns('');
-      // Considera refetching de turnos aquí si el useProfessionalConsultorioTurnos no lo hace automáticamente
+      // Consider refetching turns here if useProfessionalConsultorioTurnos doesn't do it automatically
     } catch (apiError) {
       console.error('Error al habilitar turnos:', apiError);
       alert(`Hubo un error al habilitar los turnos: ${apiError.message}`);
@@ -121,7 +112,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-green-100 animate-fadeIn">
       <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2 leading-tight">
-        Panel de Control
         Panel de Control
       </h2>
 
@@ -147,8 +137,9 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         Gestión simplificada para tu consultorio.
       </p>
 
-      {/* Grid de Tarjetas (Mi Agenda, Mis Pacientes, Finanzas) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10"> {/* Cambiado a 3 columnas para Finanzas */}
+      {/* Grid de Tarjetas (Mi Agenda, Mis Pacientes, Finanzas, Habilitar Turnos) */}
+      {/* Changed to 4 columns for Habilitar Turnos to be its own card/button */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {/* Card: Mi Agenda */}
         <div
           className="bg-green-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-green-200"
@@ -167,50 +158,36 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           <p className="text-gray-500 text-sm mt-1">turnos agendados para hoy</p>
         </div>
 
-        {/* Card: Mis Pacientes */}
-        <div className="bg-blue-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-blue-200">
-          <FaUserMd className="text-blue-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Mis Pacientes</h3>
-          <p className="text-gray-600 text-sm">Accede y gestiona la información de tus pacientes.</p>
-          <span className="text-blue-700 font-bold text-3xl mt-2">87</span> {/* Esto es un número fijo, puedes conectarlo a datos reales si existen */}
-          <p className="text-gray-500 text-sm mt-1">pacientes registrados</p>
-        </div>
 
-        {/* Card: Finanzas */}
+       
+
+        {/* Card: Habilitar Turnos - Styled like other cards */}
         <div
-          className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-purple-200"
-          onClick={() => alert('¡Llevando a la sección de Finanzas! Aquí podrías ver reportes de ingresos, gastos, etc.')}
+          className="bg-indigo-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-indigo-200"
+          onClick={() => setShowModal(true)}
         >
-          <FaDollarSign className="text-purple-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Finanzas</h3>
-          <p className="text-gray-600 text-sm">Controla tus ingresos y facturación.</p>
-          {isLoadingTurnos ? ( // Reutilizamos isLoadingTurnos, pero idealmente sería un isLoadingFinanzas
-             <span className="text-purple-700 text-lg mt-2">Cargando...</span>
-          ) : errorTurnos ? ( // Igual para el error
-             <span className="text-red-500 text-sm mt-2">Error</span>
-          ) : (
-             <span className="text-purple-700 font-bold text-3xl mt-2">{simulatedMonthlyIncome}</span>
-          )}
-          <p className="text-gray-500 text-sm mt-1">ingresos estimados del mes</p>
+          <FaClock className="text-indigo-600 text-3xl" /> {/* Using FaClock for a different icon */}
+          <h3 className="font-semibold text-gray-800 text-lg">Habilitar Turnos</h3>
+          <p className="text-gray-600 text-sm">Abre nuevos horarios para tus pacientes.</p>
+          <span className="text-indigo-700 font-bold text-xl mt-2">Administrar</span>
+          <p className="text-gray-500 text-sm mt-1">nuevos espacios de consulta</p>
         </div>
       </div>
 
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 mb-4">Acciones Rápidas</h3>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
-          >
-            Habilitar Turnos
-          </button>
-          <button className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200 shadow-md hover:shadow-lg">
-            Ver Historial
-          </button>
-        </div>
-      </div>
+      
 
-      {/* Modal para Habilitar Turnos */}
+      {/* Conditional rendering for TurnList */}
+      {showTurnosList && (
+        <div className="mt-8">
+          <TurnList
+            profesionalId={medico?.id}
+            consultorioId={consultorio?.id}
+            onClose={() => setShowTurnosList(false)}
+          />
+        </div>
+      )}
+
+      {/* Modal for Enabling Turns */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto">
@@ -226,12 +203,12 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
                 id="turn-date"
                 value={selectedDate}
                 onChange={handleDateChange}
-                min={new Date().toISOString().split('T')[0]} // Establecer fecha mínima a hoy
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
-            {selectedDate && ( // Mostrar este input solo si se ha seleccionado una fecha
+            {selectedDate && (
               <div className="mb-6">
                 <label htmlFor="num-turns" className="block text-gray-700 font-semibold mb-2">
                   ¿Cuántos turnos quieres habilitar?
@@ -241,7 +218,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
                   id="num-turns"
                   value={numberOfTurns}
                   onChange={handleNumberOfTurnsChange}
-                  min="1" // Mínimo 1 turno
+                  min="1"
                   placeholder="Ej: 10"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
@@ -253,104 +230,26 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
                 onClick={() => {
                   setShowModal(false);
                   setSelectedDate('');
-                  setNumberOfTurns(''); // Limpiar al cancelar
+                  setNumberOfTurns('');
                 }}
                 className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors duration-200"
-                disabled={isSubmitting} // Deshabilitar mientras se envía
+                disabled={isSubmitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleEnableTurns}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
-                disabled={isSubmitting} // Deshabilitar mientras se envía
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Habilitando...' : 'Habilitar'}
               </button>
             </div>
           </div>
-
-          {/* Manejo de estados de carga y error para los turnos */}
-          {isLoadingTurnos ? (
-            <p className="text-gray-600 text-center py-8">Cargando turnos de la agenda...</p>
-          ) : errorTurnos ? (
-            <p className="text-red-500 text-center py-8">Error al cargar turnos: {errorTurnos.message}</p>
-          ) : sortedDates.length === 0 ? (
-            <p className="text-gray-600 text-center py-8">No hay turnos agendados en el futuro cercano.</p>
-          ) : (
-            <div className="space-y-4">
-              {sortedDates.map(dateKey => (
-                <div key={dateKey} className="border border-gray-200 rounded-lg shadow-sm">
-                  <div
-                    className="flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors duration-200"
-                    onClick={() => toggleSection(dateKey)}
-                  >
-                    <h4 className="font-semibold text-lg text-gray-800">
-                      {formatearFechaSQL(dateKey)} ({groupedAppointments[dateKey].length} turnos)
-                    </h4>
-                    <svg
-                      className={`w-6 h-6 transform transition-transform duration-200 ${
-                        openAgendaSections[dateKey] ? 'rotate-180' : 'rotate-0'
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </div>
-                  {/* Contenido de los turnos para la fecha, visible solo si la sección está abierta */}
-                  {openAgendaSections[dateKey] && (
-                    <ul className="divide-y divide-gray-100">
-                      {groupedAppointments[dateKey].map(appointment => (
-                        <li key={appointment.id} className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors">
-                          <div>
-                            <p className="font-semibold text-gray-800 text-md">
-                              {formatTimeForDisplay(appointment.hora)}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {appointment.motivo} - Paciente:  {appointment.apellido_paciente}, {appointment.nombre_paciente || 'Paciente sin asignar'}
-                            </p>
-                            {appointment.consultorio && (
-                              <p className="text-xs text-gray-500 mt-1">Consultorio: {appointment.consultorio.nombre}</p>
-                            )}
-                          </div>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full
-                            ${appointment.estado === 'reservado' ? 'bg-green-100 text-green-800' :
-                              appointment.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'}`
-                          }>
-                            {appointment.estado}
-                          </span>
-                          <div className="flex gap-2 ml-4">
-                              <button className="text-blue-500 hover:text-blue-700" title="Ver Detalles">
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                              </button>
-                              <button className="text-red-500 hover:text-red-700" title="Cancelar Turno">
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                              </button>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button
-            onClick={() => setShowAgendaModal(false)}
-            className="mt-6 bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition-colors w-full sm:w-auto"
-          >
-            Cerrar Agenda
-          </button>
         </div>
       )}
     </div>
   );
 };
-}
 
 export default PanelConsultorioPropio;

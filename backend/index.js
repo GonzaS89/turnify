@@ -56,14 +56,11 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
           t.fecha,
           t.estado,
           t.nombre_paciente,
-<<<<<<< HEAD
           t.apellido_paciente,
           t.DNI,
           t.cobertura,
           t.telefono
-=======
-          t.apellido_paciente
->>>>>>> 88cbc2d4ed7275911aca03366c40c2f06a383cbc
+
       FROM
           turnos AS t
       JOIN
@@ -316,6 +313,8 @@ app.post('/api/habilitarturnos', async (req, res) => {
         }
     }
 });
+
+// CAMBIO DE CONTRASEÑA //
 
 
 
