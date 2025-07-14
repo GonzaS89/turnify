@@ -208,27 +208,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           <p className="text-gray-500 text-sm mt-1">tus convenios</p>
         </div>
 
-        {/* Card: Mis Pacientes */}
-        <div
-          className="bg-blue-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-blue-200"
-        >
-          <FaUserMd className="text-blue-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Mis Pacientes</h3>
-          <p className="text-gray-600 text-sm">Accede al listado de tus pacientes.</p>
-          <span className="text-blue-700 font-bold text-xl mt-2">Próximamente</span>
-          <p className="text-gray-500 text-sm mt-1">gestión de pacientes</p>
-        </div>
-
-        {/* Card: Finanzas */}
-        <div
-          className="bg-red-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-red-200"
-        >
-          <FaDollarSign className="text-red-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Mis Finanzas</h3>
-          <p className="text-gray-600 text-sm">Revisa tus ingresos y estadísticas.</p>
-          <span className="text-red-700 font-bold text-xl mt-2">{simulatedMonthlyIncome}</span>
-          <p className="text-gray-500 text-sm mt-1">ingreso simulado este mes</p>
-        </div>
+        
       </div>
 
       {/* Renderizado condicional para TurnList */}
