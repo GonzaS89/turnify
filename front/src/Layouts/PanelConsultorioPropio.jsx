@@ -1,11 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { FaCalendarAlt, FaUserMd, FaDollarSign, FaClock } from 'react-icons/fa'; // Added FaClock for the new button
+import { FaCalendarAlt, FaUserMd, FaDollarSign, FaClock, FaCog, FaShieldAlt } from 'react-icons/fa'; // Importa FaShieldAlt para el icono de coberturas
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import TurnList from './TurnList';
+import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
+import GestionCoberturas from './components/GestionCoberturas'; // ¡Asegúrate de que esta ruta sea correcta!
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Para el modal de habilitar turnos
+  const [showSettingsModal, setShowSettingsModal] = useState(false); // Estado para el modal de ajustes generales
+  const [showCoberturasModal, setShowCoberturasModal] = useState(false); // Estado para el modal de coberturas
   const [selectedDate, setSelectedDate] = useState('');
   const [numberOfTurns, setNumberOfTurns] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +23,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     consultorio?.id
   );
 
-  // Calculate reserved turns for today using useMemo for optimization
+  // Calcula turnos reservados para hoy usando useMemo para optimización
   const turnsToday = useMemo(() => {
     if (!turnos || turnos.length === 0) return 0;
 
@@ -32,7 +36,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     ).length;
   }, [turnos]);
 
-  // Calculate a simulated value for "monthly income" (you can replace it with real data)
+  // Calcula un valor simulado para "ingresos mensuales"
   const simulatedMonthlyIncome = useMemo(() => {
     const completedTurns = turnos ? turnos.filter(turno => turno.estado === 'completado').length : 0;
     const averagePrice = 2500;
@@ -52,7 +56,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     return <p className="text-red-500 text-center py-4">Error al cargar datos del médico: {error.message}</p>;
   }
 
-  // --- Functions for the Enable Turns Modal ---
+  // --- Funciones para el Modal de Habilitar Turnos ---
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
     setNumberOfTurns('');
@@ -100,7 +104,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
       setShowModal(false);
       setSelectedDate('');
       setNumberOfTurns('');
-      // Consider refetching turns here if useProfessionalConsultorioTurnos doesn't do it automatically
+      // Considera volver a cargar los turnos aquí si useProfessionalConsultorioTurnos no lo hace automáticamente
     } catch (apiError) {
       console.error('Error al habilitar turnos:', apiError);
       alert(`Hubo un error al habilitar los turnos: ${apiError.message}`);
@@ -108,6 +112,17 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
       setIsSubmitting(false);
     }
   };
+
+  // --- Función para abrir el modal de ajustes generales del consultorio ---
+  const handleConsultorioSettings = () => {
+    setShowSettingsModal(true); // Abre el modal de ajustes generales
+  };
+
+  // --- Función para abrir el modal de gestión de coberturas ---
+  const handleOpenCoberturasModal = () => {
+    setShowCoberturasModal(true); // Abre el modal de gestión de coberturas
+  };
+
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-green-100 animate-fadeIn">
@@ -137,9 +152,8 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         Gestión simplificada para tu consultorio.
       </p>
 
-      {/* Grid de Tarjetas (Mi Agenda, Mis Pacientes, Finanzas, Habilitar Turnos) */}
-      {/* Changed to 4 columns for Habilitar Turnos to be its own card/button */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      {/* Grid de Tarjetas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
         {/* Card: Mi Agenda */}
         <div
           className="bg-green-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-green-200"
@@ -158,25 +172,66 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           <p className="text-gray-500 text-sm mt-1">turnos agendados para hoy</p>
         </div>
 
-
-       
-
-        {/* Card: Habilitar Turnos - Styled like other cards */}
+        {/* Card: Habilitar Turnos */}
         <div
           className="bg-indigo-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-indigo-200"
           onClick={() => setShowModal(true)}
         >
-          <FaClock className="text-indigo-600 text-3xl" /> {/* Using FaClock for a different icon */}
+          <FaClock className="text-indigo-600 text-3xl" />
           <h3 className="font-semibold text-gray-800 text-lg">Habilitar Turnos</h3>
           <p className="text-gray-600 text-sm">Abre nuevos horarios para tus pacientes.</p>
           <span className="text-indigo-700 font-bold text-xl mt-2">Administrar</span>
           <p className="text-gray-500 text-sm mt-1">nuevos espacios de consulta</p>
         </div>
+
+        {/* Card: Ajustes del Consultorio (para ajustes generales) */}
+        <div
+          className="bg-gray-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200"
+          onClick={handleConsultorioSettings} // Abre el modal de ajustes generales
+        >
+          <FaCog className="text-gray-600 text-3xl" />
+          <h3 className="font-semibold text-gray-800 text-lg">Ajustes del Consultorio</h3>
+          <p className="text-gray-600 text-sm">Gestiona la información y configuración de tu consultorio.</p>
+          <span className="text-gray-700 font-bold text-xl mt-2">Configurar</span>
+          <p className="text-gray-500 text-sm mt-1">tu consultorio</p>
+        </div>
+
+        {/* NUEVA CARD: Gestión de Coberturas */}
+        <div
+          className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-purple-200"
+          onClick={handleOpenCoberturasModal} // Abre el modal de gestión de coberturas
+        >
+          <FaShieldAlt className="text-purple-600 text-3xl" /> {/* Icono para coberturas */}
+          <h3 className="font-semibold text-gray-800 text-lg">Gestionar Coberturas</h3>
+          <p className="text-gray-600 text-sm">Añade o edita las obras sociales y prepagas que recibes.</p>
+          <span className="text-purple-700 font-bold text-xl mt-2">Administrar</span>
+          <p className="text-gray-500 text-sm mt-1">tus convenios</p>
+        </div>
+
+        {/* Card: Mis Pacientes */}
+        <div
+          className="bg-blue-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-blue-200"
+        >
+          <FaUserMd className="text-blue-600 text-3xl" />
+          <h3 className="font-semibold text-gray-800 text-lg">Mis Pacientes</h3>
+          <p className="text-gray-600 text-sm">Accede al listado de tus pacientes.</p>
+          <span className="text-blue-700 font-bold text-xl mt-2">Próximamente</span>
+          <p className="text-gray-500 text-sm mt-1">gestión de pacientes</p>
+        </div>
+
+        {/* Card: Finanzas */}
+        <div
+          className="bg-red-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-red-200"
+        >
+          <FaDollarSign className="text-red-600 text-3xl" />
+          <h3 className="font-semibold text-gray-800 text-lg">Mis Finanzas</h3>
+          <p className="text-gray-600 text-sm">Revisa tus ingresos y estadísticas.</p>
+          <span className="text-red-700 font-bold text-xl mt-2">{simulatedMonthlyIncome}</span>
+          <p className="text-gray-500 text-sm mt-1">ingreso simulado este mes</p>
+        </div>
       </div>
 
-      
-
-      {/* Conditional rendering for TurnList */}
+      {/* Renderizado condicional para TurnList */}
       {showTurnosList && (
         <div className="mt-8">
           <TurnList
@@ -187,7 +242,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         </div>
       )}
 
-      {/* Modal for Enabling Turns */}
+      {/* Modal para Habilitar Turnos */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto">
@@ -248,6 +303,22 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           </div>
         </div>
       )}
+
+      {/* Modal para Ajustes Generales del Consultorio */}
+      <ConsultorioSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        consultorio={consultorio}
+        // Ya no es necesario pasar onManageCoberturas aquí si hay una card directa
+        // onManageCoberturas={handleOpenCoberturasModal}
+      />
+
+      {/* Nuevo Modal para Gestión de Coberturas */}
+      <GestionCoberturas
+        isOpen={showCoberturasModal}
+        onClose={() => setShowCoberturasModal(false)}
+        consultorioId={consultorio?.id} // Pasamos el ID para que el hook pueda buscar las coberturas
+      />
     </div>
   );
 };

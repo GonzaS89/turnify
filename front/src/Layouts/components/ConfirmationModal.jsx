@@ -41,11 +41,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
 
             console.log('Turno actualizado:', response.data);
             setIsSuccess(true); // Marca la reserva como exitosa
-            setConfirmedTurnoId(response.data.updatedId); // Guarda el ID del turno confirmado
-
-            // Llama a la prop turnoReservado para notificar al componente padre (App.js)
-            // y pasarle el ID del turno confirmado.
-            
+            setConfirmedTurnoId(response.data.updatedId); 
 
             // Opcional: Cerrar el modal de éxito automáticamente después de unos segundos
             setTimeout(() => {

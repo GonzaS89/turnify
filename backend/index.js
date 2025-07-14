@@ -10,11 +10,11 @@ const PORT = process.env.PORT || 3006;
 
 app.use(cors({ origin: "*" }));
 
-app.use(express.json()) /
+app.use(express.json()) 
 
-    //OBTENER TODOS LOS PROFESIONALES //
+//OBTENER TODOS LOS PROFESIONALES //
 
-    app.get("/api/profesionales", async (req, res) => {
+app.get("/api/profesionales", async (req, res) => {
         try {
             const [resultado] = await pool.execute("SELECT * FROM profesionales");
             res.json(resultado);
@@ -22,11 +22,11 @@ app.use(express.json()) /
             console.error("Error al obtener profesionales");
             res.status(500).send("Error al obtener profesionales");
         }
-    })
+})
 
     //OBTENER TODOS LOS CONSULTORIOS //
 
-    app.get("/api/consultorios", async (req, res) => {
+app.get("/api/consultorios", async (req, res) => {
         try {
             const [resultado] = await pool.execute("SELECT * FROM consultorios");
             res.json(resultado);
@@ -34,7 +34,19 @@ app.use(express.json()) /
             console.error("Error al obtener consultorios");
             res.status(500).send("Error al obtener consultorios");
         }
-    })
+})
+
+//OBTENER TODAS LAS COBERTURAS //
+
+app.get("/api/coberturas", async (req, res) => {
+        try {
+            const [resultado] = await pool.execute("SELECT * FROM cobertura_medica");
+            res.json(resultado);
+        } catch {
+            console.error("Error al obtener coberturas");
+            res.status(500).send("Error al obtener coberturas");
+        }
+})
 
 //OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
@@ -155,7 +167,8 @@ app.get("/api/coberturas/:id", async (req, res) => {
     const { id } = req.params;
     const query = `
     SELECT 
-    cm.nombre AS cobertura,
+    cm.id AS id,
+    cm.nombre AS nombre,
     cm.siglas AS siglas
     FROM consultorio_cobertura AS cc
     JOIN 
@@ -314,7 +327,38 @@ app.post('/api/habilitarturnos', async (req, res) => {
     }
 });
 
-// CAMBIO DE CONTRASEÑA //
+// BORRAR COBERTURA DEL CONSULTORIO //
+
+app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
+    const { coberturaMedicaId, consultorioId } = req.params;
+
+    try {
+        // Validación básica de los IDs
+        if (!coberturaMedicaId || isNaN(coberturaMedicaId && !consultorioId || isNaN(consultorioId))) {
+            return res.status(400).json({ message: "ID cobertura médica inválidos." });
+        }
+
+        // Consulta SQL para eliminar la relación en la tabla intermedia
+        const sql = `
+            DELETE FROM consultorio_cobertura AS cc
+            WHERE  cc.cobertura_medica_id = ? AND cc.consultorio_id = ?
+        `;
+        const [resultado] = await pool.execute(sql, [coberturaMedicaId, consultorioId]);
+
+        // 'affectedRows' indica cuántas filas fueron eliminadas
+        if (resultado.affectedRows === 0) {
+            // Si no se eliminó ninguna fila, es probable que la relación no existiera
+            return res.status(404).json({ message: "Relación de cobertura no encontrada para este consultorio." });
+        }
+
+        // Éxito: retorna un estado 200 OK y un mensaje
+        res.status(200).json({ message: "Cobertura eliminada del consultorio exitosamente." });
+
+    } catch (error) {
+        console.error("Error al eliminar cobertura del consultorio:", error);
+        res.status(500).json({ message: "Error interno del servidor al eliminar la cobertura." });
+    }
+});
 
 
 
