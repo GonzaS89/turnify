@@ -48,6 +48,31 @@ app.get("/api/coberturas", async (req, res) => {
         }
 })
 
+//OBTENER TODAS LAS PROVINCIAS //
+
+app.get("/api/localidades/:provinciaId", async (req, res) => {
+    const { provinciaId } = req.params;
+    try {
+        const [resultado] = await pool.execute("SELECT * FROM localidades WHERE provincia_id = ? ORDER BY nombre ASC;", [provinciaId]);
+        res.json(resultado);
+    } catch {
+        console.error("Error al obtener localidades");
+        res.status(500).send("Error al obtener localidades");
+    }
+})
+
+//OBTENER LOCALIDADES SEGUN ID PROVINCIA //
+
+app.get("/api/provincias", async (req, res) => {
+    try {
+        const [resultado] = await pool.execute("SELECT * FROM provincias");
+        res.json(resultado);
+    } catch {
+        console.error("Error al obtener provincias");
+        res.status(500).send("Error al obtener provincias");
+    }
+})
+
 //OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
 app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res) => {
@@ -286,6 +311,7 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
     }
 });
 
+
 // HABILITAR TURNOS //
 
 app.post('/api/habilitarturnos', async (req, res) => {
@@ -339,11 +365,11 @@ app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId
         }
 
         // Consulta SQL para eliminar la relación en la tabla intermedia
-        const sql = `
+        const query = `
             DELETE FROM consultorio_cobertura AS cc
             WHERE  cc.cobertura_medica_id = ? AND cc.consultorio_id = ?
         `;
-        const [resultado] = await pool.execute(sql, [coberturaMedicaId, consultorioId]);
+        const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
 
         // 'affectedRows' indica cuántas filas fueron eliminadas
         if (resultado.affectedRows === 0) {
@@ -360,6 +386,76 @@ app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId
     }
 });
 
+// AGREGAR COBERTURA Al CONSULTORIO //
+
+app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
+    const { coberturaMedicaId, consultorioId } = req.params;
+
+    // Validación básica de los IDs
+    if (!coberturaMedicaId || isNaN(coberturaMedicaId) || !consultorioId || isNaN(consultorioId)) {
+        return res.status(400).json({ message: "ID cobertura médica o consultorio inválidos." });
+    }
+
+    try {
+        // Consulta SQL para insertar la relación en la tabla intermedia
+        const query = `
+            INSERT INTO consultorio_cobertura (cobertura_medica_id, consultorio_id)
+            VALUES (?, ?)
+        `;
+        const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
+
+        // Éxito: retorna un estado 201 Created y un mensaje
+        res.status(201).json({ message: "Cobertura agregada al consultorio exitosamente.", insertId: resultado.insertId });
+
+    } catch (error) {
+        console.error("Error al agregar cobertura al consultorio:", error);
+        res.status(500).json({ message: "Error interno del servidor al agregar la cobertura." });
+    }
+})
+
+
+// MODIFICAR DATOS DEL CONSUTORIO //
+
+app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
+    const { consultorioId } = req.params; 
+    const { nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre } = req.body; 
+
+    const query = `
+        UPDATE consultorios
+        SET
+            nombre = ?,
+            tipo = ?,
+            provincia = ?,
+            localidad = ?,
+            direccion = ?,
+            telefono = ?,
+            hora_inicio = ?,
+            hora_cierre = ?
+            WHERE id = ?;
+    `;
+
+    // Los valores se pasan como un array para la consulta preparada
+    const values = [nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre, consultorioId];
+
+    try {
+        const [result] = await pool.query(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: `Consultorio con ID ${consultorioId} no encontrado.` });
+        }
+
+        res.status(200).json({
+            message: 'Datos actualizados exitosamente.',
+            updatedId: consultorioId,
+            changes: result.affectedRows
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar el turno:', error);
+        res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
+    }
+});
+    
 
 
 app.listen(PORT, "0.0.0.0", () => {

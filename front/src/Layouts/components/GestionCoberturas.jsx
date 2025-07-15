@@ -12,8 +12,11 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     const { coberturas: activeCoberturas, isLoading, error, refetch} = useCoberturaxIdConsultorio(consultorioId);
     const { coberturas: allCoberturas, isLoading: isLoadingAllCoberturas, error: errorAllCoberturas } = useAllCoberturas();
 
-    console.log(activeCoberturas, 'Active Coberturas');
 
+    const coberturaIncluded = id => activeCoberturas?.some(cobertura => cobertura.id === id);
+
+
+    // Filtrar las coberturas activas y las disponibles para añadir según el término de búsqueda
 
     const filteredAllCoberturas = allCoberturas?.filter(cobertura =>
         cobertura.siglas.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,7 +76,7 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     }
 
     // --- Función para añadir una cobertura ---
-    async function handleAddCobertura(coberturaId) {
+    async function handleAddCobertura(coberturaMedicaId, consultorioId) {
         if (!consultorioId) {
             alert('Error: ID de consultorio no disponible para añadir la cobertura.');
             return;
@@ -81,8 +84,8 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
 
         try {
             const response = await axios.post(
-                `http://localhost:3006/api/consultorios/${consultorioId}/coberturas`,
-                { coberturaId: coberturaId }
+                `http://localhost:3006/api/agregarCoberturaAlConsultorio/${coberturaMedicaId}/${consultorioId}`,
+                
             );
 
             alert(response.data.message || 'Cobertura añadida exitosamente.');
@@ -174,16 +177,16 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
                                 {/* Resultados de la búsqueda */}
                                 {searchTerm && (
                                     <div className="bg-gray-50 rounded-lg shadow-inner border border-gray-100 p-3 max-h-48 overflow-y-auto custom-scrollbar">
-                                        {availableCoberturasToAdd && availableCoberturasToAdd.length > 0 ? (
+                                        {filteredAllCoberturas && filteredAllCoberturas.length > 0 ? (
                                             <ul className="space-y-2">
-                                                {availableCoberturasToAdd.map(cobertura => (
-                                                    <li key={cobertura.id} className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors duration-150">
+                                                {filteredAllCoberturas.map(cobertura => (
+                                                    <li key={cobertura.id} className={`${coberturaIncluded(cobertura.id) ? 'pointer-events-none' : ''} flex items-center justify-between p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors duration-150`}>
                                                         <span>{cobertura.siglas} - {cobertura.nombre}</span>
                                                         <button
-                                                            onClick={() => handleAddCobertura(cobertura.id)}
-                                                            className="ml-4 bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600"
+                                                            onClick={() => handleAddCobertura(cobertura.id, consultorioId)}
+                                                            className={`"ml-4 bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600" ${coberturaIncluded(cobertura.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         >
-                                                            Añadir
+                                                            {coberturaIncluded(cobertura.id) ? 'Añadida' : 'Añadir'}
                                                         </button>
                                                     </li>
                                                 ))}
