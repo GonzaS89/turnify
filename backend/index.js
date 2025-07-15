@@ -416,7 +416,7 @@ app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId",
 
 // MODIFICAR DATOS DEL CONSUTORIO //
 
-app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
+app.put('/api/modificardatosconsultorio/:consultorio.id', async (req, res) => {
     const { consultorioId } = req.params; 
     const { nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre } = req.body; 
 
