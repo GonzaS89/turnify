@@ -14,8 +14,6 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
   const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
 
-  console.log('Consultorio recibido:', consultorio);
-
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: '',
@@ -81,9 +79,12 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
       hora_cierre: formData.hora_cierre,
     };
 
-    console.log('Datos del formulario antes de enviar:', dataToSend);
+
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`);
+      const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`,{
+
+        ...dataToSend,
+      });
 
       console.log('Datos actualizados:', response.data);
       

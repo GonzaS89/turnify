@@ -77,7 +77,7 @@ const TurnSelectModal = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-2 sm:p-4">
       <div
-        className={`bg-white rounded-xl shadow-2xl p-4 sm:p-6 flex flex-col justify-between gap-4 max-h-[95vh] w-full max-w-md lg:max-w-2xl overflow-hidden`} // CAMBIO AQUÍ: 'lg:max-w-xl' a 'lg:max-w-2xl'
+        className={`bg-white rounded-xl shadow-2xl p-4 sm:p-6 flex flex-col justify-between gap-4 max-h-[95vh] w-full max-w-md lg:max-w-5xl overflow-hidden`} // CAMBIO AQUÍ: 'lg:max-w-xl' a 'lg:max-w-2xl'
       >
         {/* All content that should shrink and allow turns to grow */}
         <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar-hidden">
@@ -120,7 +120,16 @@ const TurnSelectModal = ({
               </p>
             </div>
           )}
+        
+          
+          
 
+        
+          
+        </div>
+                  
+        <div className="flex">
+          <div className="contenedor-fechas">
           <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 text-center mb-4">
             Elegí una fecha
           </h2>
@@ -172,17 +181,18 @@ const TurnSelectModal = ({
               </>
             )}
           </div>
-
-          {/* Título que muestra la fecha seleccionada para los turnos */}
-          {fechaSeleccionada && (
+          </div>
+          {/* Sección de Turnos */}
+          {fechaSeleccionada ? (
+            <div className="contenedor-turnos">
+  
             <h3 className="text-lg sm:text-xl font-bold text-gray-800 text-center mt-3 mb-3 pb-2 border-b-2 border-blue-200 w-full">
               Turnos para el{" "}
               <span className="text-blue-700">
                 {formatearFechaSQL(fechaSeleccionada)}
               </span>
             </h3>
-          )}
-        </div>
+          
 
         {/* This is the section we want to ensure visibility for */}
         <div className="flex-grow overflow-y-auto max-h-[calc(100vh-250px)] sm:max-h-[calc(100vh-300px)] pr-1 w-full custom-scrollbar">
@@ -266,6 +276,17 @@ const TurnSelectModal = ({
             </p>
           )}
         </div>
+        </div>
+                  ) : (
+                    <div className="flex-1 ml-3 sm:ml-4">
+                      <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 text-center mb-4">
+                        Selecciona una fecha para ver los turnos
+                        </h2>
+                        </div>
+                        )}
+          
+          </div>
+        
 
         {/* Botón para cerrar el modal */}
         <button

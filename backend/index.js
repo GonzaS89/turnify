@@ -133,10 +133,11 @@ app.get("/api/consultorios/:id", async (req, res) => {
       c.tipo,
       c.direccion,
       c.nombre,
-      c.localidad
-  FROM profesional_consultorio AS pc -- Alias para la tabla intermedia
+      l.nombre AS localidad
+  FROM profesional_consultorio AS pc 
   JOIN consultorios AS c ON c.id = pc.consultorio_id
-  JOIN profesionales AS p ON p.id = pc.profesional_id -- Asegúrate de usar el alias correcto aquí también
+  JOIN profesionales AS p ON p.id = pc.profesional_id 
+  JOIN localidades AS l ON l.id = c.localidad
   WHERE p.id = ?
   `;
     try {
@@ -222,15 +223,20 @@ app.get("/api/consultorio/:id", async (req, res) => {
     const { id } = req.params;
     const query = `
     SELECT 
-c.id AS id,
+c.id,
 c.nombre,
 c.direccion,
-c.localidad,
+p.nombre AS provincia,
+l.nombre AS localidad,
 c.tipo,
 c.hora_inicio AS inicio,
 c.hora_cierre AS cierre
 FROM consultorios AS c
-WHERE id = ?
+JOIN
+provincias AS p ON p.id = c.provincia
+JOIN
+localidades AS l ON l.id = c.localidad
+WHERE c.id = ?
     `;
     try {
         const [resultados] = await pool.execute(query, [id]);
