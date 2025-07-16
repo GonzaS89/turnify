@@ -1,116 +1,110 @@
 // src/components/modals/EditConsultorioModal.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Asegúrate de tener axios instalado: npm install axios
+import axios from 'axios';
 import useAllProvincias from '../../../customHooks/useAllProvincias';
 import useLocalidadesxIdProvincia from '../../../customHooks/useLocalidadesxIdProvincia';
 
-const serverLocal = 'http://localhost:3006'; // Tu URL local del backend
-const serverExterno = 'https://api.tu-dominio.com'; // Tu URL externa del backend (¡Asegúrate de cambiarla!)
+const serverLocal = 'http://localhost:3006';
+const serverExterno = 'https://api.tu-dominio.com';
 const API_BASE_URL = window.location.hostname === 'localhost' ? serverLocal : serverExterno;
 
-
-const EditConsultorioModal = ({ isOpen, onClose, consultorio }) => { // Renombrado onSave a onUpdateSuccess para mayor claridad
-  // Estado para controlar la provincia seleccionada que dispara el hook de localidades
+const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess }) => {
   const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
-
-  // Hooks para cargar provincias y localidades
   const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
   const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
-  // Estado del formulario
+
+  console.log('Consultorio recibido:', consultorio);
+
   const [formData, setFormData] = useState({
     nombre: '',
     tipo: '',
-    provincia_id: '', // Usamos provincia_id para consistencia con la DB
-    localidad_id: '', // Usamos localidad_id para consistencia con la DB
+    provincia: '',
+    localidad: '',
     direccion: '',
-    telefono: '', // Asegúrate de que el consultorio prop también tenga 'telefono'
+    telefono: '',
     hora_inicio: '',
     hora_cierre: '',
   });
 
-  const [loading, setLoading] = useState(false); // Estado para indicar si la petición está en curso
-  const [errorSubmit, setErrorSubmit] = useState(null); // Estado para manejar errores específicos de la petición de envío
+  const [loading, setLoading] = useState(false);
+  const [errorSubmit, setErrorSubmit] = useState(null);
 
-
-  // useEffect para inicializar formData y idProvinciaSelected cuando el modal se abre o el consultorio cambia
   useEffect(() => {
     if (consultorio) {
       setFormData({
         nombre: consultorio.nombre || '',
         tipo: consultorio.tipo || 'propio',
-        provincia_id: consultorio.provincia_id || '', // Pre-rellena con el ID de provincia del consultorio
-        localidad_id: consultorio.localidad_id || '', // Pre-rellena con el ID de localidad del consultorio
+        provincia: consultorio.provincia || '',
+        localidad: consultorio.localidad || '',
         direccion: consultorio.direccion || '',
-        telefono: consultorio.telefono || '', // Asegúrate de tener este campo en tu consultorio
+        telefono: consultorio.telefono || '',
         hora_inicio: consultorio.hora_inicio || '',
         hora_cierre: consultorio.hora_cierre || '',
       });
-      // Importante: también inicializa idProvinciaSelected para que las localidades se carguen al abrir
-      setIdProvinciaSelected(consultorio.provincia_id || '');
-      setErrorSubmit(null); // Limpiar errores al abrir el modal
+      setIdProvinciaSelected(consultorio.provincia || '');
+      setErrorSubmit(null);
     }
-  }, [consultorio]); // Se ejecuta cada vez que el objeto 'consultorio' cambia
+  }, [consultorio]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
 
-    // Lógica para actualizar idProvinciaSelected y resetear localidad_id
-    if (name === 'provincia_id') {
-      setIdProvinciaSelected(value); // Esto hará que useLocalidadesxIdProvincia recargue
+    if (name === 'provincia') {
+      setIdProvinciaSelected(value);
       setFormData((prevData) => ({
         ...prevData,
-        localidad_id: '', // Resetea la localidad al cambiar la provincia
+        localidad: '',
       }));
     }
   };
 
   const modificarDatos = async (e) => {
-    e.preventDefault(); // Previene el comportamiento por defecto del formulario
-    setLoading(true); // Activa el estado de carga
-    setErrorSubmit(null); // Limpia cualquier error anterior
+    e.preventDefault();
+    setLoading(true);
+    setErrorSubmit(null);
 
-    console.log('Datos del formulario antes de enviar:', formData);
+    const dataToSend = {
+      nombre: formData.nombre,
+      tipo: formData.tipo,
+      provincia: formData.provincia ? parseInt(formData.provincia, 10) : null,
+      localidad: formData.localidad ? parseInt(formData.localidad, 10) : null,
+      direccion: formData.direccion,
+      telefono: formData.telefono,
+      hora_inicio: formData.hora_inicio,
+      hora_cierre: formData.hora_cierre,
+    };
+
+    console.log('Datos del formulario antes de enviar:', dataToSend);
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`, {
-        nombre: formData.nombre,
-        tipo: formData.tipo,
-        provincia_id: formData.provincia_id, // Usar provincia_id
-        localidad_id: formData.localidad_id, // Usar localidad_id
-        direccion: formData.direccion,
-        telefono: formData.telefono,
-        hora_inicio: formData.hora_inicio,
-        hora_cierre: formData.hora_cierre,
-      });
+      const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`);
 
       console.log('Datos actualizados:', response.data);
-      // Llama a la función onUpdateSuccess pasada por prop para notificar al padre
-  
+      
+      // Llama a la función onUpdateSuccess con los datos actualizados
+      if (onUpdateSuccess) {
+        onUpdateSuccess(response.data);
+      }
 
-      // Cierra el modal y recarga la página solo si la operación fue exitosa
+      // Cierra el modal, sin recargar la página
       onClose();
-      // Considera no recargar la página completa si puedes actualizar el estado en el padre.
-      // window.location.reload(); // Solo si es absolutamente necesario
-      // window.scrollTo(0, 0);
 
     } catch (error) {
       console.error('Error al actualizar los datos del consultorio:', error);
       const errorMessage = error.response && error.response.data && error.response.data.message
         ? error.response.data.message
         : 'Error al conectar con el servidor o actualizar los datos del consultorio.';
-      setErrorSubmit(errorMessage); // Muestra el error en este modal
+      setErrorSubmit(errorMessage);
     } finally {
-      setLoading(false); // Desactiva el estado de carga
+      setLoading(false);
     }
   };
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
@@ -132,7 +126,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio }) => { // Renombra
 
         <form onSubmit={modificarDatos} className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
           {loading && <p className="text-center text-blue-600">Guardando cambios...</p>}
-          {errorSubmit && <p className="text-center text-red-600 font-semibold">{errorSubmit}</p>} {/* Usar errorSubmit */}
+          {errorSubmit && <p className="text-center text-red-600 font-semibold">{errorSubmit}</p>}
 
           {loadingProvincias && <p className="text-center text-gray-500">Cargando provincias...</p>}
           {errorProvincias && <p className="text-center text-red-500">Error al cargar provincias: {errorProvincias.message}</p>}
@@ -169,11 +163,11 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio }) => { // Renombra
           </div>
 
           <div>
-            <label htmlFor="provincia_id" className="block text-gray-700 text-lg font-semibold mb-1">Provincia:</label>
+            <label htmlFor="provincia" className="block text-gray-700 text-lg font-semibold mb-1">Provincia:</label>
             <select
-              id="provincia_id"
-              name="provincia_id" // ¡CORREGIDO! Este debe ser el nombre del campo en formData
-              value={formData.provincia_id} // Usamos provincia_id
+              id="provincia"
+              name="provincia"
+              value={formData.provincia}
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={loading || loadingProvincias}
@@ -188,14 +182,14 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio }) => { // Renombra
           </div>
 
           <div>
-            <label htmlFor="localidad_id" className="block text-gray-700 text-lg font-semibold mb-1">Localidad:</label>
+            <label htmlFor="localidad" className="block text-gray-700 text-lg font-semibold mb-1">Localidad:</label>
             <select
-              id="localidad_id" // ¡CORREGIDO! Este debe ser el ID único del elemento
-              name="localidad_id" // ¡CORREGIDO! Este debe ser el nombre del campo en formData
-              value={formData.localidad_id} // Usamos localidad_id
+              id="localidad"
+              name="localidad"
+              value={formData.localidad}
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={loading || loadingLocalidades || !idProvinciaSelected} // Deshabilita si no hay provincia seleccionada
+              disabled={loading || loadingLocalidades || !idProvinciaSelected}
             >
               <option value="">Selecciona una localidad</option>
               {localidades?.map((localidad) => (

@@ -1,15 +1,17 @@
+// src/components/PanelConsultorioPropio.jsx
 import React, { useState, useMemo } from 'react';
-import { FaCalendarAlt, FaUserMd, FaDollarSign, FaClock, FaCog, FaShieldAlt } from 'react-icons/fa'; // Importa FaShieldAlt para el icono de coberturas
+import { FaCalendarAlt, FaClock, FaCog, FaShieldAlt } from 'react-icons/fa';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import TurnList from './TurnList';
 import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
-import GestionCoberturas from './components/GestionCoberturas'; // ¡Asegúrate de que esta ruta sea correcta!
+import GestionCoberturas from './components/GestionCoberturas';
 
+// Agrega 'onConsultorioDataRefreshed' como una prop
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
-  const [showModal, setShowModal] = useState(false); // Para el modal de habilitar turnos
-  const [showSettingsModal, setShowSettingsModal] = useState(false); // Estado para el modal de ajustes generales
-  const [showCoberturasModal, setShowCoberturasModal] = useState(false); // Estado para el modal de coberturas
+  const [showModal, setShowModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showCoberturasModal, setShowCoberturasModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [numberOfTurns, setNumberOfTurns] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,7 +106,8 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
       setShowModal(false);
       setSelectedDate('');
       setNumberOfTurns('');
-      // Considera volver a cargar los turnos aquí si useProfessionalConsultorioTurnos no lo hace automáticamente
+      // Si la habilitación de turnos también afecta los datos del consultorio,
+      // podrías llamar a onConsultorioDataRefreshed aquí también.
     } catch (apiError) {
       console.error('Error al habilitar turnos:', apiError);
       alert(`Hubo un error al habilitar los turnos: ${apiError.message}`);
@@ -115,12 +118,20 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   // --- Función para abrir el modal de ajustes generales del consultorio ---
   const handleConsultorioSettings = () => {
-    setShowSettingsModal(true); // Abre el modal de ajustes generales
+    setShowSettingsModal(true);
   };
 
   // --- Función para abrir el modal de gestión de coberturas ---
   const handleOpenCoberturasModal = () => {
-    setShowCoberturasModal(true); // Abre el modal de gestión de coberturas
+    setShowCoberturasModal(true);
+  };
+
+  // --- NUEVA FUNCIÓN: Manejar la actualización del consultorio desde el modal de ajustes ---
+  const handleConsultorioUpdatedFromSettings = (updatedData) => {
+    console.log("Datos del consultorio actualizados recibidos en PanelConsultorioPropio:", updatedData);
+    
+    // Cierra el modal de ajustes después de que el padre haya procesado la actualización
+    setShowSettingsModal(false);
   };
 
 
@@ -187,7 +198,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         {/* Card: Ajustes del Consultorio (para ajustes generales) */}
         <div
           className="bg-gray-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200"
-          onClick={handleConsultorioSettings} // Abre el modal de ajustes generales
+          onClick={handleConsultorioSettings}
         >
           <FaCog className="text-gray-600 text-3xl" />
           <h3 className="font-semibold text-gray-800 text-lg">Ajustes del Consultorio</h3>
@@ -199,16 +210,14 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         {/* NUEVA CARD: Gestión de Coberturas */}
         <div
           className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-purple-200"
-          onClick={handleOpenCoberturasModal} // Abre el modal de gestión de coberturas
+          onClick={handleOpenCoberturasModal}
         >
-          <FaShieldAlt className="text-purple-600 text-3xl" /> {/* Icono para coberturas */}
+          <FaShieldAlt className="text-purple-600 text-3xl" />
           <h3 className="font-semibold text-gray-800 text-lg">Gestionar Coberturas</h3>
           <p className="text-gray-600 text-sm">Añade o edita las obras sociales y prepagas que recibes.</p>
           <span className="text-purple-700 font-bold text-xl mt-2">Administrar</span>
           <p className="text-gray-500 text-sm mt-1">tus convenios</p>
         </div>
-
-        
       </div>
 
       {/* Renderizado condicional para TurnList */}
@@ -289,15 +298,14 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         consultorio={consultorio}
-        // Ya no es necesario pasar onManageCoberturas aquí si hay una card directa
-        // onManageCoberturas={handleOpenCoberturasModal}
+        onConsultorioUpdated={handleConsultorioUpdatedFromSettings} 
       />
 
       {/* Nuevo Modal para Gestión de Coberturas */}
       <GestionCoberturas
         isOpen={showCoberturasModal}
         onClose={() => setShowCoberturasModal(false)}
-        consultorioId={consultorio?.id} // Pasamos el ID para que el hook pueda buscar las coberturas
+        consultorioId={consultorio?.id}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 
-import { FaCalendarCheck, FaUserMd, FaChartBar, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus } from 'react-icons/fa';
+import { FaCalendarCheck, FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus } from 'react-icons/fa';
 
 const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe consultorioData
   // Get current date for display

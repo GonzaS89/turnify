@@ -33,7 +33,8 @@ const useConsultorioxId = (consultorioId) => {
             try {
                 // Realizamos la petición GET usando Axios
                 // Axios devuelve la respuesta en un objeto con una propiedad 'data'
-                const response = await axios.get(`${baseUrl}/api/consultorio/${consultorioId}`);
+                const timestamp = new Date().getTime();
+                const response = await axios.get(`${baseUrl}/api/consultorio/${consultorioId}?timestamp=${timestamp}`);
 
                 // Los datos de la respuesta ya están disponibles y parseados en `response.data`
                 setConsultorio(response.data);

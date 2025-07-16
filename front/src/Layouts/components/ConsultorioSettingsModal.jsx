@@ -6,6 +6,8 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Nuevo estado para el modal de edición
 
+  console.log('Consultorio Settings Modal - Datos del consultorio:', consultorio);
+
   if (!isOpen) return null;
 
   const handleOpenEditModal = () => {
@@ -71,7 +73,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
                     </div>
                     <div>
                       <p className="font-semibold text-lg">Horario de Atención:</p>
-                      <p className="text-xl">{consultorio.hora_inicio || 'N/A'} - {consultorio.hora_cierre || 'N/A'} Hs.</p>
+                      <p className="text-xl">{consultorio.inicio || 'N/A'} - {consultorio.cierre || 'N/A'} Hs.</p>
                     </div>
                   </div>
                   {/* Botón para abrir el modal de edición */}
