@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
+import useAllCoberturas from '../../../customHooks/useAllCoberturas'; // Asegúrate de que esta ruta sea correcta
+
+
 
 const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOptions, selectedTurno, profesional, consultorio, ordenTurno }) => {
     // Estados internos para la lógica de la API y la UI
@@ -8,6 +11,17 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
     const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
     const [isSuccess, setIsSuccess] = useState(false); // Controla si la reserva fue exitosa
     const [confirmedTurnoId, setConfirmedTurnoId] = useState(null); // Guarda el ID del turno confirmado
+
+    const { coberturas } = useAllCoberturas(); // Hook para obtener las coberturas médicas
+
+    console.log(coberturas)// Encuentra la cobertura seleccionada por el usuario
+
+
+
+    const coberturaElegida = coberturas.find(cobertura => cobertura.id == formData.selectedOption); // Asegúrate de que selectedOption sea un ID válido
+
+
+
 
     // Si el modal no está abierto, no renderiza nada
     if (!isOpen) return null;
@@ -130,7 +144,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
                                 <p><span className="font-semibold text-gray-700">Teléfono:</span> {formData?.telefono || 'N/A'}</p>
                                 <p className="col-span-full">
                                     <span className="font-semibold text-gray-700">Cobertura Médica:</span>
-                                    {formData?.selectedOption || 'N/A'}
+                                  {coberturaElegida? ` ${coberturaElegida.siglas} (${coberturaElegida.nombre})` : ' No seleccionada'}
                                 </p>
                             </div>
                         </div>

@@ -176,7 +176,7 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                                         <option value={'Particular'} >Particular</option>
                                         {Array.isArray(options) && options.map((option) => (
                                             <option key={option.id} value={option.id}>
-                                                {option.siglas} - {option.cobertura}
+                                                {option.siglas} - {option.nombre}
                                             </option>
                                         ))}
                                     </select>
