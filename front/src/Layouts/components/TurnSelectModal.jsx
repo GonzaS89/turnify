@@ -5,9 +5,11 @@ import { useState } from "react"; // Ya no necesitamos useRef
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
 
+import Turno from "./Turno"; // Importación del componente Turno
+
 // IMPORTACION DE ICONOS //
 
-import { PiCalendarCheckBold, PiCalendarXBold, PiFaceMask } from "react-icons/pi";
+
 
 const TurnSelectModal = ({
   consultorio,
@@ -95,7 +97,7 @@ const TurnSelectModal = ({
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-2 sm:p-4 font-inter">
       {/* Contenedor principal del modal */}
       <div
-        className={`bg-white rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col justify-between gap-4 w-full max-w-md lg:max-w-4xl h-[95vh]`}
+        className={`bg-white rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col justify-between gap-4 w-full max-w-md lg:max-w-4xl lg:h-[95vh] xl:h-auto`}
       >
         {/* Contenido superior (información del consultorio y profesional) */}
         <div className="flex flex-col gap-3">
@@ -168,14 +170,14 @@ const TurnSelectModal = ({
                     <div
                       // Eliminada la ref ya que no hay scroll automático
                       // Cambiado a grid para un layout de cuadrícula
-                      className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 justify-items-center"
+                      className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-3 gap-2 sm:gap-3 justify-items-center"
                     >
                       {fechasUnicas?.map((fecha, index) => (
                         <button
                           key={index}
                           onClick={(e) => handleFechaChange({ target: { value: fecha } })} // Ya no pasamos e.currentTarget
                           className={`
-                            flex flex-col items-center justify-center py-3 px-2 rounded-lg border-2 px-6
+                            flex flex-col items-center justify-center py-3 px-5 rounded-lg border-2
                             transition-all duration-300 ease-in-out text-center
                             group outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-blue-400
                             ${fechaSeleccionada === fecha
@@ -210,11 +212,7 @@ const TurnSelectModal = ({
           <div className="flex flex-col basis-full lg:basis-2/3 p-4 bg-gray-50 rounded-xl shadow-inner border border-gray-100 overflow-hidden">
             <h3 className="text-lg sm:text-xl font-bold text-gray-700 text-center mb-3 pb-2 border-b-2 border-green-200 w-full">
               Turnos disponibles
-              {fechaSeleccionada && (
-                <span className="text-green-600 ml-1">
-                  para el {formatearFechaSQL(fechaSeleccionada)}
-                </span>
-              )}
+              
             </h3>
 
             {/* Contenedor de los turnos con scroll */}
@@ -223,66 +221,7 @@ const TurnSelectModal = ({
                 turnosFiltrados.length > 0 ? (
                   <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 mt-3">
                     {turnosFiltrados.map((turno, index) => (
-                    <div key={turno.id} className="w-full flex justify-center">
-                    <button
-                      onClick={() => handleSelectTurno(turno, index)}
-                      className={`
-                        relative flex flex-col justify-between items-center p-2 sm:p-3 rounded-lg border-2
-                        transition-all duration-300 ease-in-out w-full aspect-square text-center
-                        group outline-none cursor-pointer
-                        focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-blue-400 focus-visible:z-20
-                        ${
-                          turno.estado === "disponible"
-                            ? "bg-white shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md border-gray-200 hover:border-blue-400 text-gray-800"
-                            : "bg-gray-100 shadow-inner border-gray-200 text-gray-400 cursor-not-allowed opacity-75"
-                        }
-                      `}
-                      disabled={turno.estado !== "disponible"}
-                    >
-                      {/* Efectos de fondo dinámicos para turnos disponibles */}
-                      {turno.estado === "disponible" && (
-                        <>
-                          {/* Resplandor de gradiente radial sutil al pasar el ratón */}
-                          <div className="absolute inset-0 rounded-lg bg-gradient-radial from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out pointer-events-none"></div>
-                  
-                          {/* Pequeño indicador de marca de verificación - aparece al pasar el ratón/foco */}
-                          <svg
-                            className="absolute top-1 left-1 w-3 h-3 text-green-500 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 group-focus-visible:scale-100 origin-top-left"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            ></path>
-                          </svg>
-                        </>
-                      )}
-                  
-                      {/* Contenido del botón */}
-                      <div className="flex flex-col items-center gap-1 relative z-10 w-full">
-                        {turno.estado === "disponible" ? (
-                          <PiCalendarCheckBold className="text-4xl sm:text-5xl text-blue-500 mb-1 group-hover:text-blue-600 transition-colors duration-200 drop-shadow-sm" />
-                        ) : (
-                          <PiCalendarXBold className="text-4xl sm:text-5xl text-gray-400 mb-1" />
-                        )}
-                        <p className="text-sm sm:text-base font-extrabold leading-tight text-gray-700 group-hover:text-blue-700 transition-colors duration-200">
-                          Turno #{index + 1}
-                        </p>
-                      </div>
-                      <p
-                        className={`text-xs sm:text-sm font-medium relative z-10 ${
-                          turno.estado === "disponible"
-                            ? "text-green-500 group-hover:text-green-600 transition-colors duration-200"
-                            : "text-gray-400"
-                        }`}
-                      >
-                        {turno.estado === "disponible" ? "Disponible" : "Reservado"}
-                      </p>
-                    </button>
-                  </div>
+                      <Turno turno={turno} index={index} enviarTurno={handleSelectTurno}/>
                     ))}
                   </div>
                 ) : (

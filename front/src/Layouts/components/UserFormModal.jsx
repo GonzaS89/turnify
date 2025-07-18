@@ -173,7 +173,7 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                                         required
                                     >
                                         <option value="" disabled>Elige una cobertura</option>
-                                        <option value={'Particular'} >Particular</option>
+                                        <option value={'particular'} >Particular</option>
                                         {Array.isArray(options) && options.map((option) => (
                                             <option key={option.id} value={option.id}>
                                                 {option.siglas} - {option.nombre}

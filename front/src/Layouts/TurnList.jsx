@@ -1,10 +1,20 @@
-// TurnList.jsx
-import React, { useState } from 'react';
+
+import { useState } from 'react';// TurnList.jsx
 import { FaClock, FaUser, FaInfoCircle, FaCalendarAlt, FaChevronDown, FaChevronUp, FaIdCard, FaShieldAlt, FaPhone } from 'react-icons/fa';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
+import useAllCoberturas from '../../customHooks/useAllCoberturas';
 
 const TurnList = ({ profesionalId, consultorioId, onClose }) => {
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId);
+
+  const {coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas} = useAllCoberturas();
+
+  const coberturaElegida = (coberturaId) => {
+    const cobertura = coberturas.find(cobertura => cobertura.id == coberturaId);
+    return cobertura
+  }
+
+
 
   const [fechasExpandidas, setFechasExpandidas] = useState({});
 
@@ -137,7 +147,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose }) => {
                                   {turno.cobertura && (
                                     <p className="flex items-start">
                                       <FaShieldAlt className="mr-2 text-purple-600" />
-                                      <span className="font-semibold ml-1">{turno.cobertura}</span>
+                                      <span className="font-semibold ml-1">{turno?.cobertura === 'Particular' ? 'Particular' : coberturaElegida(turno?.cobertura).siglas}</span>
                                     </p>
                                   )}
                                   {turno.telefono && (
