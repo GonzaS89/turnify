@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"; // Make sure Br
 
 // Import your components
 import UserDashboard from "./Layouts/UserDashboard";
-import { Header } from "./Header";
 import { Footer } from "./Footer";
 import Login from "./Layouts/Login";
 import Main from "./Layouts/Main";
@@ -11,6 +10,7 @@ import Main from "./Layouts/Main";
 
 const App = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false); 
+
 
   // Function to close the login modal
   const closeLogin = () => {
@@ -21,6 +21,10 @@ const App = () => {
   const openLogin = (value) => {
     setOpenLoginModal(value);
   };
+
+  const recibirConsultorio = value => {
+    value && setHiddenHeader(true)
+  }
 
 
 
@@ -34,10 +38,10 @@ const App = () => {
       */}
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-gray-50 font-sans text-gray-800">
 
-        <Header openLogin={openLogin} />
+    
 
         {/* The Login modal should be rendered conditionally based on state */}
-        {openLoginModal && <Login closeLogin={closeLogin} />}
+        {openLoginModal && <Login closeLogin={closeLogin} enviarConsultorio={recibirConsultorio} />}
 
         {/*
           Routes should be rendered within the main layout div

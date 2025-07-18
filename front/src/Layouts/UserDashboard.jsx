@@ -1,33 +1,28 @@
 // src/components/MiCuenta.jsx (UserDashboard.jsx)
 import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import useConsultorioById from '../../customHooks/useConsultorioxId'; // Importa tu custom hook
+import { useLocation, Link, useNavigate } from 'react-router-dom'; // Importamos useNavigate
+import { FaSignOutAlt } from 'react-icons/fa'; // Importamos el icono para cerrar sesión
+import useConsultorioById from '../../customHooks/useConsultorioxId';
 import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
 
-const UserDashboard = () => {
+// Se añade 'onLogout' como una prop esperada
+const UserDashboard = ({ onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate(); // Hook para la navegación programática
 
-  // Obtén el ID del consultorio.
-  // Idealmente, este ID debería persistir en localStorage o un contexto de autenticación
-  // después del login, para que no se pierda al recargar.
-  // Por ahora, lo tomamos de location.state como fallback.
+  // 1. Obtención del ID del consultorio
+  // Considera almacenar el consultorioId en localStorage o un contexto de autenticación
+  // para persistencia y para evitar depender únicamente de location.state.
   const consultorioId = location.state?.consultorio?.id;
 
-  console.log('Consultorio ID:', consultorioId);
+  // 2. Uso del custom hook para obtener los datos del consultorio
+  const { consultorio: consultorioDataArray, loading, error } = useConsultorioById(consultorioId);
+  const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
 
+  // console.log('Datos del consultorio:', consultorio); // Para depuración
 
-  // Usa tu custom hook para obtener los datos del consultorio
-  const { consultorio: consul, loading, error } = useConsultorioById(consultorioId);
-
-  const consultorio = consul[0]
-
-  console.log('Datos del consultorio:', consultorio);
-
-
-
-
-  // Manejo de estados de carga y error
+  // 3. Manejo de estados de carga y error
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
@@ -43,11 +38,12 @@ const UserDashboard = () => {
           <p className="text-red-500 text-lg mb-4">
             Error al cargar datos del consultorio: {error.message}
           </p>
-          <Link to="/">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Volver al Inicio
-            </button>
-          </Link>
+          <button
+            onClick={() => navigate('/')} // Usa navigate para ir al inicio
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Volver al Inicio
+          </button>
         </div>
       </div>
     );
@@ -61,22 +57,45 @@ const UserDashboard = () => {
           <p className="text-red-500 text-lg mb-4">
             No se encontraron datos para el consultorio. Por favor, inicia sesión.
           </p>
-          <Link to="/">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Volver al Inicio
-            </button>
-          </Link>
+          <button
+            onClick={() => navigate('/')} // Usa navigate para ir al inicio
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Volver al Inicio
+          </button>
         </div>
       </div>
     );
   }
 
-  // Lógica de renderizado condicional
+  // 4. Valores derivados para el renderizado
+  const consultorioName = consultorio?.nombre || 'tu consultorio'; // Nombre del consultorio para el saludo
+
+  // 5. Estructura Principal del JSX
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 mt-[150px]">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
+        {/* --- Header del Dashboard --- */}
+        <header className="flex justify-between items-center bg-white p-6 rounded-t-2xl shadow-md border-b border-gray-200 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800">
+            ¡Bienvenido a {consultorioName}!
+          </h1>
+      
+            <button
+              onClick={onLogout}
+              className="flex items-center text-red-500 hover:text-red-700 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 text-base border border-red-300 hover:border-red-500"
+              aria-label="Cerrar sesión"
+            >
+              <FaSignOutAlt className="mr-2" />
+              Cerrar Sesión
+            </button>
+        
+        </header>
+        {/* --- Fin del Header --- */}
+
+        {/* Renderizado condicional del panel principal basado en el tipo de consultorio */}
         {consultorio?.tipo === 'propio' ? (
-          <PanelConsultorioPropio consultorioData={consultorio} />
+          <PanelConsultorioPropio consultorioData={consultorio} onLogout={onLogout} />
         ) : (
           <PanelCentroMedico consultorioData={consultorio} />
         )}

@@ -12,17 +12,16 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     const { coberturas: activeCoberturas, isLoading, error, refetch} = useCoberturaxIdConsultorio(consultorioId);
     const { coberturas: allCoberturas, isLoading: isLoadingAllCoberturas, error: errorAllCoberturas } = useAllCoberturas();
 
-
     const coberturaIncluded = id => activeCoberturas?.some(cobertura => cobertura.id === id);
 
-
     // Filtrar las coberturas activas y las disponibles para añadir según el término de búsqueda
-
     const filteredAllCoberturas = allCoberturas?.filter(cobertura =>
         cobertura.siglas.toLowerCase().includes(searchTerm.toLowerCase()) ||
         cobertura.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Las coberturas disponibles para añadir son aquellas que resultan de la búsqueda
+    // y que NO están ya incluidas en las coberturas activas del consultorio.
     const activeCoverageIds = new Set(activeCoberturas?.map(c => c.id));
     const availableCoberturasToAdd = filteredAllCoberturas?.filter(c => !activeCoverageIds.has(c.id));
 
@@ -36,33 +35,23 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     }, [isOpen]);
 
     // --- Función para eliminar una cobertura ---
-    async function handleRemoveCobertura(coberturaMedicaId,consultorioId) {
-        
-        if (!coberturaMedicaId) {
-            alert('Error: ID de cobertura médica no disponible para eliminar.');
+    async function handleRemoveCobertura(coberturaMedicaId, consultorioId) {
+        if (!coberturaMedicaId || !consultorioId) {
+            alert('Error: IDs de cobertura médica o consultorio no disponibles para eliminar.');
             return;
         }
 
-        if (!consultorioId) {
-            alert('Error: ID de consutorio no disponible para eliminar.');
-            return;
-        }
         if (!window.confirm('¿Estás seguro de que quieres eliminar esta cobertura de tu consultorio?')) {
             return;
         }
 
         try {
-            // ¡¡¡CAMBIO CLAVE AQUÍ!!!
-            // La URL debe incluir el consultorioId y el endpoint es /api/consultorios/:consultorioId/coberturas/:coberturaMedicaId
             const response = await axios.delete(
                 `http://localhost:3006/api/borrarCoberturaDeConsulotorio/${coberturaMedicaId}/${consultorioId}`
             );
 
             alert(response.data.message || 'Cobertura eliminada exitosamente.');
-            // Una vez que la operación es exitosa en el backend, refetchActiveCoberturas()
-            // recargará la lista, haciendo que la UI se actualice.
-            refetch();
-
+            refetch(); // Recargar la lista de coberturas activas
         } catch (apiError) {
             console.error('Error al realizar la petición DELETE:', apiError);
             let errorMessage = 'Hubo un error al eliminar la cobertura.';
@@ -85,13 +74,11 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
         try {
             const response = await axios.post(
                 `http://localhost:3006/api/agregarCoberturaAlConsultorio/${coberturaMedicaId}/${consultorioId}`,
-                
             );
 
             alert(response.data.message || 'Cobertura añadida exitosamente.');
-            refetch(); // Recarga los datos para actualizar la UI
-            setSearchTerm(''); // Limpia la búsqueda
-
+            refetch(); // Recargar los datos para actualizar la UI
+            setSearchTerm(''); // Limpiar la búsqueda para que el usuario vea la lista actualizada
         } catch (apiError) {
             console.error('Error al realizar la petición POST:', apiError);
             let errorMessage = 'Hubo un error al añadir la cobertura.';
@@ -107,7 +94,7 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
             <div className={`
-                bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-lg md:max-w-xl
+                bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-lg lg:max-w-4xl // Ajuste: Usamos 'lg' para que la doble columna aparezca en pantallas más grandes
                 flex flex-col gap-6 relative
                 max-h-[90vh] overflow-hidden
             `}>
@@ -160,42 +147,54 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
                                 )}
                             </div>
 
-                            {/* Sección: Añadir Nueva Cobertura */}
+                            {/* Sección: Añadir Nueva Cobertura - Diseño de Dos Columnas */}
                             <div>
                                 <h3 className="text-xl font-bold text-gray-800 mb-3">Añadir Nueva Cobertura</h3>
                                 <p className="text-gray-600 mb-4 text-sm">Busca y añade obras sociales o prepagas a tu lista.</p>
-                                <div className="flex gap-2 mb-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar cobertura..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
 
-                                {/* Resultados de la búsqueda */}
-                                {searchTerm && (
-                                    <div className="bg-gray-50 rounded-lg shadow-inner border border-gray-100 p-3 max-h-48 overflow-y-auto custom-scrollbar">
-                                        {filteredAllCoberturas && filteredAllCoberturas.length > 0 ? (
-                                            <ul className="space-y-2">
-                                                {filteredAllCoberturas.map(cobertura => (
-                                                    <li key={cobertura.id} className={`${coberturaIncluded(cobertura.id) ? 'pointer-events-none' : ''} flex items-center justify-between p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors duration-150`}>
-                                                        <span>{cobertura.siglas} - {cobertura.nombre}</span>
-                                                        <button
-                                                            onClick={() => handleAddCobertura(cobertura.id, consultorioId)}
-                                                            className={`"ml-4 bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600" ${coberturaIncluded(cobertura.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                        >
-                                                            {coberturaIncluded(cobertura.id) ? 'Añadida' : 'Añadir'}
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                {/* Contenedor que se convierte en flex-row solo en 'lg' y más grandes */}
+                                <div className="flex flex-col lg:flex-row gap-6">
+                                    {/* Columna Izquierda: Input de Búsqueda */}
+                                    <div className="lg:w-1/3 flex-shrink-0"> {/* Ocupa 1/3 del ancho en pantallas 'lg' y más grandes */}
+                                        <label htmlFor="search-cobertura" className="sr-only">Buscar cobertura</label>
+                                        <input
+                                            type="text"
+                                            id="search-cobertura"
+                                            placeholder="Buscar por nombre o siglas..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                                        />
+                                    </div>
+
+                                    {/* Columna Derecha: Resultados de la Búsqueda */}
+                                    <div className="lg:w-2/3 flex-grow"> {/* Ocupa 2/3 del ancho restante en pantallas 'lg' y más grandes */}
+                                        {searchTerm ? ( // Mostrar resultados solo si hay un término de búsqueda
+                                            <div className="bg-gray-50 rounded-lg shadow-inner border border-gray-100 p-3 max-h-48 overflow-y-auto custom-scrollbar">
+                                                {availableCoberturasToAdd && availableCoberturasToAdd.length > 0 ? (
+                                                    <ul className="space-y-2">
+                                                        {availableCoberturasToAdd.map(cobertura => (
+                                                            <li key={cobertura.id} className="flex items-center justify-between p-2 rounded-md hover:bg-blue-50 cursor-pointer transition-colors duration-150 border border-transparent hover:border-blue-200">
+                                                                <span className="font-medium text-gray-800 text-base">{cobertura.siglas} - {cobertura.nombre}</span>
+                                                                <button
+                                                                    onClick={() => handleAddCobertura(cobertura.id, consultorioId)}
+                                                                    className={`ml-4 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                                                                    aria-label={`Añadir ${cobertura.siglas} a mi consultorio`}
+                                                                >
+                                                                    Añadir
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="text-gray-500 text-sm text-center py-4">No se encontraron coberturas para "{searchTerm}" o ya están todas añadidas.</p>
+                                                )}
+                                            </div>
                                         ) : (
-                                            <p className="text-gray-500 text-sm text-center">No se encontraron coberturas disponibles para añadir o ya están todas activas.</p>
+                                            <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded-lg shadow-inner border border-gray-100">Ingresa un término de búsqueda para ver las coberturas disponibles.</p>
                                         )}
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </>
                     )}

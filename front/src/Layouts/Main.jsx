@@ -4,6 +4,7 @@ import Steps from "./Steps";
 import Benefits from "./Benefits";
 import FAQS from "./FAQS";
 import Testimonials from "./Testimonials";
+import { Header } from "../Header";
 import UserFormModal from "./components/UserFormModal";
 import ConfirmationModal from "./components/ConfirmationModal";
 import Separator from "./components/Separator";
@@ -97,6 +98,7 @@ const Main = () => {
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 mt-8">
+          <Header openLogin={openLogin}/>
       <Hero enviarIds={recibirIds} />
       <hr className="my-16 border-gray-200 border-t-2" />
       <Steps />

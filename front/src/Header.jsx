@@ -16,7 +16,7 @@ export const Header = ( { openLogin }) => {
 
   return (
     <div>
-      <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-sm py-4 z-50 transition-all duration-300">
+      <header className={`"fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-sm py-4 z-50 transition-all duration-300"`}>
         <div className="container mx-auto px-4 flex justify-between items-center relative">
           {/* Logo Centrado en Mobile */}
           <a href="#hero-section" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
