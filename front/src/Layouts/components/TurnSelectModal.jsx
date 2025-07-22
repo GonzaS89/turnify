@@ -12,8 +12,6 @@ import Turno from "./Turno"; // Importación del componente Turno
 
 
 const TurnSelectModal = ({
-  consultorio,
-  idConsultorio,
   idProfesional,
   enviarTurnoYOrden,
   cerrarModalTurnos,
@@ -23,12 +21,13 @@ const TurnSelectModal = ({
     turnos,
     isLoading: isLoadingTurnos,
     error: errorTurnos,
-  } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);
+  } = useProfessionalConsultorioTurnos(idProfesional);
 
   const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(idProfesional);
 
   // Asegurarse de que `profesional` es un array y tiene al menos un elemento
   const medico = profesional && profesional.length > 0 ? profesional[0] : null;
+
 
   // DECLARACION DE ESTADOS
   // `fechaSeleccionada` almacenará la fecha elegida por el usuario en el selector.

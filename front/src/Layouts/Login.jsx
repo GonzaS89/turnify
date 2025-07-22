@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'; // Import useState and useEf
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import useAllConsultorios from "../../customHooks/useAllConsultorios";
 
-const Login = ({ closeLogin, enviarConsultorio }) => {
+const Login = ({ closeLogin }) => {
   const { consultorios, isLoading, error: fetchError } = useAllConsultorios(); 
   const navigate = useNavigate(); 
   const [username, setUsername] = useState('');
@@ -39,7 +39,7 @@ const Login = ({ closeLogin, enviarConsultorio }) => {
       (c) => c.usuario === username && c.contrasena === password
     );
 
-    enviarConsultorio(consultorio)
+  
 
     if (consultorio) {
  
