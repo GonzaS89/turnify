@@ -78,7 +78,7 @@ const UserDashboard = ({ onLogout }) => {
         {/* --- Header del Dashboard --- */}
         <header className="flex justify-between items-center bg-white p-6 rounded-t-2xl shadow-md border-b border-gray-200 mb-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800">
-            ¡Bienvenido a {consultorioName}!
+            ¡Bienvenido!
           </h1>
       
             <button

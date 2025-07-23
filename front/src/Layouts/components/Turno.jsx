@@ -4,11 +4,11 @@ const Turno = ({ turno, index, enviarTurno }) => {
   const isAvailable = turno.estado === "disponible";
 
   return (
-    <div key={turno.id} className="w-full flex justify-center p-2">
+    <div key={turno.id} className="w-full flex justify-center">
       <button
         onClick={() => enviarTurno(turno, index)}
         className={`
-          relative flex flex-col justify-between items-center p-4 rounded-xl border
+          relative flex flex-col justify-between items-center p-1 rounded-xl border
           transition-all duration-200 ease-in-out w-full aspect-square text-center
           group outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:z-20
           ${
@@ -23,7 +23,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
         {isAvailable && (
           <>
             {/* Resplandor de gradiente muy sutil al pasar el ratón (menos opaco) */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in pointer-events-none"></div>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/30 via-transparent to-transparent opacity-0 pointer-events-none"></div>
 
             {/* Pequeño punto de confirmación suave */}
             <span
@@ -34,17 +34,17 @@ const Turno = ({ turno, index, enviarTurno }) => {
         )}
 
         {/* Contenido del botón */}
-        <div className="flex flex-col items-center gap-2 relative z-10 w-full">
+        <div className="flex flex-row items-center justify-center gap-2 relative z-10 w-full h-full">
           {isAvailable ? (
             <PiCalendarCheckBold className="text-4xl text-blue-500 mb-1 group-hover:text-blue-600 transition-colors duration-200" />
           ) : (
             <PiCalendarXBold className="text-4xl text-gray-300 mb-1" />
           )}
-          <p className="text-base font-semibold leading-tight text-gray-700 group-hover:text-blue-700 transition-colors duration-200">
-            Turno #{index + 1}
+          <p className="text-base font-semibold leading-tight text-gray-700 group-hover:text-blue-700 transition-colors duration-200 h-auto">
+            #{index + 1}
           </p>
         </div>
-        <p
+        {/* <p
           className={`text-xs font-medium relative z-10 ${
             isAvailable
               ? "text-blue-400 group-hover:text-blue-500 transition-colors duration-200"
@@ -52,7 +52,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
           }`}
         >
           {isAvailable ? "Seleccionar" : "Reservado"}
-        </p>
+        </p> */}
       </button>
     </div>
   );

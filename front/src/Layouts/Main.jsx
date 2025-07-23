@@ -9,11 +9,11 @@ import UserFormModal from "./components/UserFormModal";
 import ConfirmationModal from "./components/ConfirmationModal";
 import Separator from "./components/Separator";
 import TurnSelectModal from "./components/TurnSelectModal";
-import useConsultorioxId from "../../customHooks/useConsultorioxId"; // Importamos el custom hook para obtener el consultorio por ID
 // Importamos los custom hooks necesarios   
 
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
-import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
+import useProfessionalConsultorios from '../../customHooks/useProfessionalConsultorios';
+import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 
 const Main = ({ openLogin }) => {
   const [idConsultorio, setIdConsultorio] = useState(null); // ID
@@ -53,16 +53,20 @@ const Main = ({ openLogin }) => {
 
   // CARGA DE CUSTOM HOOKS
 
-  const { consultorio } = useConsultorioxId(idConsultorio);
+  const { consultorios ,isLoading:isLoadingConsultorio, error:errorConsultorio} = useProfessionalConsultorios(idProfesional);
   const { profesional } = useProfesionalxId(idProfesional);
-  const { coberturas } = useCoberturaxIdConsultorio(idConsultorio);
+
 
   const prof = profesional[0];
-  const consult = consultorio[0];
+  const consult = consultorios[0];
+ 
+
+  const { coberturas } = useCoberturaxIdConsultorio(consult?.id);
+
 
   useEffect(() => {
     idProfesional && setShowModalTurnos(true); // Abre el modal de turnos si hay un ID de consultorio
-  }, [idConsultorio]);
+  }, [idProfesional]);
 
   // Función para manejar la selección de un turno y abrir el formulario de usuario
 
@@ -107,7 +111,7 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-200 border-t-2" />
       <FAQS />
       <hr className="my-16 border-gray-200 border-t-2" />
-      <Separator />
+    
 
       {showModalTurnos && !showUserFormModal && !showConfirmationModal && (
         <TurnSelectModal

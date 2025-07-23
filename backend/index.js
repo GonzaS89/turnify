@@ -134,6 +134,8 @@ app.get("/api/consultorios/:id", async (req, res) => {
       c.tipo,
       c.direccion,
       c.nombre,
+      c.hora_inicio AS inicio,
+      c.hora_cierre AS cierre,
       l.nombre AS localidad
   FROM profesional_consultorio AS pc 
   JOIN consultorios AS c ON c.id = pc.consultorio_id
@@ -260,6 +262,7 @@ app.get("/api/profesional/:id", async (req, res) => {
     const { id } = req.params;
     const query = `
     SELECT 
+p.id,    
 p.nombre,
 p.apellido,
 p.especialidad,

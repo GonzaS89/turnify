@@ -20,7 +20,7 @@ const Hero = ({ enviarIds }) => {
     };
 
     return (
-        <section className="min-h-screen mt-32">
+        <section className="mt-32">
             {/* Hero Section */}
             <div
                 id="hero-section"

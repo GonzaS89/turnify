@@ -86,7 +86,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
         ...dataToSend,
       });
 
-      console.log('Datos actualizados:', response.data);
+      location.reload(true)
       
       // Llama a la función onUpdateSuccess con los datos actualizados
       if (onUpdateSuccess) {
