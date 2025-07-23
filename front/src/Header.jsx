@@ -109,7 +109,7 @@ export const Header = ( { openLogin }) => {
         className="w-full px-5 py-3 border border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 text-base shadow-sm hover:shadow-md" > {/* Slightly more rounded, added subtle shadow */}
         Iniciar Sesión
       </button>
-      <button
+      <button 
         className="w-full px-5 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 text-base shadow-md hover:shadow-lg" > {/* Slightly more rounded, stronger shadow */}
         Registrarse
       </button>

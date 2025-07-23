@@ -50,7 +50,7 @@ const App = () => {
         */}
         <main className="flex-grow"> {/* Use a <main> tag for semantic correctness and apply flex-grow */}
           <Routes>
-            <Route path="/" element={<Main />} />
+            <Route path="/" element={<Main openLogin={openLogin}/>} />
             <Route path="/micuenta" element={<UserDashboard />} />
             {/* Add more routes here as needed */}
           </Routes>

@@ -15,7 +15,7 @@ import useConsultorioxId from "../../customHooks/useConsultorioxId"; // Importam
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
 
-const Main = () => {
+const Main = ({ openLogin }) => {
   const [idConsultorio, setIdConsultorio] = useState(null); // ID
   const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
   const [selectedTurno, setSelectedTurno] = useState(null); // Turno seleccionado para la reserva
