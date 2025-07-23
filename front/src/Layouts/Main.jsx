@@ -46,14 +46,10 @@ const Main = ({ openLogin }) => {
     setOrdenTurno(null); // Limpia el índice del turno seleccionado al cerrar el modal
   };
 
-  const recibirIds = (idConsultorio, idProfesional) => {
-    setIdConsultorio(idConsultorio); // Actualiza el ID del consultorio
+  const recibirIds = (idProfesional) => {
     setIdProfesional(idProfesional); // Actualiza el ID del profesional
   };
 
- 
-
-  
 
   // CARGA DE CUSTOM HOOKS
 
@@ -65,7 +61,7 @@ const Main = ({ openLogin }) => {
   const consult = consultorio[0];
 
   useEffect(() => {
-    idConsultorio && setShowModalTurnos(true); // Abre el modal de turnos si hay un ID de consultorio
+    idProfesional && setShowModalTurnos(true); // Abre el modal de turnos si hay un ID de consultorio
   }, [idConsultorio]);
 
   // Función para manejar la selección de un turno y abrir el formulario de usuario
@@ -96,9 +92,11 @@ const Main = ({ openLogin }) => {
     setShowUserFormModal(true); // Reabre el formulario de usuario para editar
   };
 
+
+
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 mt-8">
-          <Header openLogin={openLogin}/>
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <Header openLogin={openLogin} />
       <Hero enviarIds={recibirIds} />
       <hr className="my-16 border-gray-200 border-t-2" />
       <Steps />
@@ -114,7 +112,6 @@ const Main = ({ openLogin }) => {
       {showModalTurnos && !showUserFormModal && !showConfirmationModal && (
         <TurnSelectModal
           consultorio={consult} // Pasamos el consultorio para mostrar su información
-          idConsultorio={idConsultorio} // Pasamos el ID del consultorio
           idProfesional={idProfesional} // Pasamos el ID del profesional
           enviarTurnoYOrden={recibirTurnoYOrden} // Pasamos la función para recibir el turno y orden
           cerrarModalTurnos={cerrarModalTurnos} // Pasamos la función para cerrar el modal
@@ -147,7 +144,7 @@ const Main = ({ openLogin }) => {
         />
       )}
 
-    
+
     </main>
   );
 };

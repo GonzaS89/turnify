@@ -22,12 +22,6 @@ const App = () => {
     setOpenLoginModal(value);
   };
 
-  const recibirConsultorio = value => {
-    value && setHiddenHeader(true)
-  }
-
-
-
 
   return (
     <BrowserRouter>
@@ -41,7 +35,7 @@ const App = () => {
     
 
         {/* The Login modal should be rendered conditionally based on state */}
-        {openLoginModal && <Login closeLogin={closeLogin} enviarConsultorio={recibirConsultorio} />}
+        {openLoginModal && <Login closeLogin={closeLogin} />}
 
         {/*
           Routes should be rendered within the main layout div
