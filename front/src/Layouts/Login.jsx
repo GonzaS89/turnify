@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'; // Import useState and useEffect
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import useAllConsultorios from "../../customHooks/useAllConsultorios";
 
 const Login = ({ closeLogin }) => {
@@ -8,30 +8,32 @@ const Login = ({ closeLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setLoginError('');
   }, [username, password]);
 
-  const handleLogin = (e) => {
-    e.preventDefault(); 
-
-    setLoginError(''); 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setLoginError('');
 
     if (isLoading) {
       setLoginError("Cargando datos de consultorios, por favor espera...");
+      setIsSubmitting(false);
       return;
     }
 
     if (fetchError) {
       setLoginError(`Error al cargar datos: ${fetchError.message || 'Error desconocido'}`);
+      setIsSubmitting(false);
       return;
     }
 
-    // Ensure consultorios is an array and not empty
     if (!consultorios || consultorios.length === 0) {
       setLoginError("No hay consultorios registrados para verificar credenciales.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -39,113 +41,374 @@ const Login = ({ closeLogin }) => {
       (c) => c.usuario === username && c.contrasena === password
     );
 
-  
-
     if (consultorio) {
- 
-      console.log("Login exitoso para:", consultorio.nombre || consultorio.usuario);
-  
-
-
-      navigate("/micuenta", { state: { consultorio } }); 
-      closeLogin();
+      // Simular un pequeño delay para mejor UX
+      setTimeout(() => {
+        navigate("/micuenta", { state: { consultorio } }); 
+        closeLogin();
+        setIsSubmitting(false);
+      }, 500);
     } else {
-
       setLoginError("Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.");
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div>
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-50 backdrop-blur-md p-4 sm:p-6">
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md flex flex-col items-center justify-center text-center gap-5 sm:gap-6 border border-blue-100 relative overflow-hidden">
-          {/* Subtle gradient overlay for extra detail */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: 'radial-gradient(circle at top left, rgba(255,255,255,0.8) 0%, transparent 70%)' }}></div>
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: 'radial-gradient(circle at bottom right, rgba(173,216,230,0.8) 0%, transparent 70%)' }}></div>
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
+      <div className="
+        relative
+        max-h-[95vh]
+        bg-white
+        rounded-2xl
+        shadow-2xl
+        p-8
+        w-full
+        max-w-md
+        border
+        border-gray-100
+        transform
+        transition-all
+        duration-300
+        ease-out
+        animate-fade-in-up
+      ">
+       
+        
+        <div className="
+          absolute
+          -top-24
+          -right-24
+          w-48
+          h-48
+          bg-blue-50
+          rounded-full
+          opacity-50
+          blur-3xl
+        "></div>
+        <div className="
+          absolute
+          -bottom-24
+          -left-24
+          w-48
+          h-48
+          bg-indigo-50
+          rounded-full
+          opacity-50
+          blur-3xl
+        "></div>
 
-          {/* Back Button */}
-          <button
-            onClick={() => closeLogin()} // Function to close the login modal
-            className="absolute top-4 left-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-200 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 z-10"
-            aria-label="Go back"
-            title="Go back"
+        {/* Botón de cerrar */}
+        <button
+          onClick={closeLogin}
+          className="
+            absolute
+            top-4
+            right-4
+            p-2
+            rounded-full
+            bg-gray-100
+            hover:bg-gray-200
+            transition-all
+            duration-200
+            text-gray-500
+            hover:text-gray-700
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-500
+            z-10
+          "
+          aria-label="Cerrar"
+          title="Cerrar"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        {/* Header */}
+        <div className="text-center mb-8 mt-4">
+          <div className="
+            w-16
+            h-16
+            bg-gradient-to-br
+            from-blue-500
+            to-indigo-600
+            rounded-2xl
+            flex
+            items-center
+            justify-center
+            mx-auto
+            mb-4
+            text-white
+            text-2xl
+            shadow-lg
+          ">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-          </button>
-
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-3 leading-tight tracking-tight">
-            Login
+          </div>
+          
+          <h2 className="
+            text-2xl
+            font-bold
+            text-gray-900
+            mb-2
+          ">
+            Bienvenido a <span className="text-indigo-600">TurniFy</span>
           </h2>
-          <p className="text-gray-600 mb-6 text-base sm:text-lg">
-            Ingresa las credenciales de tu cuenta para acceder a TurniFy.
+          <p className="
+            text-gray-600
+            text-sm
+          ">
+            Ingresa tus credenciales para acceder a tu cuenta
           </p>
+        </div>
 
-          <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
-            {/* Username Input with Label */}
-            <div>
-              <label htmlFor="username" className="sr-only">Usuario</label>
+        {/* Formulario */}
+        <form onSubmit={handleLogin} className="space-y-5">
+          {/* Campo de usuario */}
+          <div>
+            <label htmlFor="username" className="
+              block
+              text-sm
+              font-medium
+              text-gray-700
+              mb-2
+            ">
+              Usuario
+            </label>
+            <div className="
+              relative
+              rounded-lg
+              shadow-sm
+            ">
+              <div className="
+                absolute
+                inset-y-0
+                left-0
+                pl-3
+                flex
+                items-center
+                pointer-events-none
+                text-gray-400
+              ">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
               <input
                 id="username"
                 type="text"
-                placeholder="Usuario"
-                value={username} // Controlled component
-                onChange={(e) => setUsername(e.target.value)} // Update state on change
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-800"
-                aria-label="Ingresa tu usuario"
-                required // Make input required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="
+                  block
+                  w-full
+                  pl-10
+                  pr-3
+                  py-3
+                  border
+                  border-gray-200
+                  rounded-lg
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-indigo-500
+                  focus:border-indigo-500
+                  placeholder-gray-400
+                  text-gray-800
+                  transition-all
+                  duration-200
+                "
+                placeholder="Ingresa tu usuario"
+                required
+                disabled={isSubmitting}
               />
             </div>
+          </div>
 
-            {/* Password Input with Label */}
-            <div>
-              <label htmlFor="password" className="sr-only">Contraseña</label>
+          {/* Campo de contraseña */}
+          <div>
+            <label htmlFor="password" className="
+              block
+              text-sm
+              font-medium
+              text-gray-700
+              mb-2
+            ">
+              Contraseña
+            </label>
+            <div className="
+              relative
+              rounded-lg
+              shadow-sm
+            ">
+              <div className="
+                absolute
+                inset-y-0
+                left-0
+                pl-3
+                flex
+                items-center
+                pointer-events-none
+                text-gray-400
+              ">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
               <input
                 id="password"
                 type="password"
-                placeholder="Contraseña"
-                value={password} // Controlled component
-                onChange={(e) => setPassword(e.target.value)} // Update state on change
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-800"
-                aria-label="Ingresa tu contraseña"
-                required // Make input required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="
+                  block
+                  w-full
+                  pl-10
+                  pr-3
+                  py-3
+                  border
+                  border-gray-200
+                  rounded-lg
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-indigo-500
+                  focus:border-indigo-500
+                  placeholder-gray-400
+                  text-gray-800
+                  transition-all
+                  duration-200
+                "
+                placeholder="Ingresa tu contraseña"
+                required
+                disabled={isSubmitting}
               />
             </div>
+          </div>
 
-            {/* Loading/Error Feedback */}
-            {isLoading && (
-              <p className="text-blue-600 text-sm animate-pulse">Cargando datos...</p>
-            )}
-            {fetchError && (
-              <p className="text-red-500 text-sm">Error: {fetchError.message}</p>
-            )}
-            {loginError && (
-              <p className="text-red-500 text-sm">{loginError}</p>
-            )}
+          {/* Mensajes de estado */}
+          {(isLoading || fetchError || loginError) && (
+            <div className="
+              p-3
+              rounded-lg
+              text-sm
+              flex
+              items-center
+              gap-2
+            ">
+              {isLoading && (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-blue-600">Cargando datos...</span>
+                </>
+              )}
+              
+              {fetchError && (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-red-500">Error: {fetchError.message}</span>
+                </>
+              )}
+              
+              {loginError && (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-red-500">{loginError}</span>
+                </>
+              )}
+            </div>
+          )}
 
-            <button
-              type="submit" // Important: set type to submit for form handling
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading} // Disable button while loading
-            >
-              Login
-            </button>
-          </form>
+          {/* Botón de submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting || isLoading}
+            className={`
+              w-full
+              py-3
+              px-4
+              rounded-lg
+              font-semibold
+              text-white
+              transition-all
+              duration-300
+              transform
+              focus:outline-none
+              focus:ring-2
+              focus:ring-offset-2
+              focus:ring-indigo-500
+              disabled:opacity-70
+              disabled:cursor-not-allowed
+              ${isSubmitting 
+                ? 'bg-indigo-400' 
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-[1.02] hover:shadow-lg'
+              }
+            `}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Ingresando...</span>
+              </div>
+            ) : (
+              'Iniciar Sesión'
+            )}
+          </button>
+        </form>
 
-          {/* Optional: Add a "Forgot Password?" link */}
-          <a href="#" className="text-sm text-blue-600 hover:underline mt-4">¿Olvidaste tu contraseña?</a>
+        {/* Enlace de recuperación */}
+        {/* <div className="mt-6 text-center">
+          <a 
+            href="#" 
+            className="
+              text-sm
+              text-indigo-600
+              hover:text-indigo-800
+              font-medium
+              transition-colors
+              duration-200
+            "
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div> */}
+
+        {/* Footer */}
+        <div className="
+          mt-8
+          pt-6
+          border-t
+          border-gray-100
+          text-center
+        ">
+          <p className="
+            text-xs
+            text-gray-500
+          ">
+            © 2024 TurniFy. Todos los derechos reservados.
+          </p>
         </div>
       </div>
     </div>

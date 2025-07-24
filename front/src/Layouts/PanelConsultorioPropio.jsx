@@ -8,7 +8,7 @@ import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GestionCoberturas from './components/GestionCoberturas';
 
 // Agrega 'onConsultorioDataRefreshed' como una prop
-const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
+const PanelConsultorioPropio = ({ consultorioData: consultorio, loading }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);

@@ -1,58 +1,72 @@
-import { PiCalendarCheckBold, PiCalendarXBold } from "react-icons/pi";
+import { PiCalendarCheckFill, PiCalendarXFill } from "react-icons/pi";
 
 const Turno = ({ turno, index, enviarTurno }) => {
   const isAvailable = turno.estado === "disponible";
 
   return (
-    <div key={turno.id} className="w-full flex justify-center">
+    <div className="flex justify-center">
       <button
-        onClick={() => enviarTurno(turno, index)}
+        onClick={() => isAvailable && enviarTurno(turno, index)}
+        disabled={!isAvailable}
         className={`
-          relative flex flex-col justify-between items-center p-1 rounded-xl border
-          transition-all duration-200 ease-in-out w-full aspect-square text-center
-          group outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:z-20
-          ${
-            isAvailable
-              ? "bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 border-blue-100 hover:border-blue-300 cursor-pointer"
-              : "bg-gray-50 shadow-inner border-gray-100 text-gray-400 cursor-not-allowed opacity-80"
+          relative w-full max-w-[100px] aspect-square flex flex-col items-center justify-center
+          p-3 rounded-2xl border-2 transition-all duration-300 ease-in-out
+          focus:outline-none focus:ring-2 focus:ring-offset-2
+          ${isAvailable
+            ? `
+              bg-gradient-to-br from-white to-gray-50 border-gray-300 text-gray-800
+              shadow-md hover:shadow-lg
+              hover:border-blue-400 hover:-translate-y-1
+              active:scale-95
+              focus:ring-blue-500 focus:ring-offset-white
+              `
+            : `
+              bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 text-gray-500
+              shadow-inner cursor-not-allowed opacity-80
+              focus:ring-gray-400 focus:ring-offset-gray-100
+              `
           }
         `}
-        disabled={!isAvailable}
+        aria-label={isAvailable ? `Seleccionar turno número ${index + 1}` : `Turno número ${index + 1} no disponible`}
       >
-        {/* Efectos de fondo y de interacción sutiles para turnos disponibles */}
-        {isAvailable && (
-          <>
-            {/* Resplandor de gradiente muy sutil al pasar el ratón (menos opaco) */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-50/30 via-transparent to-transparent opacity-0 pointer-events-none"></div>
-
-            {/* Pequeño punto de confirmación suave */}
-            <span
-              className="absolute top-2 right-2 w-2.5 h-2.5 bg-blue-400 rounded-full
-              opacity-0 scale-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-200 ease-out origin-center delay-50"
-            ></span>
-          </>
-        )}
-
-        {/* Contenido del botón */}
-        <div className="flex flex-row items-center justify-center gap-2 relative z-10 w-full h-full">
+        {/* Contenedor del ícono con fondo circular */}
+        <div className={`
+          mb-2 flex items-center justify-center rounded-full p-2 transition-all duration-300
+          ${isAvailable 
+            ? 'bg-blue-100 text-blue-600' 
+            : 'bg-gray-200 text-gray-400'}
+        `}>
           {isAvailable ? (
-            <PiCalendarCheckBold className="text-4xl text-blue-500 mb-1 group-hover:text-blue-600 transition-colors duration-200" />
+            <PiCalendarCheckFill className="text-xl" />
           ) : (
-            <PiCalendarXBold className="text-4xl text-gray-300 mb-1" />
+            <PiCalendarXFill className="text-xl" />
           )}
-          <p className="text-base font-semibold leading-tight text-gray-700 group-hover:text-blue-700 transition-colors duration-200 h-auto">
-            #{index + 1}
-          </p>
         </div>
-        {/* <p
-          className={`text-xs font-medium relative z-10 ${
-            isAvailable
-              ? "text-blue-400 group-hover:text-blue-500 transition-colors duration-200"
-              : "text-gray-400"
-          }`}
-        >
-          {isAvailable ? "Seleccionar" : "Reservado"}
-        </p> */}
+
+        {/* Número de Turno con estilo de badge */}
+        <span className={`
+          text-sm font-black px-2.5 py-1 rounded-full transition-all duration-300
+          ${isAvailable 
+            ? 'bg-blue-500 text-white shadow-sm' 
+            : 'bg-gray-400 text-white'}
+        `}>
+          {index + 1}
+        </span>
+
+        {/* Estado del turno como texto pequeño */}
+        <span className={`
+          text-[0.6rem] font-bold mt-1 transition-all duration-300
+          ${isAvailable 
+            ? 'text-blue-600' 
+            : 'text-gray-500'}
+        `}>
+          {isAvailable ? 'LIBRE' : 'OCUPADO'}
+        </span>
+
+        {/* Efecto de resplandor sutil para turnos disponibles */}
+        {isAvailable && (
+          <div className="absolute inset-0 rounded-2xl bg-blue-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+        )}
       </button>
     </div>
   );

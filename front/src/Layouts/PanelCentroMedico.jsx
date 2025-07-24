@@ -1,5 +1,5 @@
 
-import { FaCalendarCheck, FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus } from 'react-icons/fa';
+import { FaCalendarCheck, FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus} from 'react-icons/fa';
 
 const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe consultorioData
   // Get current date for display
@@ -10,14 +10,14 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
     day: 'numeric'
   });
 
-  if (!consultorio) {
-    return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
-  }
+  // if (!consultorio) {
+  //   return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
+  // }
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-blue-100">
       <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2 leading-tight">
-        ¡Bienvenido, {consultorio.nombre || "Centro Médico"}! {/* Usa consultorioData.nombre */}
+        ¡Bienvenido, {consultorio?.nombre || "Centro Médico"}! {/* Usa consultorioData.nombre */}
       </h1>
       <p className="text-gray-600 mb-2 text-lg sm:text-xl">
         Panel de Gestión del Centro Médico

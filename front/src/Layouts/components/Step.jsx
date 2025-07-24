@@ -1,67 +1,69 @@
 import React from 'react';
-
 import { FaBriefcaseMedical, FaCalendarAlt, FaCheckCircle } from "react-icons/fa";
 
-
 const Step = ({ referencia, titulo, contenido }) => {
-
-  let icono;
-
-  function obtenerIcono() {
-    icono =
-      referencia === 'medico' ? <FaBriefcaseMedical /> :
-        referencia === 'dia' ? <FaCalendarAlt className='text-red-400' /> : <FaCheckCircle className='text-green-500' />
-
-    return icono
-  }
-
+  const obtenerIcono = () => {
+    switch (referencia) {
+      case 'medico':
+        return <FaBriefcaseMedical className="text-indigo-600" />;
+      case 'dia':
+        return <FaCalendarAlt className="text-amber-500" />;
+      case 'confirmacion':
+        return <FaCheckCircle className="text-emerald-500" />;
+      default:
+        return <FaCheckCircle className="text-emerald-500" />;
+    }
+  };
 
   return (
     <div className="
-    flex flex-col items-center
-    p-8
-    bg-white
-    rounded-3xl
-    shadow-xl
-    border-2 border-transparent
-    transform transition-all duration-500
-    hover:scale-105
-    hover:shadow-2xl
-    hover:border-blue-400
-    cursor-pointer
-  ">
-    <div className="
-      w-20 h-20
-      bg-blue-100
-      text-blue-700
-      rounded-full
-      flex items-center justify-center
-      font-bold text-4xl
-      mb-6
-      transition-all duration-500
-      group-hover:bg-blue-200
+      flex flex-col items-center
+      p-6
+      bg-white
+      rounded-2xl
+      shadow-lg
+      border border-gray-100
+      transform transition-all duration-300
+      hover:scale-105
+      hover:shadow-xl
+      hover:border-indigo-200
+      cursor-pointer
+      w-full
+      max-w-xs
+      mx-auto
     ">
-      {obtenerIcono()}
+      <div className="
+        w-16 h-16
+        bg-indigo-50
+        rounded-full
+        flex items-center justify-center
+        mb-5
+        transition-colors duration-300
+        group-hover:bg-indigo-100
+      ">
+        <div className="text-2xl">
+          {obtenerIcono()}
+        </div>
+      </div>
+      <h3 className="
+        text-xl
+        font-bold
+        text-gray-800
+        mb-2
+        text-center
+      ">
+        {titulo}
+      </h3>
+      <p className="
+        text-gray-600
+        text-center
+        text-sm
+        leading-relaxed
+      ">
+        {contenido}
+      </p>
     </div>
-    <h3 className="
-      text-2xl
-      font-extrabold
-      text-gray-900
-      mb-3
-      text-center
-    ">
-      {titulo}
-    </h3>
-    <p className="
-      text-gray-700
-      text-center
-      text-base
-      leading-relaxed
-    ">
-      {contenido}
-    </p>
-  </div>
-  )
-}
+  );
+};
 
-export default Step
+export default Step;
