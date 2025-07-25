@@ -1,42 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaUserDoctor } from "react-icons/fa6";
-
 
 const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, enviarIds }) => {
     const [specialty, setSpecialty] = useState("");
-    const [searchQuery, setSearchQuery] = useState(""); // Cambiado de 'date' a 'searchQuery'
+    const [searchQuery, setSearchQuery] = useState("");
     const [filteredDoctors, setFilteredDoctors] = useState([]);
-    const [message, setMessage] = useState("");
+    const firstDoctorRef = useRef(null);
 
-    // Efecto para filtrar doctores cuando cambian la especialidad o la consulta de búsqueda
+    // Función auxiliar para normalizar cadenas (quitar acentos)
+    const normalizeString = (str) => {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    // Efecto para filtrar doctores y hacer scroll
     useEffect(() => {
         if (profesionales && profesionales.length > 0) {
             let currentFilteredDoctors = profesionales;
-
             if (specialty) {
                 currentFilteredDoctors = currentFilteredDoctors.filter(doc => doc.especialidad === specialty);
             }
-
-            // Nuevo filtro por nombre/apellido
             if (searchQuery) {
-                const lowerCaseQuery = searchQuery.toLowerCase();
+                const normalizedQuery = normalizeString(searchQuery);
                 currentFilteredDoctors = currentFilteredDoctors.filter(doc =>
-                    doc.nombre.toLowerCase().includes(lowerCaseQuery) ||
-                    doc.apellido.toLowerCase().includes(lowerCaseQuery)
+                    normalizeString(doc.nombre).includes(normalizedQuery) ||
+                    normalizeString(doc.apellido).includes(normalizedQuery)
                 );
             }
-            
             setFilteredDoctors(currentFilteredDoctors);
+            // *** Lógica para el scroll a la primera coincidencia ***
+            if (currentFilteredDoctors.length > 0 && firstDoctorRef.current) {
+                // Usamos setTimeout para asegurar que el DOM se haya actualizado después del renderizado
+                setTimeout(() => {
+                    firstDoctorRef.current.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
         } else if (!isLoading && !error) {
             setFilteredDoctors([]);
         }
-    }, [specialty, searchQuery, profesionales, isLoading, error]); // Dependencias actualizadas
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        setMessage("Búsqueda actualizada.");
-        setTimeout(() => setMessage(''), 2000);
-    };
+    }, [specialty, searchQuery, profesionales, isLoading, error]);
 
     if (!showModal) {
         return null;
@@ -44,37 +48,29 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative animate-scale-in">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 min-w-[] lg:max-w-6xl max-h-[90vh] overflow-y-auto relative animate-scale-in">
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold"
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold z-10"
                 >
                     &times;
                 </button>
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
-                    Encuentra a tu Especialista
-                </h2>
 
-                {/* Formulario de búsqueda dentro del modal */}
-                <form
-                    onSubmit={handleSearch}
-                    className="
-                        flex flex-col md:flex-row justify-center items-end gap-6 md:gap-8
-                        bg-gray-50 p-6 sm:p-8 rounded-2xl shadow-inner mb-12
-                        border border-gray-100
-                    "
-                >
-                    <div className="flex flex-col items-start w-full md:w-1/2">
-                        <label
-                            htmlFor="specialty"
-                            className="text-base font-semibold text-gray-700 mb-2"
-                        >
+                <div className="mb-8 text-center">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                        Encuentra a tu Especialista
+                    </h2>
+                </div>
+
+                <form className="bg-gray-50 p-4 md:p-6 rounded-2xl shadow-inner mb-8 border border-gray-100 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+                    <div className="flex flex-col">
+                        <label htmlFor="specialty" className="text-sm font-semibold text-gray-700 mb-1">
                             Especialidad
                         </label>
                         <select
                             id="specialty"
                             name="specialty"
-                            className="p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-3 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:border-gray-400"
+                            className="p-2 md:p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:border-gray-400"
                             value={specialty}
                             onChange={(e) => setSpecialty(e.target.value)}
                         >
@@ -88,105 +84,96 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
                                 ))}
                         </select>
                     </div>
-                    <div className="flex flex-col items-start w-full md:w-1/2">
-                        <label
-                            htmlFor="searchQuery" // Cambiado de 'date' a 'searchQuery'
-                            className="block text-base font-semibold text-gray-700 mb-2"
-                        >
+
+                    <div className="flex flex-col">
+                        <label htmlFor="searchQuery" className="block text-sm font-semibold text-gray-700 mb-1">
                             Nombre o Apellido
                         </label>
                         <input
-                            type="text" // Cambiado de 'date' a 'text'
-                            id="searchQuery" // Cambiado de 'date' a 'searchQuery'
-                            className="p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-3 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:border-gray-400"
-                            placeholder="Ej: Juan Pérez" // Nuevo placeholder
-                            value={searchQuery} // Cambiado de 'date' a 'searchQuery'
-                            onChange={(e) => setSearchQuery(e.target.value)} // Cambiado de 'setDate' a 'setSearchQuery'
+                            type="text"
+                            id="searchQuery"
+                            className="p-2 md:p-3 border border-gray-300 rounded-lg text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm hover:border-gray-400"
+                            placeholder="Ej: Juan Pérez"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button
+
+                    {/* <button
                         type="submit"
-                        className="
-                            w-full md:w-auto px-10 py-3
-                            bg-blue-600 text-white rounded-xl font-bold text-lg
-                            hover:bg-blue-700 transition-all duration-300 transform hover:scale-105
-                            shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300
-                        "
+                        className="px-4 py-2 md:px-6 md:py-3 bg-blue-600 text-white rounded-xl font-bold text-base md:text-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-300 whitespace-nowrap"
                     >
                         Aplicar Filtros
-                    </button>
+                    </button> */}
                 </form>
 
-                {/* Mensaje de estado de búsqueda dentro del modal */}
-                {message && (
-                    <div
-                        className={`p-4 mb-8 rounded-lg text-white text-center font-semibold transition-all duration-300 ease-in-out transform scale-100 opacity-100 ${
-                            message.includes("actualizada")
-                                ? "bg-blue-500 shadow-md animate-fade-in"
-                                : "bg-red-500 shadow-md animate-fade-in"
-                        }`}
-                    >
-                        {message}
-                    </div>
-                )}
+                <div className="mt-6">
+                    {isLoading && (
+                        <div className="flex justify-center items-center py-16">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                            <span className="ml-3 text-blue-600 text-xl">Cargando profesionales...</span>
+                        </div>
+                    )}
 
-                {/* Loading, Error, or No Doctors Found messages dentro del modal */}
-                {isLoading && (
-                    <p className="text-center text-blue-600 text-xl py-16 bg-white rounded-xl shadow-lg border border-blue-100 animate-pulse">
-                        Cargando profesionales...
-                    </p>
-                )}
+                    {error && (
+                        <p className="text-center text-red-600 text-xl py-16 bg-white rounded-xl shadow-lg border border-red-100">
+                            Error:{" "}
+                            {error.message ||
+                                "No se pudo cargar la información de los profesionales."}
+                        </p>
+                    )}
 
-                {error && (
-                    <p className="text-center text-red-600 text-xl py-16 bg-white rounded-xl shadow-lg border border-red-100">
-                        Error:{" "}
-                        {error.message ||
-                            "No se pudo cargar la información de los profesionales."}
-                    </p>
-                )}
-
-                {!isLoading && !error && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredDoctors?.length > 0 ? (
-                            filteredDoctors.map((doctor) => (
-                                <div
-                                    key={doctor.id}
-                                    className="
-                                        bg-white rounded-2xl shadow-xl py-4 px-6 border border-gray-100
-                                        transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300
-                                        group flex flex-col justify-between h-full cursor-pointer
-                                    "
-                                >
-                                    <div className="flex flex-col lg:flex-row items-center sm:items-start lg:items-center gap-4 text-center sm:text-left">
-                                        <FaUserDoctor className='text-5xl'/>
-                                        <div>
-                                            <h3 className="text-2xl lg:text-base font-bold text-gray-900 leading-tight">
-                                                Dr. {doctor.apellido}, {doctor.nombre}
-                                            </h3>
-                                            <p className="text-blue-600 font-semibold text-lg lg:text-sm mt-1">
-                                                {doctor.especialidad}
-                                            </p>
+                    {!isLoading && !error && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredDoctors?.length > 0 ? (
+                                filteredDoctors.map((doctor, index) => (
+                                    <div
+                                        key={doctor.id}
+                                        ref={index === 0 ? firstDoctorRef : null}
+                                        className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-blue-300 flex flex-col h-full"
+                                    >
+                                        <div className="flex items-start space-x-4 mb-4">
+                                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                <FaUserDoctor className='text-2xl text-white' />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-900">
+                                                    {doctor.apellido}, {doctor.nombre}
+                                                </h3>
+                                                <p className="text-blue-600 font-semibold text-sm mt-1">
+                                                    {doctor.especialidad}
+                                                </p>
+                                                <p className="text-gray-500 text-xs mt-1">
+                                                    Mat: {doctor.matricula}
+                                                </p>
+                                            </div>
                                         </div>
+                                        <button
+                                            onClick={() => enviarIds(doctor.id)}
+                                            className="mt-auto w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm rounded-lg shadow hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 flex items-center justify-center"
+                                        >
+                                            Ver turnos
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                            >
+                                                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
                                     </div>
-
-                                    {/* <p className="text-gray-700 mb-6 text-base leading-relaxed flex-grow">
-                                        {doctor.bio}
-                                    </p> */}
-                                    {/* <ConsultorioInfo
-                                        professionalId={doctor.id}
-                                        enviarIds = {enviarIds}
-                                    /> */}
-                                    <button onClick={()=> enviarIds(doctor.id)}>Ver turnos</button>
+                                ))
+                            ) : (
+                                <div className="col-span-full py-16 text-center">
+                                    <p className="text-gray-600 text-lg">
+                                        No se encontraron médicos con los criterios de búsqueda. Por favor, intenta con otra especialidad o nombre.
+                                    </p>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="text-center text-gray-600 text-xl col-span-full py-16 bg-white rounded-xl shadow-lg border border-gray-100">
-                                No se encontraron médicos con los criterios de búsqueda. Por
-                                favor, intenta con otra especialidad o nombre.
-                            </p>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

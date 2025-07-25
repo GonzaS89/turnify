@@ -129,8 +129,8 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
                                 <p><span className="font-semibold text-gray-700">DNI:</span> {formData?.dni || 'N/A'}</p>
                                 <p><span className="font-semibold text-gray-700">Teléfono:</span> {formData?.telefono || 'N/A'}</p>
                                 <p className="col-span-full">
-                                    <span className="font-semibold text-gray-700">Cobertura Médica:</span>
-                                    {coberturaElegida? ` ${coberturaElegida.siglas} (${coberturaElegida.nombre})` : ' No seleccionada'}
+                                    <span className="font-semibold text-gray-700">Cobertura Médica:</span>{" "}
+                                    {coberturaElegida? ` ${coberturaElegida.siglas} (${coberturaElegida.nombre})` : 'Particular'}
                                 </p>
                             </div>
                         </div>
