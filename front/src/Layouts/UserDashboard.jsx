@@ -1,5 +1,5 @@
 // src/components/MiCuenta.jsx (UserDashboard.jsx)
-import React, { useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { FaSignOutAlt } from 'react-icons/fa';
 import useConsultorioById from '../../customHooks/useConsultorioxId';
@@ -11,22 +11,39 @@ const UserDashboard = ({ onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // ✅ Mejor manejo de datos del consultorio desde localStorage
   const storedConsultorio = JSON.parse(localStorage.getItem('consultorio') || 'null');
   const consultorioId = location.state?.consultorio?.id || storedConsultorio?.id;
 
+  // ⚠️ NOTA: Estás usando hardcoded ID (2) - debería ser consultorioId
   const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
   const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
 
-  // Guardar en localStorage si se cargó correctamente
+  // ✅ Guardar en localStorage si se cargó correctamente
   useEffect(() => {
-    if (consultorio && !localStorage.getItem('consultorio')) {
-      localStorage.setItem('consultorio', JSON.stringify(consultorio));
+    if (consultorio) {
+      try {
+        localStorage.setItem('consultorio', JSON.stringify(consultorio));
+      } catch (error) {
+        console.error('Error al guardar en localStorage:', error);
+      }
     }
   }, [consultorio]);
 
+  // ✅ Manejo mejorado del logout
   const handleLogout = () => {
-    localStorage.removeItem('consultorio');
-    navigate('/')
+    try {
+      localStorage.removeItem('consultorio');
+      // Llamar a la función onLogout si existe
+      if (onLogout && typeof onLogout === 'function') {
+        onLogout();
+      }
+    } catch (error) {
+      console.error('Error al eliminar de localStorage:', error);
+    } finally {
+      // Siempre navegar al inicio
+      navigate('/');
+    }
   };
 
   // ✅ PRIMERO verificamos loading - Mostrar pantalla de carga primero
@@ -43,6 +60,11 @@ const UserDashboard = ({ onLogout }) => {
 
   // ✅ SEGUNDO verificamos error - Solo si ya terminó de cargar
   if (error) {
+    // Limpiar localStorage en caso de error crítico
+    if (error.message.includes('No autorizado') || error.message.includes('401')) {
+      localStorage.removeItem('consultorio');
+    }
+    
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
@@ -61,7 +83,7 @@ const UserDashboard = ({ onLogout }) => {
   }
 
   // ✅ TERCERO verificamos si hay datos - Solo si ya terminó de cargar y no hay error
-  if (!consultorio) {
+  if (!consultorio && !storedConsultorio) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
@@ -80,7 +102,8 @@ const UserDashboard = ({ onLogout }) => {
   }
 
   // ✅ Si todo está bien, mostramos el dashboard
-  const consultorioName = consultorio?.nombre || 'tu consultorio';
+  const consultorioToUse = consultorio || storedConsultorio;
+  const consultorioName = consultorioToUse?.nombre || 'tu consultorio';
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
@@ -99,10 +122,10 @@ const UserDashboard = ({ onLogout }) => {
           </button>
         </header>
 
-        {consultorio?.tipo === 'propio' ? (
-          <PanelConsultorioPropio consultorioData={consultorio} onLogout={onLogout} />
+        {consultorioToUse?.tipo === 'propio' ? (
+          <PanelConsultorioPropio consultorioData={consultorioToUse} onLogout={handleLogout} />
         ) : (
-          <PanelCentroMedico consultorioData={consultorio} />
+          <PanelCentroMedico consultorioData={consultorioToUse} />
         )}
       </div>
     </div>

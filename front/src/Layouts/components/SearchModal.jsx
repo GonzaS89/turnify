@@ -48,7 +48,7 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 min-w-full lg:max-w-6xl max-h-[90vh] overflow-y-auto relative animate-scale-in">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 min-w-[] lg:max-w-6xl max-h-[90vh] overflow-y-auto relative animate-scale-in">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold z-10"

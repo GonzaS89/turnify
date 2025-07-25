@@ -1,5 +1,10 @@
 
+import { useEffect, useState } from 'react';
 import { FaCalendarCheck, FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus} from 'react-icons/fa';
+import GestionProfesionales from './components/GestionProfesionales';
+import TurnList from './TurnList';
+import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
+import CountUp from 'react-countup'
 
 const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe consultorioData
   // Get current date for display
@@ -9,6 +14,20 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
     month: 'long',
     day: 'numeric'
   });
+
+  const consultorioID = consultorio?.id;
+
+  const { profesional:profesionales, isLoading, error} = useProfesionalxIdConsultorio(consultorioID);
+
+  const numProfesionales = profesionales?.length
+ 
+  const [showGestionMedicos, setShowGestionMedicos] = useState(false);
+  const [showModalTurnos, setShowModalTurnos] = useState(false);
+  const [profesionalID, setProfesionalID] = useState(null);
+
+  const recibirProfesionalID = value => {
+    setProfesionalID(value)
+  }
 
   // if (!consultorio) {
   //   return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
@@ -29,20 +48,16 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
       {/* Quick Access / Key Metrics Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {/* Today's Appointments */}
-        <div className="bg-blue-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
-          <FaCalendarCheck className="text-blue-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Turnos de Hoy</h3>
-          <p className="text-gray-600 text-sm">Ver la agenda del día.</p>
-          <span className="text-blue-700 font-bold text-2xl mt-2">12</span> {/* Placeholder */}
-          <p className="text-xs text-gray-500">turnos pendientes</p>
-        </div>
+      
 
         {/* Manage Doctors */}
-        <div className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+        <div 
+        className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+        onClick={()=> setShowGestionMedicos(true)}>
           <FaUserMd className="text-purple-600 text-3xl" />
           <h3 className="font-semibold text-gray-800 text-lg">Gestionar Médicos</h3>
           <p className="text-gray-600 text-sm">Administra tu equipo médico.</p>
-          <span className="text-purple-700 font-bold text-2xl mt-2">5</span> {/* Placeholder */}
+          <span className="text-purple-700 font-bold text-2xl mt-2"><CountUp start={0} end={numProfesionales} duration={1}/></span> {/* Placeholder */}
           <p className="text-xs text-gray-500">médicos activos</p>
         </div>
 
@@ -123,6 +138,14 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
           </button>
         </div>
       </div>
+      {showGestionMedicos && (
+        <GestionProfesionales openModalTurnos={()=> setShowModalTurnos(true)} closeModalGestion={() => setShowGestionMedicos(false)} consultorio = {consultorio} enviarProfesionalID={recibirProfesionalID} />
+      )}
+
+      {showModalTurnos && (
+        <TurnList consultorioId={consultorioID} profesionalId={profesionalID} onClose={()=> setShowModalTurnos(false)} />
+      )}
+
     </div>
   );
 };
