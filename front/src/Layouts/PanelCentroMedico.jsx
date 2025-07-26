@@ -1,7 +1,8 @@
 
-import { useEffect, useState } from 'react';
-import { FaCalendarCheck, FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus} from 'react-icons/fa';
+import { useState } from 'react';
+import { FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus} from 'react-icons/fa';
 import GestionProfesionales from './components/GestionProfesionales';
+import GenerarTurnosModal from './components/GenerarTurnosModal';
 import TurnList from './TurnList';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import CountUp from 'react-countup'
@@ -24,10 +25,20 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
   const [showGestionMedicos, setShowGestionMedicos] = useState(false);
   const [showModalTurnos, setShowModalTurnos] = useState(false);
   const [profesionalID, setProfesionalID] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const recibirProfesionalID = value => {
     setProfesionalID(value)
   }
+
+  const actualizarTurnos = () => {
+    setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
+  }
+
+  setTimeout(() => {
+    setRefreshTrigger(0)
+  }, 2000);
 
   // if (!consultorio) {
   //   return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
@@ -138,12 +149,36 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
           </button>
         </div>
       </div>
+
+      {/* Modal para Habilitar Turnos */}
+        {showModal && (
+          <GenerarTurnosModal 
+          medico={profesionalID} 
+          consultorio={consultorioID} 
+          closeModalHabilitarTurnos = {() => setShowModal(false)}
+          actualizarTurnos = {actualizarTurnos}
+          />
+        )}
+
       {showGestionMedicos && (
-        <GestionProfesionales openModalTurnos={()=> setShowModalTurnos(true)} closeModalGestion={() => setShowGestionMedicos(false)} consultorio = {consultorio} enviarProfesionalID={recibirProfesionalID} />
+        <GestionProfesionales 
+        openModalTurnos={()=> setShowModalTurnos(true)} 
+        closeModalGestion={() => setShowGestionMedicos(false)} 
+        consultorio = {consultorio} 
+        enviarProfesionalID={recibirProfesionalID} />
       )}
 
       {showModalTurnos && (
-        <TurnList consultorioId={consultorioID} profesionalId={profesionalID} onClose={()=> setShowModalTurnos(false)} />
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+            <TurnList
+              profesionalId={profesionalID}
+              consultorioId={consultorioID}
+              onClose={() => setShowModalTurnos(false)}
+              openModalHabilitarTurnos={() => setShowModal(true)}
+              refreshTrigger={refreshTrigger}
+              tipoConsultorio={consultorio.tipo}
+            />
+          </div>
       )}
 
     </div>

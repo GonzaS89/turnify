@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-const GenerarTurnosModal = ( {closeModalHabilitarTurnos, medico, consultorio} ) => {
+const GenerarTurnosModal = ( {closeModalHabilitarTurnos, medico, consultorio, actualizarTurnos} ) => {
 
     const [selectedDate, setSelectedDate] = useState('');
     const [numberOfTurns, setNumberOfTurns] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    console.log(medico)
+    console.log(medico, consultorio)
 
     // --- Funciones para el Modal de Habilitar Turnos ---
     const handleDateChange = (e) => {
@@ -49,7 +49,8 @@ const GenerarTurnosModal = ( {closeModalHabilitarTurnos, medico, consultorio} ) 
             }
             const result = await response.json();
             alert(result.message || `Se han habilitado ${numberOfTurns} turnos para el ${selectedDate}.`);
-            closeModalHabilitarTurnos;
+            closeModalHabilitarTurnos();
+            actualizarTurnos();
             setSelectedDate('');
             setNumberOfTurns('');
         } catch (apiError) {
@@ -61,14 +62,14 @@ const GenerarTurnosModal = ( {closeModalHabilitarTurnos, medico, consultorio} ) 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-2xl font-bold text-gray-800">Habilitar Turnos</h3>
                         <button
                             onClick={() => {
-                                closeModalHabilitarTurnos;
+                                closeModalHabilitarTurnos();
                                 setSelectedDate('');
                                 setNumberOfTurns('');
                             }}
@@ -116,7 +117,7 @@ const GenerarTurnosModal = ( {closeModalHabilitarTurnos, medico, consultorio} ) 
                     <div className="flex justify-end gap-3">
                         <button
                             onClick={() => {
-                                setShowModal(false);
+                                closeModalHabilitarTurnos();
                                 setSelectedDate('');
                                 setNumberOfTurns('');
                             }}

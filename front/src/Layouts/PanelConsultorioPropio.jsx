@@ -8,23 +8,35 @@ import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import GestionCoberturas from './components/GestionCoberturas';
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio, loading }) => {
+const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);
+  const consultorioID = consultorio?.id;
+  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
 
   const [showTurnosList, setShowTurnosList] = useState(false);
-  
-  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorio.id);
   const medico = profesional ? profesional[0] : null;
+
+  const medicoID = medico?.id;
+  
+  
   
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
-    medico?.id,
-    consultorio?.id
+    medicoID, consultorioID
   );
 
-  const consultorioID = consultorio?.id;
-  const medicoID = medico?.id;
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const actualizarTurnos = () => {
+    setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
+  }
+
+  setTimeout(() => {
+    setRefreshTrigger(0)
+  }, 1000);
+
+  
 
 
   // Calcula turnos reservados para hoy usando useMemo para optimización
@@ -73,9 +85,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, loading }) => {
       </div>
     );
   }
-
-  
- 
 
   // --- Función para abrir el modal de ajustes generales del consultorio ---
   const handleConsultorioSettings = () => {
@@ -234,13 +243,20 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, loading }) => {
               profesionalId={medico?.id}
               consultorioId={consultorio?.id}
               onClose={() => setShowTurnosList(false)}
+              openModalHabilitarTurnos={() => setShowModal(true)}
+               refreshTrigger={refreshTrigger}
             />
           </div>
         )}
 
         {/* Modal para Habilitar Turnos */}
         {showModal && (
-          <GenerarTurnosModal medico={medicoID} consultorio={consultorioID} closeModalHabilitarTurnos = {() => setShowModal(false)}/>
+          <GenerarTurnosModal 
+          medico={medicoID} 
+          consultorio={consultorioID} 
+          closeModalHabilitarTurnos = {() => setShowModal(false)}
+          actualizarTurnos={actualizarTurnos}
+          />
         )}
 
         {/* Modal para Ajustes Generales del Consultorio */}

@@ -1,12 +1,16 @@
 // src/components/TurnList.jsx
 import { useState, useEffect, useRef } from 'react';
 import { FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus } from 'react-icons/fa';
+import { TbRefresh } from "react-icons/tb";
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import useAllCoberturas from '../../customHooks/useAllCoberturas';
+import useProfesionalxId from '../../customHooks/useProfesionalxId';
 
-const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTurnos }) => { // Añadido onAgregarTurno
-  const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId);
+const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTurnos, refreshTrigger, tipoConsultorio }) => { // Añadido onAgregarTurno
+  const [actualizarTurnos, setActualizarTurnos] = useState(refreshTrigger);
+  const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, actualizarTurnos);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
+  const { profesional, isLoading:isLoadingProfesionales, error: errorProfesionales} = useProfesionalxId(profesionalId)
   
   const coberturaElegida = (value) => {
     if (value === 'particular') {
@@ -18,6 +22,10 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
     }
     return 'Cargando...';
   };
+
+  const medico = profesional[0];
+
+  const nombreMedico = `${medico?.nombre} ${medico?.apellido}`
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const datesListRef = useRef(null);
@@ -67,6 +75,17 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
   const handleAgregarTurnoClick = () => {
     openModalHabilitarTurnos()
   };
+
+  const handleActualizarTurnos = () => {{
+    setActualizarTurnos(1)
+
+    setTimeout(() => {
+      setActualizarTurnos(0)
+    }, 100);
+  }} 
+
+  
+
 
   // Estados de carga y error
   if (isLoading || isLoadingCoberturas) {
@@ -149,13 +168,22 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
   const turnosDeLaFechaSeleccionada = turnosAgrupados[fechaSeleccionada] || [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[60]">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col">
         {/* Header del Modal */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h3 className="text-2xl font-bold text-gray-800">Tu Agenda de Turnos</h3>
+          <h3 className="text-2xl font-bold text-gray-800">{tipoConsultorio === 'propio' ? 'Tu Agenda de Turnos' : `Agenda de turnos de Doc. ${nombreMedico}`}</h3>
           <div className="flex items-center space-x-2">
+            
             {/* Botón Agregar Turno en el header */}
+            <button
+              onClick={handleActualizarTurnos}
+              className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-sm"
+            >
+              <TbRefresh className="mr-2" />
+              <span className="hidden sm:inline">Buscar actualizaciones</span>
+              <span className="sm:hidden">Actualizar</span>
+            </button>
             <button
               onClick={handleAgregarTurnoClick}
               className="flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-sm"
@@ -164,6 +192,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
               <span className="hidden sm:inline">Habilitar Turnos</span>
               <span className="sm:hidden">Agregar</span>
             </button>
+            
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-full hover:bg-gray-100"
@@ -174,7 +203,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
         </div>
 
         {/* Contenido Principal */}
-        <div className="flex flex-col lg:flex-row flex-grow overflow-hidden">
+        <div className="flex flex-col lg:flex-row flex-grow overflow-hidden z-50">
           {/* Lista de Fechas - Sidebar */}
           <div className="w-full lg:w-1/3 border-r border-gray-200 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-gray-200">
