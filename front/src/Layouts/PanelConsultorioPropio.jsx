@@ -7,6 +7,7 @@ import TurnList from './TurnList';
 import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import GestionCoberturas from './components/GestionCoberturas';
+import Coberturas from './cards/Coberturas';
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const [showModal, setShowModal] = useState(false);
@@ -30,11 +31,12 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   const actualizarTurnos = () => {
     setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
+    setTimeout(() => {
+      setRefreshTrigger(0)
+    }, 2000);
   }
 
-  setTimeout(() => {
-    setRefreshTrigger(0)
-  }, 1000);
+  
 
   
 
@@ -217,23 +219,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           </div>
 
           {/* Card: Gestión de Coberturas */}
-          <div 
-            className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg p-6 border border-purple-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
-            onClick={handleOpenCoberturasModal}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-gray-800 text-xl mb-2">Coberturas</h3>
-                <p className="text-gray-600 text-sm mb-4">Gestiona obras sociales</p>
-              </div>
-              <FaShieldAlt className="text-purple-500 text-2xl" />
-            </div>
-            <div className="mt-4">
-              <span className="inline-block bg-purple-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-                Administrar
-              </span>
-            </div>
-          </div>
+          <Coberturas ejecutarCard={handleOpenCoberturasModal} />
         </div>
 
         {/* Renderizado condicional para TurnList */}
@@ -244,7 +230,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
               consultorioId={consultorio?.id}
               onClose={() => setShowTurnosList(false)}
               openModalHabilitarTurnos={() => setShowModal(true)}
-               refreshTrigger={refreshTrigger}
+              refreshTrigger={refreshTrigger}
             />
           </div>
         )}
