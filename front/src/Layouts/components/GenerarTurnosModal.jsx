@@ -3,19 +3,26 @@ import { useState } from "react";
 const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, actualizarTurnos }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [numberOfTurns, setNumberOfTurns] = useState('');
+  const [startTime, setStartTime] = useState(''); // Hora de inicio (ej: 08:30)
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false); // ← Nuevo estado
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  console.log(medico, consultorio);
+  // Duración del turno en minutos (puedes hacerla configurable después)
+  const duracionTurno = 30;
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
     setNumberOfTurns('');
+    setStartTime(''); // Resetear si cambia la fecha
   };
 
   const handleNumberOfTurnsChange = (e) => {
     const value = Math.max(0, parseInt(e.target.value) || 0);
     setNumberOfTurns(value.toString());
+  };
+
+  const handleStartTimeChange = (e) => {
+    setStartTime(e.target.value);
   };
 
   const handleEnableTurns = async () => {
@@ -27,44 +34,58 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
       alert("Por favor, ingresa un número válido de turnos.");
       return;
     }
+    if (!startTime) {
+      alert("Por favor, selecciona una hora de inicio.");
+      return;
+    }
+
     setIsSubmitting(true);
 
+    console.log(startTime, 'startTime', duracionTurno); // Verificar el formato de la hora
+
     try {
-        const response = await fetch('http://localhost:3006/api/habilitarturnos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            consultorioId: consultorio,
-            profesionalId: medico,
-            fecha: selectedDate,
-            cantidadTurnos: parseInt(numberOfTurns),
-          }),
-        });
-      
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al habilitar turnos');
-        }
-      
-        setShowSuccessToast(true);
-      
-        // Cerrar modal y limpiar después de 2 segundos
-        setTimeout(() => {
-          closeModalHabilitarTurnos();
-          actualizarTurnos();
-          setSelectedDate('');
-          setNumberOfTurns('');
-          setShowSuccessToast(false);
-        }, 2000);
-      
-      } catch (apiError) {
-        console.error('Error al habilitar turnos:', apiError);
-        alert(`Error: ${apiError.message}`);
-        setIsSubmitting(false);
+      const response = await fetch('http://localhost:3006/api/habilitarturnos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consultorioId: consultorio,
+          profesionalId: medico,
+          fecha: selectedDate,
+          cantidadTurnos: parseInt(numberOfTurns),
+          horaInicio: startTime,        // Ej: "08:30"
+          duracionTurno: duracionTurno, // En minutos
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al habilitar turnos');
       }
+
+      const result = await response.json();
+
+      // Mostrar toast de éxito
+      setShowSuccessToast(true);
+
+      // Cerrar modal y limpiar después de 2 segundos
+      setTimeout(() => {
+        closeModalHabilitarTurnos();
+        actualizarTurnos();
+        setSelectedDate('');
+        setNumberOfTurns('');
+        setStartTime('');
+        setShowSuccessToast(false);
+      }, 2000);
+    } catch (apiError) {
+      console.error('Error al habilitar turnos:', apiError);
+      alert(`Error: ${apiError.message}`);
+      setIsSubmitting(false);
+    }
   };
 
-  // --- Formatear la fecha seleccionada (en español, con día de la semana) ---
+  // Formatear la fecha seleccionada
   const formattedDate = selectedDate
     ? (() => {
         const [year, month, day] = selectedDate.split('-');
@@ -93,6 +114,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
                   closeModalHabilitarTurnos();
                   setSelectedDate('');
                   setNumberOfTurns('');
+                  setStartTime('');
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -102,11 +124,11 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
               </button>
             </div>
 
-            <p className="text-gray-600 mb-6">Selecciona la fecha y la cantidad de turnos a habilitar.</p>
+            <p className="text-gray-600 mb-6">Selecciona la fecha, hora de inicio y cantidad de turnos.</p>
 
             <div className="mb-6">
               <label htmlFor="turn-date" className="block text-gray-700 font-semibold mb-2">
-                Selecciona una fecha:
+                Fecha:
               </label>
               <input
                 type="date"
@@ -119,20 +141,36 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
             </div>
 
             {selectedDate && (
-              <div className="mb-6">
-                <label htmlFor="num-turns" className="block text-gray-700 font-semibold mb-2">
-                  ¿Cuántos turnos quieres habilitar?
-                </label>
-                <input
-                  type="number"
-                  id="num-turns"
-                  value={numberOfTurns}
-                  onChange={handleNumberOfTurnsChange}
-                  min="1"
-                  placeholder="Ej: 10"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
+              <>
+                <div className="mb-6">
+                  <label htmlFor="turn-time" className="block text-gray-700 font-semibold mb-2">
+                    Hora de inicio:
+                  </label>
+                  <input
+                    type="time"
+                    id="turn-time"
+                    value={startTime}
+                    onChange={handleStartTimeChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="text-gray-500 text-sm mt-1">Turnos de {duracionTurno} minutos</p>
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="num-turns" className="block text-gray-700 font-semibold mb-2">
+                    Cantidad de turnos:
+                  </label>
+                  <input
+                    type="number"
+                    id="num-turns"
+                    value={numberOfTurns}
+                    onChange={handleNumberOfTurnsChange}
+                    min="1"
+                    placeholder="Ej: 10"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+              </>
             )}
 
             <div className="flex justify-end gap-3">
@@ -141,6 +179,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
                   closeModalHabilitarTurnos();
                   setSelectedDate('');
                   setNumberOfTurns('');
+                  setStartTime('');
                 }}
                 className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
                 disabled={isSubmitting}
@@ -173,12 +212,9 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
 
       {/* Toast de éxito */}
       {showSuccessToast && (
-        <div
-          className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[200] transition-opacity duration-300 ease-in-out"
-          style={{ opacity: showSuccessToast ? 1 : 0 }}
-        >
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[200]">
           Se agregaron {numberOfTurns} turnos para el{' '}
-          <strong>{formattedDate}</strong>
+          <strong>{formattedDate}</strong> a partir de las <strong>{startTime}</strong>
         </div>
       )}
     </>
