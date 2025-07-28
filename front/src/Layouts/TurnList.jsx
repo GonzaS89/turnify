@@ -12,6 +12,8 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
 
+  consol
+
   const coberturaElegida = (value) => {
     if (value === 'particular') return 'Particular';
     if (!isLoadingCoberturas && !errorCoberturas && coberturas) {
