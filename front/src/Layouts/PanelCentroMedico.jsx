@@ -1,187 +1,174 @@
-
 import { useState } from 'react';
-import { FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus} from 'react-icons/fa';
+import { FaUserMd, FaClinicMedical, FaUsers, FaPlusSquare, FaCalendarPlus } from 'react-icons/fa';
 import GestionProfesionales from './components/GestionProfesionales';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import TurnList from './TurnList';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
-import CountUp from 'react-countup'
+import GestionCoberturas from './components/GestionCoberturas';
+import CountUp from 'react-countup';
+import { FaShieldAlt } from 'react-icons/fa';
+import Coberturas from './cards/Coberturas';
 
-const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe consultorioData
-  // Get current date for display
+const PanelCentroMedico = ({ consultorioData: consultorio }) => {
+  // Fecha actual formateada
   const currentDate = new Date().toLocaleDateString('es-AR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 
   const consultorioID = consultorio?.id;
+  const { profesional: profesionales, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
+  const numProfesionales = profesionales?.length || 0;
 
-  const { profesional:profesionales, isLoading, error} = useProfesionalxIdConsultorio(consultorioID);
-
-  const numProfesionales = profesionales?.length
- 
   const [showGestionMedicos, setShowGestionMedicos] = useState(false);
   const [showModalTurnos, setShowModalTurnos] = useState(false);
+  const [showCoberturasModal, setShowCoberturasModal] = useState(false);
   const [profesionalID, setProfesionalID] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const recibirProfesionalID = value => {
-    setProfesionalID(value)
-  }
+  const recibirProfesionalID = (value) => {
+    setProfesionalID(value);
+  };
 
   const actualizarTurnos = () => {
-    setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
-     setTimeout(() => {
-    setRefreshTrigger(0)
-  }, 100);
+    setRefreshTrigger((prev) => prev + 1);
+    setTimeout(() => setRefreshTrigger(0), 100);
+  };
 
-  }
-
- 
-  // if (!consultorio) {
-  //   return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
-  // }
+  const handleOpenCoberturasModal = () => {
+    setShowCoberturasModal(true);
+  };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-blue-100">
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2 leading-tight">
-        ¡Bienvenido, {consultorio?.nombre || "Centro Médico"}! {/* Usa consultorioData.nombre */}
-      </h1>
-      <p className="text-gray-600 mb-2 text-lg sm:text-xl">
-        Panel de Gestión del Centro Médico
-      </p>
-      <p className="text-gray-500 mb-8 text-base sm:text-lg">
-        Hoy es: <span className="font-semibold capitalize">{currentDate}</span>
-      </p>
-
-      {/* Quick Access / Key Metrics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {/* Today's Appointments */}
-      
-
-        {/* Manage Doctors */}
-        <div 
-        className="bg-purple-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-        onClick={()=> setShowGestionMedicos(true)}>
-          <FaUserMd className="text-purple-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Gestionar Médicos</h3>
-          <p className="text-gray-600 text-sm">Administra tu equipo médico.</p>
-          <span className="text-purple-700 font-bold text-2xl mt-2"><CountUp start={0} end={numProfesionales} duration={1}/></span> {/* Placeholder */}
-          <p className="text-xs text-gray-500">médicos activos</p>
-        </div>
-
-        {/* Patient Management */}
-        <div className="bg-teal-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
-          <FaUsers className="text-teal-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Base de Pacientes</h3>
-          <p className="text-gray-600 text-sm">Accede a los datos de tus pacientes.</p>
-          <span className="text-teal-700 font-bold text-2xl mt-2">345</span> {/* Placeholder */}
-          <p className="text-xs text-gray-500">pacientes registrados</p>
-        </div>
-
-        {/* Add Appointment Button */}
-        <div className="bg-green-50 p-5 rounded-xl shadow-md flex flex-col items-start space-y-2 hover:shadow-lg transition-shadow duration-200 cursor-pointer">
-          <FaCalendarPlus className="text-green-600 text-3xl" />
-          <h3 className="font-semibold text-gray-800 text-lg">Agregar Turno</h3>
-          <p className="text-gray-600 text-sm">Registra un nuevo turno.</p>
-          <span className="text-green-700 font-bold text-2xl mt-2">+</span>
-          <p className="text-xs text-gray-500">crear nuevo</p>
-        </div>
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow-lg border border-blue-100 p-5 sm:p-8 max-w-7xl mx-auto">
+      {/* Encabezado */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-2">
+          ¡Bienvenido, {consultorio?.nombre || "Centro Médico"}!
+        </h1>
+        <p className="text-gray-600 text-lg">Panel de Gestión del Centro Médico</p>
+        <p className="text-gray-500 text-sm mt-1">
+          Hoy es: <span className="font-semibold text-blue-700 capitalize">{currentDate}</span>
+        </p>
       </div>
 
-      {/* Upcoming Appointments (or Daily Schedule) */}
-      <div className="mb-10">
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
-          Turnos Pendientes
-        </h2>
-        <div className="bg-gray-100 p-5 rounded-lg border border-gray-200">
-          {false ? (
-            <p className="text-gray-700 text-center py-4">No hay turnos programados para hoy.</p>
-          ) : (
-            <ul className="space-y-3">
-              <li className="p-3 bg-white rounded-md shadow-sm border border-blue-100 flex justify-between items-center">
-                <div>
-                  <p className="font-semibold text-blue-700">Paciente: Juan Pérez</p>
-                  <p className="text-sm text-gray-600">Dr. García - 10:00 AM</p>
-                </div>
-                <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm hover:bg-blue-200 transition-colors">Ver Detalles</button>
-              </li>
-              <li className="p-3 bg-white rounded-md shadow-sm border border-blue-100 flex justify-between items-center">
-                <div>
-                  <p className="font-semibold text-blue-700">Paciente: María López</p>
-                  <p className="text-sm text-gray-600">Dra. Fernández - 11:30 AM</p>
-                </div>
-                <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm hover:bg-blue-200 transition-colors">Ver Detalles</button>
-              </li>
-            </ul>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3 mt-5">
-            <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors">
-              Ver Agenda Completa
-            </button>
-            <button className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition-colors flex items-center justify-center space-x-2">
-              <FaCalendarPlus className="text-xl" />
-              <span>Agregar Turno</span>
-            </button>
+      {/* Sección de KPIs / Acceso Rápido */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        {/* Gestionar Médicos */}
+        <div
+          onClick={() => setShowGestionMedicos(true)}
+          className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg text-white">
+              <FaUserMd className="w-6 h-6" />
+            </div>
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">Gestionar Médicos</h3>
+          <p className="text-gray-600 text-sm mb-3">Administra tu equipo médico.</p>
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-purple-600">
+              <CountUp end={numProfesionales} duration={1.5} />
+            </span>
+            <span className="text-xs text-gray-500">activos</span>
+          </div>
+        </div>
+
+        {/* Base de Pacientes */}
+        <div className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100 opacity-80">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg text-white">
+              <FaUsers className="w-6 h-6" />
+            </div>
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">Base de Pacientes</h3>
+          <p className="text-gray-600 text-sm mb-3">Accede a los datos de tus pacientes.</p>
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-teal-600">345</span>
+            <span className="text-xs text-gray-500">registrados</span>
+          </div>
+        </div>
+
+        {/* Agregar Turno */}
+        <div
+          onClick={() => setShowModalTurnos(true)}
+          className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg text-white">
+              <FaCalendarPlus className="w-6 h-6" />
+            </div>
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">Agregar Turno</h3>
+          <p className="text-gray-600 text-sm mb-3">Registra un nuevo turno manualmente.</p>
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-green-600">+</span>
+            <span className="text-xs text-gray-500">nuevo turno</span>
+          </div>
+        </div>
+
+        {/* Coberturas Médicas */}
+        <div
+          onClick={handleOpenCoberturasModal}
+          className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white">
+              <FaShieldAlt className="w-6 h-6" />
+            </div>
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">Coberturas Médicas</h3>
+          <p className="text-gray-600 text-sm mb-3">Gestiona obras sociales y prepagas.</p>
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold text-blue-600">📋</span>
+            <span className="text-xs text-gray-500">configurar</span>
           </div>
         </div>
       </div>
 
-      {/* Clinic Settings / Account Management */}
-      <div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
-          Configuración del Consultorio
-        </h2>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-            <FaClinicMedical className="text-xl" />
-            <span>Datos del Consultorio</span>
-          </button>
-          <button className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-            <FaUserMd className="text-xl" />
-            <span>Administrar Personal</span>
-          </button>
-          <button className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center space-x-2">
-            <FaPlusSquare className="text-xl" />
-            <span>Agregar Especialidad</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Modal para Habilitar Turnos */}
-        {showModal && (
-          <GenerarTurnosModal 
-          medico={profesionalID} 
-          consultorio={consultorioID} 
-          closeModalHabilitarTurnos = {() => setShowModal(false)}
-          actualizarTurnos = {actualizarTurnos}
+      {/* Listado de Turnos */}
+      {showModalTurnos && (
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-100">
+          <TurnList
+            profesionalId={profesionalID}
+            consultorioId={consultorioID}
+            onClose={() => setShowModalTurnos(false)}
+            openModalHabilitarTurnos={() => setShowModal(true)}
+            refreshTrigger={refreshTrigger}
+            tipoConsultorio={consultorio.tipo}
+            handleActualizarTurnos={actualizarTurnos}
           />
-        )}
+        </div>
+      )}
+
+      {/* Modales (mantenidos fuera del flujo principal) */}
+      {showModal && (
+        <GenerarTurnosModal
+          medico={profesionalID}
+          consultorio={consultorioID}
+          closeModalHabilitarTurnos={() => setShowModal(false)}
+          actualizarTurnos={actualizarTurnos}
+        />
+      )}
 
       {showGestionMedicos && (
-        <GestionProfesionales 
-        openModalTurnos={()=> setShowModalTurnos(true)} 
-        closeModalGestion={() => setShowGestionMedicos(false)} 
-        consultorio = {consultorio} 
-        enviarProfesionalID={recibirProfesionalID} />
+        <GestionProfesionales
+          openModalTurnos={() => setShowModalTurnos(true)}
+          closeModalGestion={() => setShowGestionMedicos(false)}
+          consultorio={consultorio}
+          enviarProfesionalID={recibirProfesionalID}
+        />
       )}
 
-      {showModalTurnos && (
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-            <TurnList
-              profesionalId={profesionalID}
-              consultorioId={consultorioID}
-              onClose={() => setShowModalTurnos(false)}
-              openModalHabilitarTurnos={() => setShowModal(true)}
-              refreshTrigger={refreshTrigger}
-              tipoConsultorio={consultorio.tipo}
-            />
-          </div>
-      )}
-
+      {/* Modal de Coberturas */}
+      <GestionCoberturas
+        isOpen={showCoberturasModal}
+        onClose={() => setShowCoberturasModal(false)}
+        consultorioId={consultorio?.id}
+      />
     </div>
   );
 };

@@ -7,57 +7,54 @@ import TurnList from './TurnList';
 import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import GestionCoberturas from './components/GestionCoberturas';
+import Coberturas from './cards/Coberturas';
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);
+  const [showTurnosList, setShowTurnosList] = useState(false);
+
   const consultorioID = consultorio?.id;
   const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
 
-  const [showTurnosList, setShowTurnosList] = useState(false);
   const medico = profesional ? profesional[0] : null;
-
   const medicoID = medico?.id;
-  
-  
-  
+
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
-    medicoID, consultorioID
+    medicoID,
+    consultorioID
   );
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const actualizarTurnos = () => {
-    setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
-  }
+    setRefreshTrigger((prev) => prev + 1);
+    setTimeout(() => setRefreshTrigger(0), 2000);
+  };
 
-  setTimeout(() => {
-    setRefreshTrigger(0)
-  }, 1000);
-
-  
-
-
-  // Calcula turnos reservados para hoy usando useMemo para optimización
+  // Turnos reservados para hoy
   const turnsToday = useMemo(() => {
     if (!turnos || turnos.length === 0) return 0;
     const today = new Date();
-    const todayFormatted = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-    return turnos.filter(turno =>
-      new Date(turno.fecha).toISOString().split('T')[0] === todayFormatted &&
-      turno.estado === 'reservado'
+    const todayFormatted = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today
+      .getDate()
+      .toString()
+      .padStart(2, '0')}`;
+    return turnos.filter(
+      (turno) =>
+        new Date(turno.fecha).toISOString().split('T')[0] === todayFormatted && turno.estado === 'reservado'
     ).length;
   }, [turnos]);
 
-
+  // Manejo de errores y carga
   if (!consultorio) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-red-200">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
-          <p className="text-red-500 font-medium">Datos del consultorio no disponibles.</p>
+          <p className="text-red-500">Datos del consultorio no disponibles.</p>
         </div>
       </div>
     );
@@ -65,10 +62,10 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-          <p className="text-gray-700 text-xl">Cargando datos del médico...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-blue-200">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-700 text-lg">Cargando datos del médico...</p>
         </div>
       </div>
     );
@@ -76,198 +73,179 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-gray-100 p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center border border-red-200">
           <div className="text-red-500 text-5xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
-          <p className="text-red-500">Error al cargar datos del médico: {error.message}</p>
+          <p className="text-red-500">Error al cargar datos: {error.message}</p>
         </div>
       </div>
     );
   }
 
-  // --- Función para abrir el modal de ajustes generales del consultorio ---
-  const handleConsultorioSettings = () => {
-    setShowSettingsModal(true);
-  };
-
-  // --- Función para abrir el modal de gestión de coberturas ---
-  const handleOpenCoberturasModal = () => {
-    setShowCoberturasModal(true);
-  };
-
-  // --- NUEVA FUNCIÓN: Manejar la actualización del consultorio desde el modal de ajustes ---
+  const handleConsultorioSettings = () => setShowSettingsModal(true);
+  const handleOpenCoberturasModal = () => setShowCoberturasModal(true);
   const handleConsultorioUpdatedFromSettings = (updatedData) => {
-    console.log("Datos del consultorio actualizados recibidos en PanelConsultorioPropio:", updatedData);
+    console.log('Datos actualizados:', updatedData);
     setShowSettingsModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-6 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header con información del médico */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border-l-4 border-green-500">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
-                Panel de Control
-              </h1>
+        {/* ===== ENCABEZADO PERSONALIZADO ===== */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-gradient-to-r from-blue-500 to-indigo-600">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            {/* Info del médico */}
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Panel de Control</h1>
+              <p className="text-gray-600 mt-1">Bienvenido , Doc. {medico?.nombre} {medico?.apellido}.</p>
+
               {medico && (
-                <div className="flex items-center mt-4">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 flex items-center justify-center mr-4">
-                    <FaUserMd className="text-gray-500 text-2xl" />
+                <div className="mt-4 flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                    {medico.nombre.charAt(0)}
+                    {medico.apellido.charAt(0)}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800">
-                      Dr./Dra. {medico.nombre} {medico.apellido}
+                      {medico.nombre} {medico.apellido}
                     </h2>
-                    <div className="flex flex-wrap gap-4 mt-2">
-                      {medico.especialidad && (
-                        <div className="flex items-center text-gray-600">
-                          <FaStethoscope className="mr-2 text-green-500" />
-                          <span>{medico.especialidad}</span>
-                        </div>
-                      )}
-                      {medico.matricula && (
-                        <div className="flex items-center text-gray-600">
-                          <FaIdCard className="mr-2 text-blue-500" />
-                          <span>Matrícula: {medico.matricula}</span>
-                        </div>
-                      )}
+                    <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-600">
+                      <span className="flex items-center">
+                        <FaStethoscope className="mr-1 text-green-500" /> {medico.especialidad || 'Sin especialidad'}
+                      </span>
+                      <span className="flex items-center">
+                        <FaIdCard className="mr-1 text-blue-500" /> Matrícula: {medico.matricula || 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-            <div className="mt-6 md:mt-0">
-              <p className="text-gray-600 text-lg">
-                Gestión simplificada para tu consultorio
+
+            {/* Fecha actual */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 text-center">
+              <p className="text-sm text-gray-600">Hoy es</p>
+              <p className="font-bold text-blue-700 capitalize">
+                {new Date().toLocaleDateString('es-AR', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Grid de Tarjetas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Card: Mi Agenda */}
-          <div 
-            className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl shadow-lg p-6 border border-green-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+        {/* ===== TARJETAS DE ACCESO RÁPIDO ===== */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Mi Agenda */}
+          <div
             onClick={() => setShowTurnosList(true)}
+            className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-gray-800 text-xl mb-2">Mi Agenda</h3>
-                <p className="text-gray-600 text-sm mb-4">Visualiza y organiza tus turnos</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg text-white">
+                <FaCalendarAlt className="w-6 h-6" />
               </div>
-              <FaCalendarAlt className="text-green-500 text-2xl" />
             </div>
-            <div className="mt-4">
-              {isLoadingTurnos ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-2"></div>
-                  <span className="text-green-700">Cargando...</span>
-                </div>
-              ) : errorTurnos ? (
-                <span className="text-red-500 text-sm">Error</span>
-              ) : (
-                <div>
-                  <span className="text-3xl font-bold text-green-700">{turnsToday}</span>
-                  <p className="text-gray-600 text-sm mt-1">turnos hoy</p>
-                </div>
-              )}
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Mi Agenda</h3>
+            <p className="text-gray-600 text-sm mb-3">Visualiza y gestiona tus turnos diarios.</p>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-green-600">{isLoadingTurnos ? '...' : turnsToday}</span>
+              <span className="text-xs text-gray-500">hoy</span>
             </div>
           </div>
 
-          {/* Card: Habilitar Turnos */}
-          <div 
-            className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl shadow-lg p-6 border border-indigo-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+          {/* Habilitar Turnos */}
+          <div
             onClick={() => setShowModal(true)}
+            className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-gray-800 text-xl mb-2">Habilitar Turnos</h3>
-                <p className="text-gray-600 text-sm mb-4">Abre nuevos horarios para pacientes</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg text-white">
+                <FaClock className="w-6 h-6" />
               </div>
-              <FaClock className="text-indigo-500 text-2xl" />
             </div>
-            <div className="mt-4">
-              <span className="inline-block bg-indigo-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-                Administrar
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Habilitar Turnos</h3>
+            <p className="text-gray-600 text-sm mb-3">Abre nuevos horarios para que los pacientes reserven.</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-block bg-indigo-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
+                Gestionar
               </span>
             </div>
           </div>
 
-          {/* Card: Ajustes del Consultorio */}
-          <div 
-            className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+          {/* Ajustes del Consultorio */}
+          <div
             onClick={handleConsultorioSettings}
+            className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-gray-800 text-xl mb-2">Ajustes</h3>
-                <p className="text-gray-600 text-sm mb-4">Configura tu consultorio</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg text-white">
+                <FaCog className="w-6 h-6" />
               </div>
-              <FaCog className="text-gray-500 text-2xl" />
             </div>
-            <div className="mt-4">
-              <span className="inline-block bg-gray-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Ajustes</h3>
+            <p className="text-gray-600 text-sm mb-3">Configura tu consultorio y preferencias.</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-block bg-gray-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
                 Configurar
               </span>
             </div>
           </div>
 
-          {/* Card: Gestión de Coberturas */}
-          <div 
-            className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg p-6 border border-purple-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+          {/* Coberturas Médicas */}
+          <div
             onClick={handleOpenCoberturasModal}
+            className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-gray-800 text-xl mb-2">Coberturas</h3>
-                <p className="text-gray-600 text-sm mb-4">Gestiona obras sociales</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white">
+                <FaShieldAlt className="w-6 h-6" />
               </div>
-              <FaShieldAlt className="text-purple-500 text-2xl" />
             </div>
-            <div className="mt-4">
-              <span className="inline-block bg-purple-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-                Administrar
+            <h3 className="text-lg font-bold text-gray-800 mb-1">Coberturas</h3>
+            <p className="text-gray-600 text-sm mb-3">Gestiona obras sociales y prepagas aceptadas.</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-block bg-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
+                Gestionar
               </span>
             </div>
           </div>
         </div>
 
-        {/* Renderizado condicional para TurnList */}
+        {/* ===== LISTA DE TURNOS (Modal integrado) ===== */}
         {showTurnosList && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
             <TurnList
               profesionalId={medico?.id}
               consultorioId={consultorio?.id}
               onClose={() => setShowTurnosList(false)}
               openModalHabilitarTurnos={() => setShowModal(true)}
-               refreshTrigger={refreshTrigger}
+              refreshTrigger={refreshTrigger}
             />
           </div>
         )}
 
-        {/* Modal para Habilitar Turnos */}
+        {/* ===== MODALES ===== */}
         {showModal && (
-          <GenerarTurnosModal 
-          medico={medicoID} 
-          consultorio={consultorioID} 
-          closeModalHabilitarTurnos = {() => setShowModal(false)}
-          actualizarTurnos={actualizarTurnos}
+          <GenerarTurnosModal
+            medico={medicoID}
+            consultorio={consultorioID}
+            closeModalHabilitarTurnos={() => setShowModal(false)}
+            actualizarTurnos={actualizarTurnos}
           />
         )}
 
-        {/* Modal para Ajustes Generales del Consultorio */}
         <ConsultorioSettingsModal
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
           consultorio={consultorio}
-          onConsultorioUpdated={handleConsultorioUpdatedFromSettings} 
+          onConsultorioUpdated={handleConsultorioUpdatedFromSettings}
         />
 
-        {/* Nuevo Modal para Gestión de Coberturas */}
         <GestionCoberturas
           isOpen={showCoberturasModal}
           onClose={() => setShowCoberturasModal(false)}

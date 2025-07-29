@@ -328,43 +328,57 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 // HABILITAR TURNOS //
 
 app.post('/api/habilitarturnos', async (req, res) => {
-    const { consultorioId, profesionalId, fecha, cantidadTurnos } = req.body;
-
+    const { consultorioId, profesionalId, fecha, cantidadTurnos, horaInicio, duracionTurno = 30 } = req.body;
+  
     // Validación básica
     if (!consultorioId || !profesionalId || !fecha || !cantidadTurnos || cantidadTurnos <= 0) {
-        return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
+      return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
     }
-
+  
+    // Validar formato de horaInicio (espera "HH:MM")
+    if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horaInicio)) {
+      return res.status(400).json({ message: 'Formato de hora de inicio inválido. Usa HH:MM.' });
+    }
+  
     let connection;
     try {
-        connection = await pool.getConnection(); // Obtener una conexión del pool
-        await connection.beginTransaction(); // Iniciar una transacción
-
-        const insertQuery = `
-            INSERT INTO turnos (consultorio_id, profesional_id, fecha)
-            VALUES (?, ?, ?)
-        `;
-
-        // Ejecutar la consulta de inserción 'cantidadTurnos' veces
-        for (let i = 0; i < cantidadTurnos; i++) {
-            await connection.execute(insertQuery, [consultorioId, profesionalId, fecha]);
-        }
-
-        await connection.commit(); // Confirmar la transacción
-        res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
-
+      connection = await pool.getConnection();
+      await connection.beginTransaction();
+  
+      const insertQuery = `
+        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora)
+        VALUES (?, ?, ?, ?)
+      `;
+  
+      let currentHour = horaInicio; // "08:30"
+  
+      for (let i = 0; i < cantidadTurnos; i++) {
+        // Insertar turno
+        await connection.execute(insertQuery, [consultorioId, profesionalId, fecha, currentHour]);
+  
+        // Calcular próxima hora
+        const [hours, minutes] = currentHour.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        date.setMinutes(date.getMinutes() + duracionTurno);
+  
+        // Formatear como "HH:MM"
+        const nextHours = String(date.getHours()).padStart(2, '0');
+        const nextMinutes = String(date.getMinutes()).padStart(2, '0');
+        currentHour = `${nextHours}:${nextMinutes}`;
+      }
+  
+      await connection.commit();
+      res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
+  
     } catch (error) {
-        if (connection) {
-            await connection.rollback(); // Deshacer la transacción en caso de error
-        }
-        console.error('Error al habilitar turnos en la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
+      if (connection) await connection.rollback();
+      console.error('Error al habilitar turnos en la base de datos:', error);
+      res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
     } finally {
-        if (connection) {
-            connection.release(); // Liberar la conexión de vuelta al pool
-        }
+      if (connection) connection.release();
     }
-});
+  });
 
 // BORRAR COBERTURA DEL CONSULTORIO //
 
