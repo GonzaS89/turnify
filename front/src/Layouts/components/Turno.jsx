@@ -1,7 +1,15 @@
 import { PiCalendarCheckFill, PiCalendarXFill } from "react-icons/pi";
 
+const formatearHora = (hora) => {
+  if (!hora) return "";
+  if (typeof hora === "string") return hora.slice(0, 5);
+  if (hora instanceof Date) return hora.toTimeString().slice(0, 5);
+  return hora;
+};
+
 const Turno = ({ turno, index, enviarTurno }) => {
   const isAvailable = turno.estado === "disponible";
+  const horaFormateada = formatearHora(turno.hora);
 
   return (
     <div className="flex justify-center">
@@ -9,63 +17,62 @@ const Turno = ({ turno, index, enviarTurno }) => {
         onClick={() => isAvailable && enviarTurno(turno, index)}
         disabled={!isAvailable}
         className={`
-          relative w-full max-w-[100px] aspect-square flex flex-col items-center justify-center
-          p-3 rounded-2xl border-2 transition-all duration-300 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-offset-2
+          relative w-full max-w-[108px] aspect-square flex flex-col items-center justify-between
+          p-3 rounded-2xl transition-all duration-300 transform
+          bg-white border-2
+          shadow-sm hover:shadow-2xl hover:scale-105 active:scale-100
+          focus:outline-none focus:ring-4 focus:ring-offset-2 focus:z-10
           ${isAvailable
             ? `
-              bg-gradient-to-br from-white to-gray-50 border-gray-300 text-gray-800
-              shadow-md hover:shadow-lg
-              hover:border-blue-400 hover:-translate-y-1
-              active:scale-95
-              focus:ring-blue-500 focus:ring-offset-white
+              border-blue-100 text-blue-800
+              hover:border-blue-300
+              focus:ring-blue-200 focus:ring-offset-2
               `
             : `
-              bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 text-gray-500
-              shadow-inner cursor-not-allowed opacity-80
-              focus:ring-gray-400 focus:ring-offset-gray-100
+              border-gray-100 bg-gray-50 text-gray-400
+              cursor-not-allowed opacity-60
+              focus:ring-gray-100
               `
           }
         `}
-        aria-label={isAvailable ? `Seleccionar turno número ${index + 1}` : `Turno número ${index + 1} no disponible`}
+        aria-label={isAvailable
+          ? `Seleccionar turno a las ${horaFormateada}`
+          : `Turno a las ${horaFormateada} no disponible`
+        }
       >
-        {/* Contenedor del ícono con fondo circular */}
+        {/* Icono con fondo suave */}
         <div className={`
-          mb-2 flex items-center justify-center rounded-full p-2 transition-all duration-300
-          ${isAvailable 
-            ? 'bg-blue-100 text-blue-600' 
-            : 'bg-gray-200 text-gray-400'}
+          w-10 h-10 flex items-center justify-center rounded-full text-4xl
+          transition-all duration-300
+          ${isAvailable
+            ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'
+            : 'bg-gray-100 text-gray-300'}
         `}>
           {isAvailable ? (
-            <PiCalendarCheckFill className="text-xl" />
+            <PiCalendarCheckFill />
           ) : (
-            <PiCalendarXFill className="text-xl" />
+            <PiCalendarXFill />
           )}
         </div>
 
-        {/* Número de Turno con estilo de badge */}
+        {/* Hora grande y clara */}
         <span className={`
-          text-sm font-black px-2.5 py-1 rounded-full transition-all duration-300
-          ${isAvailable 
-            ? 'bg-blue-500 text-white shadow-sm' 
-            : 'bg-gray-400 text-white'}
+          text-xl font-bold transition-colors duration-300
+          ${isAvailable ? 'text-gray-800' : 'text-gray-400'}
         `}>
-          {turno.hora}
+          {horaFormateada}
         </span>
 
-        {/* Estado del turno como texto pequeño */}
-        <span className={`
-          text-[0.6rem] font-bold mt-1 transition-all duration-300
-          ${isAvailable 
-            ? 'text-blue-600' 
-            : 'text-gray-500'}
-        `}>
-          {isAvailable ? 'LIBRE' : 'OCUPADO'}
-        </span>
+        
 
-        {/* Efecto de resplandor sutil para turnos disponibles */}
+        {/* Overlay sutil al pasar el mouse (solo disponible) */}
         {isAvailable && (
-          <div className="absolute inset-0 rounded-2xl bg-blue-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+          <div className="absolute inset-0 rounded-2xl bg-blue-50 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none"></div>
+        )}
+
+        {/* Bordes animados tipo "glow" (solo disponible) */}
+        {isAvailable && (
+          <div className="absolute inset-0 rounded-2xl border-2 border-blue-200 opacity-0 group-hover:opacity-40 animate-pulse group-hover:animate-none transition-all duration-500 pointer-events-none"></div>
         )}
       </button>
     </div>

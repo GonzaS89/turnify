@@ -3,12 +3,14 @@ import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 import useAllCoberturas from '../../../customHooks/useAllCoberturas'; // Asegúrate de que esta ruta sea correcta
 
-const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOptions, selectedTurno, profesional, consultorio, ordenTurno }) => {
+const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno }) => {
     // Estados internos para la lógica de la API y la UI
     const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
     const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
     const [isSuccess, setIsSuccess] = useState(false); // Controla si la reserva fue exitosa
     const [confirmedTurnoId, setConfirmedTurnoId] = useState(null); // Guarda el ID del turno confirmado
+
+    console.log(selectedTurno.hora)
 
     const { coberturas } = useAllCoberturas(); // Hook para obtener las coberturas médicas
 
@@ -110,8 +112,10 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, coberturasOption
                             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 shadow-inner">
                                 <p className="text-lg font-bold text-blue-700 mb-3">Detalles de la Cita:</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 text-sm sm:text-base">
-                                    <p><span className="font-semibold text-blue-600">Fecha:</span> {formatearFechaSQL(selectedTurno.fecha)}</p>
+                                    <p><span className="font-semibold text-blue-600">Fecha:</span> {formatearFechaSQL(selectedTurno.fecha)}</p> 
+                                    <p><span className="font-semibold text-blue-600">Hora:</span> {(selectedTurno?.hora)}</p>
                                     <p><span className="font-semibold text-blue-600">Orden:</span> {ordenTurno}° turno</p>
+                                    <p></p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Con quién:</span> Dr/a {profesional ? `${profesional.nombre} ${profesional.apellido}` : 'No disponible'}</p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Especialidad:</span> {profesional ? profesional.especialidad : 'No disponible'}</p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Dónde:</span> {consultorio ? (consultorio.tipo === 'propio' ? 'Consultorio Particular' : `Centro médico ${consultorio.nombre}`) : 'No disponible'}</p>

@@ -72,7 +72,7 @@ const TurnSelectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 font-sans">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] overflow-hidden border border-gray-200">
         
         {/* Header */}
@@ -92,7 +92,7 @@ const TurnSelectModal = ({
                 <div className="mt-1 text-xs sm:text-sm text-gray-600">
                   <p className="font-medium">{consultorio.tipo === "propio" ? "Consultorio Particular" : `Centro Médico ${consultorio.nombre}`}</p>
                   <p>{consultorio.direccion}, {consultorio.localidad}</p>
-                  <p className="mt-1">Horario: <span className="font-semibold">{consultorio.inicio} a {consultorio.cierre} Hs</span></p>
+                  {/* <p className="mt-1">Horario: <span className="font-semibold">{consultorio.inicio} a {consultorio.cierre} Hs</span></p> */}
                 </div>
               )}
             </div>

@@ -16,7 +16,6 @@ import useProfessionalConsultorios from '../../customHooks/useProfessionalConsul
 import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 
 const Main = ({ openLogin }) => {
-  const [idConsultorio, setIdConsultorio] = useState(null); // ID
   const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
   const [selectedTurno, setSelectedTurno] = useState(null); // Turno seleccionado para la reserva
   const [ordenTurno, setOrdenTurno] = useState(null); // Índice del turno seleccionado para la reserva
@@ -40,29 +39,26 @@ const Main = ({ openLogin }) => {
 
   const cerrarModalTurnos = () => {
     setShowModalTurnos(false); // Cierra el modal de turnos
-    setIdConsultorio(null); // Limpia el ID del consultorio al cerrar el modal
+    setConsultorio(null); // Limpia el ID del consultorio al cerrar el modal
     setIdProfesional(null); // Limpia el ID del profesional al cerrar el modal
     setSelectedTurno(null); // Limpia el turno seleccionado al cerrar el modal
     setOrdenTurno(null); // Limpia el índice del turno seleccionado al cerrar el modal
   };
 
-  const recibirIds = (idProfesional) => {
+  const [consultorio, setConsultorio] = useState(null); // Estado para almacenar el consultorio seleccionado
+
+  const recibirIds = (idProfesional, consultorio) => {
     setIdProfesional(idProfesional); // Actualiza el ID del profesional
+    setConsultorio(consultorio);
   };
 
 
   // CARGA DE CUSTOM HOOKS
 
-  const { consultorios ,isLoading:isLoadingConsultorio, error:errorConsultorio} = useProfessionalConsultorios(idProfesional);
   const { profesional } = useProfesionalxId(idProfesional);
 
 
   const prof = profesional[0];
-  const consult = consultorios[0];
- 
-
-  const { coberturas } = useCoberturaxIdConsultorio(consult?.id);
-
 
   useEffect(() => {
     idProfesional && setShowModalTurnos(true); // Abre el modal de turnos si hay un ID de consultorio
@@ -96,6 +92,8 @@ const Main = ({ openLogin }) => {
     setShowUserFormModal(true); // Reabre el formulario de usuario para editar
   };
 
+  const { coberturas } = useCoberturaxIdConsultorio(consultorio?.id);
+
 
 
   return (
@@ -115,7 +113,7 @@ const Main = ({ openLogin }) => {
 
       {showModalTurnos && !showUserFormModal && !showConfirmationModal && (
         <TurnSelectModal
-          consultorio={consult} // Pasamos el consultorio para mostrar su información
+          consultorio={consultorio} // Pasamos el consultorio para mostrar su información
           idProfesional={idProfesional} // Pasamos el ID del profesional
           enviarTurnoYOrden={recibirTurnoYOrden} // Pasamos la función para recibir el turno y orden
           cerrarModalTurnos={cerrarModalTurnos} // Pasamos la función para cerrar el modal
@@ -140,7 +138,7 @@ const Main = ({ openLogin }) => {
           onConfirm={handleConfirmBooking}
           onEdit={handleEditBooking}
           profesional={prof} // Pasamos el profesional para mostrar su nombre
-          consultorio={consult} // Pasamos el consultorio para mostrar su información
+          consultorio={consultorio} // Pasamos el consultorio para mostrar su información
           formData={userFormData}
           coberturasOptions={coberturas} // Pasamos las opciones de cobertura para mostrar el nombre completo
           selectedTurno={selectedTurno} // Pasamos el turno para mostrarlo en la confirmación
