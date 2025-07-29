@@ -50,7 +50,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
             ? 'bg-blue-500 text-white shadow-sm' 
             : 'bg-gray-400 text-white'}
         `}>
-          {index + 1}
+          {turno.hora}
         </span>
 
         {/* Estado del turno como texto pequeño */}

@@ -97,7 +97,8 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
           t.apellido_paciente,
           t.DNI,
           t.cobertura,
-          t.telefono
+          t.telefono,
+            t.hora
 
       FROM
           turnos AS t
