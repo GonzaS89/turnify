@@ -7,7 +7,7 @@ import useAllCoberturas from '../../customHooks/useAllCoberturas';
 import useProfesionalxId from '../../customHooks/useProfesionalxId';
 
 const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTurnos, refreshTrigger, tipoConsultorio }) => { // Añadido onAgregarTurno
-  const [actualizarTurnos, setActualizarTurnos] = useState(refreshTrigger);
+  const [actualizarTurnos, setActualizarTurnos] = useState(refreshTrigger)
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, actualizarTurnos);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading:isLoadingProfesionales, error: errorProfesionales} = useProfesionalxId(profesionalId)
@@ -78,13 +78,11 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   const handleActualizarTurnos = () => {{
     setActualizarTurnos(1)
-
     setTimeout(() => {
       setActualizarTurnos(0)
-    }, 100);
+    }, );
   }} 
 
-  
 
 
   // Estados de carga y error

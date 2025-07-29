@@ -34,12 +34,13 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => { // Recibe cons
 
   const actualizarTurnos = () => {
     setRefreshTrigger( setRefreshTrigger(prevKey => prevKey + 1 ) );
+     setTimeout(() => {
+    setRefreshTrigger(0)
+  }, 100);
+
   }
 
-  setTimeout(() => {
-    setRefreshTrigger(0)
-  }, 2000);
-
+ 
   // if (!consultorio) {
   //   return <p className="text-red-500 text-center py-4">Error: Datos del consultorio no disponibles.</p>;
   // }
