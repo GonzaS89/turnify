@@ -74,6 +74,13 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
         setSubmitError(null); // Limpia cualquier error
     };
 
+    const formatearHora = ( hora ) => {
+        if (!hora) return '';
+        const [horaParte, minutoParte] = hora.split(':');
+        const horaFormateada = `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
+        return horaFormateada;
+      }
+
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-50 backdrop-blur-md p-4 animate-fade-in"> {/* Ajuste de padding */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col gap-5 border border-blue-100 transform scale-95 animate-scale-in max-h-[90vh] overflow-y-auto"> {/* Ajuste de padding y gap */}
@@ -88,13 +95,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
                             <p className="mb-2">Tu turno ha sido reservado exitosamente.</p>
                             <p className="mt-4">Recibirás una confirmación por WhatsApp.</p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onCloseAndReset} // Cierra el modal y resetea el estado interno
-                            className="py-2.5 px-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-full hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-base"
-                        >
-                            Entendido
-                        </button>
+                       
                     </div>
                 ) : (
                     // Contenido para el estado de confirmación inicial
@@ -113,7 +114,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
                                 <p className="text-lg font-bold text-blue-700 mb-3">Detalles de la Cita:</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 text-sm sm:text-base">
                                     <p><span className="font-semibold text-blue-600">Fecha:</span> {formatearFechaSQL(selectedTurno.fecha)}</p> 
-                                    <p><span className="font-semibold text-blue-600">Hora:</span> {(selectedTurno?.hora)}</p>
+                                    <p><span className="font-semibold text-blue-600">Hora:</span> {formatearHora(selectedTurno?.hora)}</p>
                                     <p><span className="font-semibold text-blue-600">Orden:</span> {ordenTurno}° turno</p>
                                     <p></p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Con quién:</span> Dr/a {profesional ? `${profesional.nombre} ${profesional.apellido}` : 'No disponible'}</p>

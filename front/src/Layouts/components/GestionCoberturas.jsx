@@ -95,8 +95,8 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
 
             <>
 
-              <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 sm:p-6 transition-all duration-300">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col gap-5 max-h-[90vh] overflow-hidden animate-fade-up">
+              <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 xl:p-4 transition-all duration-300">
+                <div className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-4xl flex flex-col gap-5 h-screen xl:max-h-[90vh] overflow-hidden animate-fade-up">
                   
       
                   <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -143,7 +143,7 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
                             Coberturas Activas
                           </h3>
                           {activeCoberturas && activeCoberturas.length > 0 ? (
-                            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            <ul className="grid grid-cols-2 md:grid-cols-3 gap-3">
                               {activeCoberturas.map((cobertura) => (
                                 <li
                                   key={cobertura.id}

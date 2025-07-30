@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import useProfesionalxIdConsultorio from '../../../customHooks/useProfesionalxIdConsultorio';
-import { FaRegEye } from "react-icons/fa";
+import { FaRegEye, FaEdit, FaTrashAlt } from "react-icons/fa";
 
 const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio, enviarProfesionalID }) => {
   const consultorioId = consultorio?.id;
@@ -8,14 +8,14 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
   const [orden, setOrden] = useState('nombre');
   const [direccion, setDireccion] = useState('asc');
   const [filtroEspecialidad, setFiltroEspecialidad] = useState('');
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
+  const [viewMode, setViewMode] = useState('table');
 
-  // Detect screen size for auto-layout (optional)
+  // Detectar tamaño de pantalla
   useEffect(() => {
     const handleResize = () => {
       setViewMode(window.innerWidth < 768 ? 'cards' : 'table');
     };
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -40,9 +40,9 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
         })
     : [];
 
-  const handleBotonTurnos = (value) => {
+  const handleBotonTurnos = (id) => {
+    enviarProfesionalID(id);
     openModalTurnos();
-    enviarProfesionalID(value);
   };
 
   const cambiarOrden = (nuevoOrden) => {
@@ -61,26 +61,24 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 lg:p-4">
-        <div className="bg-white rounded-none xl:rounded-xl shadow-2xl w-full max-w-4xl max-h-screen overflow-hidden">
-          <div className="bg-blue-600 text-white lg:p-4 flex justify-between items-center">
-            <h2 className="text-lg font-bold flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               Gestión de Profesionales
             </h2>
             <button onClick={closeModalGestion} className="text-white hover:text-gray-200">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="p-6 flex items-center justify-center min-h-40">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-3"></div>
-              <p className="text-gray-600 text-sm">Cargando...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-600 text-lg">Cargando profesionales...</p>
           </div>
         </div>
       </div>
@@ -89,26 +87,24 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-screen overflow-hidden">
-          <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-            <h2 className="text-lg font-bold flex items-center">
-              Gestión de Profesionales
-            </h2>
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+            <h2 className="text-xl font-bold">Gestión de Profesionales</h2>
             <button onClick={closeModalGestion} className="text-white hover:text-gray-200">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div className="p-6 text-center">
-            <div className="text-red-500 mb-2">
-              <svg className="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div className="p-8 text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-red-600 text-sm">Error al cargar</p>
-            <p className="text-gray-500 text-xs mt-1">{error.message}</p>
+            <p className="text-red-600 text-lg font-medium">Error al cargar</p>
+            <p className="text-gray-500 mt-2">{error.message || "Por favor, intenta nuevamente."}</p>
           </div>
         </div>
       </div>
@@ -116,39 +112,49 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 2xl:p-2">
-      <div className="bg-white 2xl:rounded-xl shadow-2xl w-full 2xl:max-w-4xl max-h-screen overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-          <h2 className="text-lg font-bold flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 xl:p-4 animate-fade-in">
+      <div className="bg-white xlrounded-2xl shadow-2xl w-screen xl:max-w-4xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden">
+        
+        {/* Encabezado */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             Gestión de Profesionales
           </h2>
-          <button onClick={closeModalGestion} className="text-white hover:text-gray-200">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <button
+            onClick={closeModalGestion}
+            className="text-white hover:text-gray-200 transition-colors"
+            aria-label="Cerrar"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-4 overflow-y-auto flex-grow space-y-4">
-          {/* Controls */}
-          <div className="flex flex-col gap-3">
-            <button className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center shadow-md">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        {/* Contenido principal */}
+        <div className="flex-grow overflow-y-auto p-6 space-y-6">
+          
+          {/* Botón de agregar */}
+          <div className="flex justify-center">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               Agregar Profesional
             </button>
+          </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Especialidad</label>
               <select
                 value={filtroEspecialidad}
                 onChange={(e) => setFiltroEspecialidad(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Todas las especialidades</option>
                 {especialidades.map((especialidad) => (
@@ -157,120 +163,35 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
                   </option>
                 ))}
               </select>
-
-              <div className="flex bg-gray-100 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => cambiarOrden('nombre')}
-                  className={`px-3 py-1 text-xs sm:text-sm font-medium ${
-                    orden === 'nombre'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  Nombre {getSortIcon('nombre')}
-                </button>
-                <button
-                  onClick={() => cambiarOrden('especialidad')}
-                  className={`px-3 py-1 text-xs sm:text-sm font-medium ${
-                    orden === 'especialidad'
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  Especialidad {getSortIcon('especialidad')}
-                </button>
-              </div>
+            </div>
+            <div className="flex bg-gray-100 rounded-lg overflow-hidden self-end">
+              <button
+                onClick={() => cambiarOrden('nombre')}
+                className={`px-4 py-2 text-sm font-medium ${orden === 'nombre' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-700'}`}
+              >
+                Nombre {getSortIcon('nombre')}
+              </button>
+              <button
+                onClick={() => cambiarOrden('especialidad')}
+                className={`px-4 py-2 text-sm font-medium ${orden === 'especialidad' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-700'}`}
+              >
+                Especialidad {getSortIcon('especialidad')}
+              </button>
             </div>
           </div>
 
-          {/* Table or Cards */}
-          {viewMode === 'table' ? (
-            /* Desktop Table View */
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white rounded-lg">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-3 text-left text-xs font-semibold text-gray-700">Nombre</th>
-                    <th className="py-2 px-3 text-left text-xs font-semibold text-gray-700">Especialidad</th>
-                    <th className="py-2 px-3 text-left text-xs font-semibold text-gray-700">Turnos</th>
-                    <th className="py-2 px-3 text-left text-xs font-semibold text-gray-700">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {profesionalesFiltradosYOrdenados.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="py-6 text-center text-gray-500 text-sm">
-                        No se encontraron profesionales
-                        {filtroEspecialidad && (
-                          <button
-                            onClick={() => setFiltroEspecialidad('')}
-                            className="block mx-auto mt-1 text-blue-600 text-xs"
-                          >
-                            Limpiar filtros
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ) : (
-                    profesionalesFiltradosYOrdenados.map((profesional) => (
-                      <tr key={profesional.id} className="hover:bg-gray-50">
-                        <td className="py-3 px-3">
-                          <div className="flex items-center">
-                            <div className="bg-blue-100 rounded-full p-1.5 mr-2">
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {profesional.apellido}, {profesional.nombre}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate max-w-[150px]">{profesional.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-gray-700 text-sm">{profesional.especialidad}</td>
-                        <td className="py-3 px-3">
-                          <button
-                            onClick={() => handleBotonTurnos(profesional.id)}
-                            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-green-100 text-green-800"
-                          >
-                            <FaRegEye className="w-3 h-3 mr-1" />
-                            Ver
-                          </button>
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="flex space-x-1">
-                            <button className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            /* Mobile Card View */
-            <div className="space-y-3">
+          {/* Vista de tarjetas (mobile) */}
+          {viewMode === 'cards' ? (
+            <div className="grid gap-4">
               {profesionalesFiltradosYOrdenados.length === 0 ? (
-                <div className="text-center py-6 text-gray-500 text-sm">
-                  <p>No se encontraron profesionales</p>
+                <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-500 text-base">No se encontraron profesionales</p>
                   {filtroEspecialidad && (
                     <button
                       onClick={() => setFiltroEspecialidad('')}
-                      className="text-blue-600 mt-1"
+                      className="text-blue-600 text-sm underline mt-2"
                     >
-                      Limpiar filtros
+                      Limpiar filtro
                     </button>
                   )}
                 </div>
@@ -278,40 +199,38 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
                 profesionalesFiltradosYOrdenados.map((profesional) => (
                   <div
                     key={profesional.id}
-                    className="border border-gray-200 rounded-lg p-3 bg-white flex flex-col sm:flex-row gap-3"
+                    className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className="flex-1 flex items-center">
-                      <div className="bg-blue-100 rounded-full p-2 mr-3">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    {/* Info principal */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-2 bg-blue-100 rounded-full">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 text-sm">
+                        <h3 className="text-lg font-semibold text-gray-800">
                           {profesional.apellido}, {profesional.nombre}
-                        </div>
-                        <div className="text-xs text-gray-500">{profesional.email}</div>
-                        <div className="text-xs text-gray-600 mt-1">{profesional.especialidad}</div>
+                        </h3>
+                        <p className="text-sm text-gray-600">{profesional.especialidad}</p>
+                        <p className="text-xs text-gray-500 truncate mt-1">{profesional.email}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2">
+
+                    {/* Acciones */}
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                       <button
                         onClick={() => handleBotonTurnos(profesional.id)}
-                        className="flex items-center justify-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                       >
-                        <FaRegEye className="w-3 h-3" />
-                        Turnos
+                        <FaRegEye className="w-4 h-4" /> Ver turnos
                       </button>
-                      <div className="flex justify-center gap-2">
-                        <button className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
+                      <div className="flex gap-2">
+                        <button className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                          <FaEdit className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                        <button className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
+                          <FaTrashAlt className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -319,17 +238,67 @@ const GestionProfesionales = ({ openModalTurnos, closeModalGestion, consultorio,
                 ))
               )}
             </div>
+          ) : (
+            /* Vista de tabla (desktop) - se mantiene igual o puedes simplificarla */
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg border border-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Nombre</th>
+                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Especialidad</th>
+                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Turnos</th>
+                    <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {profesionalesFiltradosYOrdenados.map((profesional) => (
+                    <tr key={profesional.id} className="hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-1 bg-blue-100 rounded-full">
+                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{profesional.apellido}, {profesional.nombre}</div>
+                            <div className="text-xs text-gray-500">{profesional.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">{profesional.especialidad}</td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => handleBotonTurnos(profesional.id)}
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full hover:bg-blue-200 transition-colors"
+                        >
+                          <FaRegEye className="w-3 h-3" /> Ver
+                        </button>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-1">
+                          <button className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors">
+                            <FaEdit className="w-4 h-4" />
+                          </button>
+                          <button className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors">
+                            <FaTrashAlt className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-2 text-sm">
-          <span className="text-gray-600">
-            Mostrando {profesionalesFiltradosYOrdenados.length} de {profesionales?.length || 0}
-          </span>
+        {/* Pie de página */}
+        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-600">
+          <span>Mostrando {profesionalesFiltradosYOrdenados.length} profesional(es)</span>
           <button
             onClick={closeModalGestion}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-1.5 px-5 rounded-lg w-full sm:w-auto"
+            className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
           >
             Cerrar
           </button>

@@ -22,14 +22,14 @@ const FAQS = () => {
             a: 'Actualmente, el pago se realiza directamente en la consulta. Estamos trabajando para integrar opciones de pago en línea en el futuro.'
         },
         {
-            q: '¿Cómo puedo afiliarme como médico o centro de salud?',
-            a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón o un formulario de contacto para que nuestro equipo te ayude a crear tu perfil y comiences a recibir reservas.'
+            q: '¿Cómo puedo afiliarme como médico o centro médico?',
+            a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón de contacto para que nuestro equipo te ayude a crear tu perfil y comiences a recibir reservas.'
         },
     ];
 
     return (
         <section id="preguntas-frecuentes" className="py-12">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">Preguntas Frecuentes</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-10">Preguntas Frecuentes</h2>
             <div className="max-w-3xl mx-auto space-y-4">
                 {faqData.map((item, index) => (
                     <div
@@ -111,7 +111,7 @@ const FAQS = () => {
                       >
                         <p className="
                           text-gray-700
-                          pt-2
+                       
                           leading-relaxed
                           border-t
                           border-gray-200

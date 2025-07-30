@@ -31,7 +31,8 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                 setErrorOptions("No se proporcionaron opciones de cobertura.");
                 setOptions([]);
             }
-            // Resetear el formulario cada vez que se abre el modal
+
+            // Resetear el formulario cada vez que se abre
             setFormData({
                 nombre: '',
                 apellido: '',
@@ -44,6 +45,32 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'dni') {
+            // Solo números, máximo 8 dígitos
+            const numericValue = value.replace(/\D/g, '');
+            if (numericValue.length <= 8) {
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: numericValue,
+                }));
+            }
+            return;
+        }
+
+        if (name === 'telefono') {
+            // Solo números, máximo 10 dígitos
+            const numericValue = value.replace(/\D/g, '');
+            if (numericValue.length <= 10) {
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: numericValue,
+                }));
+            }
+            return;
+        }
+
+        // Para otros campos
         setFormData(prevData => ({
             ...prevData,
             [name]: value,
@@ -52,19 +79,28 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validación adicional al enviar
+        if (formData.dni.length < 7 || formData.dni.length > 8) {
+            alert('El DNI debe tener entre 7 y 8 dígitos.');
+            return;
+        }
+
+        if (formData.telefono.length !== 10) {
+            alert('El teléfono debe tener exactamente 10 dígitos.');
+            return;
+        }
+
         onSubmit(formData);
     };
 
     if (!isOpen) return null;
 
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
-            <div className={`
-                bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg
-                flex flex-col relative
-                max-h-[90vh] overflow-hidden // Asegura que el modal en sí no exceda el alto de la vista
-            `}>
-                {/* Close Button at the Top Right */}
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh] overflow-hidden">
+                {/* Botón de cerrar */}
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
@@ -82,9 +118,9 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                     Por favor, completá tu información para confirmar la reserva de tu turno.
                 </p>
 
-                {/* Este es el div que contendrá el formulario y tendrá el scroll interno */}
-                <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar"> {/* Aquí se aplica el scroll */}
-                    <form onSubmit={handleSubmit} id="user-form" className="flex flex-col gap-5"> {/* Agregado id para el botón de submit */}
+                {/* Contenedor con scroll interno */}
+                <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                    <form onSubmit={handleSubmit} id="user-form" className="flex flex-col gap-5">
                         {/* Nombre */}
                         <div>
                             <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -128,6 +164,10 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                                 name="dni"
                                 value={formData.dni}
                                 onChange={handleChange}
+                                inputMode="numeric"
+                                maxLength="8"
+                                pattern="[0-9]{7,8}"
+                                title="Debe tener entre 7 y 8 dígitos numéricos"
                                 className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
                                 required
                             />
@@ -144,18 +184,24 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                                 name="telefono"
                                 value={formData.telefono}
                                 onChange={handleChange}
+                                inputMode="numeric"
+                                maxLength="10"
+                                pattern="[0-9]{10}"
+                                title="Debe tener exactamente 10 dígitos numéricos"
                                 className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
                                 required
                             />
                         </div>
 
-                        {/* Select Field para Coberturas */}
+                        {/* Cobertura Médica */}
                         <div>
                             <label htmlFor="selectedOption" className="block text-sm font-semibold text-gray-700 mb-2">
                                 Selecciona tu Cobertura Médica
                             </label>
                             {isLoadingOptions ? (
-                                <p className="text-blue-600 text-base text-center font-medium animate-pulse py-4 bg-blue-50 rounded-xl shadow-inner border border-blue-100">Cargando coberturas...</p>
+                                <p className="text-blue-600 text-base text-center font-medium animate-pulse py-4 bg-blue-50 rounded-xl shadow-inner border border-blue-100">
+                                    Cargando coberturas...
+                                </p>
                             ) : errorOptions ? (
                                 <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-center text-sm shadow-md">
                                     <p className="font-bold mb-1">¡Ups! Error al cargar las coberturas:</p>
@@ -173,8 +219,8 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                                         required
                                     >
                                         <option value="" disabled>Elige una cobertura</option>
-                                        <option value={'particular'} >Particular</option>
-                                        {Array.isArray(options) && options.map((option) => (
+                                        <option value="particular">Particular</option>
+                                        {options.map((option) => (
                                             <option key={option.id} value={option.id}>
                                                 {option.siglas} - {option.nombre}
                                             </option>
@@ -189,9 +235,9 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                             )}
                         </div>
                     </form>
-                </div> {/* Fin del div con scroll interno */}
+                </div>
 
-                {/* Action Buttons (Este div queda fuera del scroll para que siempre sea visible) */}
+                {/* Botones de acción (siempre visibles) */}
                 <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-gray-200">
                     <button
                         type="button"

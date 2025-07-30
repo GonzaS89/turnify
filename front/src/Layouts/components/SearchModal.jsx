@@ -66,13 +66,21 @@ const SearchModal = ({
 
   if (!showModal) return null;
 
+  const cerrarModal = () => {
+    setSpecialty("");
+    setSearchQuery("");
+    setFilteredDoctors([]);
+    setHasSearched(false);
+    onClose();
+  }
+
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 flex items-center justify-center p-4 z-50">
-      <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 w-full max-w-6xl max-h-[90vh] overflow-y-auto relative">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 bg-black flex items-center justify-center xl:p-4 z-50">
+      <div className="bg-white/70 backdrop-blur-sm xl:rounded-3xl shadow-xl border border-gray-200/50 w-screen xl:max-w-6xl h-screen  xl:max-h-[90vh] overflow-y-auto relative">
         {/* Botón de cierre */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 text-3xl font-bold z-10 bg-white/70 w-10 h-10 rounded-full flex items-center justify-center"
+          onClick={cerrarModal}
+          className="absolute top-1 right-4 text-gray-600 hover:text-gray-800 text-3xl font-bold z-10 rounded-full flex items-center justify-center"
           aria-label="Cerrar modal"
         >
           ×
@@ -106,7 +114,7 @@ const SearchModal = ({
                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition-shadow bg-white shadow-sm"
               >
                 <option value="" disabled>
-                  Selecciona una especialidad
+                  Todas
                 </option>
                 {[...new Set(profesionales?.map((p) => p.especialidad))]
                   .sort()
@@ -115,6 +123,7 @@ const SearchModal = ({
                       {spec}
                     </option>
                   ))}
+                 
               </select>
             </div>
 
@@ -171,7 +180,7 @@ const SearchModal = ({
 
               {/* Resultados encontrados */}
               {hasSearched && filteredDoctors.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 place-items-center">
                   {filteredDoctors.map((doctor, index) => (
                     <div
                       key={doctor.id}

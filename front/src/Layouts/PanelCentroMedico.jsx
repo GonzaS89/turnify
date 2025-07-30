@@ -56,7 +56,7 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => {
       </div>
 
       {/* Sección de KPIs / Acceso Rápido */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5 mb-10">
         {/* Gestionar Médicos */}
         <div
           onClick={() => setShowGestionMedicos(true)}
@@ -78,7 +78,7 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => {
         </div>
 
         {/* Base de Pacientes */}
-        <div className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100 opacity-80">
+        {/* <div className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100 opacity-80">
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg text-white">
               <FaUsers className="w-6 h-6" />
@@ -90,7 +90,7 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => {
             <span className="text-2xl font-bold text-teal-600">345</span>
             <span className="text-xs text-gray-500">registrados</span>
           </div>
-        </div>
+        </div> */}
 
   
 

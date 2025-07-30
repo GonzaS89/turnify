@@ -72,7 +72,7 @@ const TurnSelectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-opacity-75 bg-black flex items-center justify-center p-4 z-50 backdrop-blur-md">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] overflow-hidden border border-gray-200">
         
         {/* Header */}

@@ -1,16 +1,24 @@
 // src/components/TurnList.jsx
 import { useState, useEffect, useRef } from 'react';
-import { FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus } from 'react-icons/fa';
+import { FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
 import { TbRefresh } from "react-icons/tb";
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import useAllCoberturas from '../../customHooks/useAllCoberturas';
 import useProfesionalxId from '../../customHooks/useProfesionalxId';
+import BorrarTurno from './components/BorrarTurno';
 
 const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTurnos, refreshTrigger, tipoConsultorio, handleActualizarTurnos }) => {
   const [actualizarTurnos, setActualizarTurnos] = useState(refreshTrigger);
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
+  const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
+  const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
+
+  const handleBorrarTurno = (id) => {
+    setIdTurnoSeleccionado(id);
+    setShowModalBorrarTurno(true);
+  }
 
   const coberturaElegida = (value) => {
     if (value === 'particular') return 'Particular';
@@ -142,7 +150,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center xl:p-4 z-[60]">
-      <div className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-6xl max-h-[100vh] xl:max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-6xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-5 border-b border-gray-200 bg-white">
           <h3 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">
@@ -299,6 +307,14 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
                         >
                           {turno.estado === 'reservado' ? 'Ocupado' : 'Disponible'}
                         </span>
+                        {turno.estado === 'disponible' && (
+                          <button
+                            onClick={() => handleBorrarTurno(turno.id)}
+                            className="text-red-500 hover:text-red-700 transition"
+                          >
+                            <FaTrashAlt />
+                          </button>
+                        )}
                       </div>
 
                       {turno.DNI ? (
@@ -341,6 +357,9 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
           </div>
         </div>
       </div>
+      {showModalBorrarTurno && (
+        <BorrarTurno  idTurno={IdTurnoSeleccionado} onClose={()=> setShowModalBorrarTurno(false)} actualizarTurnos={handleActualizarTurnos}/>
+      )}
     </div>
   );
 };

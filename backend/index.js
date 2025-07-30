@@ -87,7 +87,7 @@ app.get("/api/turnos-profesional/:profesionalId/:consultorioId", async (req, res
     // Tu consulta SQL para obtener los turnos del profesional
     const query = `
       SELECT
-          t.id AS turno_id,
+          t.id,
           CONCAT(p.apellido, ', ', p.nombre) AS medico,
           p.especialidad AS especialidad,
           c.direccion,
@@ -411,6 +411,39 @@ app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId
     } catch (error) {
         console.error("Error al eliminar cobertura del consultorio:", error);
         res.status(500).json({ message: "Error interno del servidor al eliminar la cobertura." });
+    }
+});
+
+// BORRAR TURNO //
+
+app.delete("/api/borrarTurno/:idTurno", async (req, res) => {
+    const { idTurno } = req.params;
+
+    try {
+        // Validación básica de los IDs
+        if (!idTurno || isNaN(idTurno)) {
+            return res.status(400).json({ message: "ID turno inválido." });
+        }
+
+        // Consulta SQL para eliminar la relación en la tabla intermedia
+        const query = `
+            DELETE FROM turnos AS t
+            WHERE  t.id = ?
+        `;
+        const [resultado] = await pool.execute(query, [idTurno]);
+
+        // 'affectedRows' indica cuántas filas fueron eliminadas
+        if (resultado.affectedRows === 0) {
+            // Si no se eliminó ninguna fila, es probable que la relación no existiera
+            return res.status(404).json({ message: "Turno no encontrado." });
+        }
+
+        // Éxito: retorna un estado 200 OK y un mensaje
+        res.status(200).json({ message: "Turno eliminado exitosamente." });
+
+    } catch (error) {
+        console.error("Error al eliminar turno:", error);
+        res.status(500).json({ message: "Error interno del servidor al eliminar turno." });
     }
 });
 

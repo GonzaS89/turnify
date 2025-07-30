@@ -100,7 +100,7 @@ const Main = ({ openLogin }) => {
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
       <Header openLogin={openLogin} />
       <Hero enviarIds={recibirIds} />
-      <hr className="my-16 border-gray-200 border-t-2" />
+
       <Steps />
       <hr className="my-16 border-gray-200 border-t-2" />
       <Benefits />

@@ -8,9 +8,9 @@ const Benefits = () => {
 
 
     return (
-        <section 
-        id='beneficios'
-        className="
+        <section
+            id='beneficios'
+            className="
             py-20
             px-4
             bg-white/70
@@ -45,7 +45,7 @@ const Benefits = () => {
                 animate-pulse
                 delay-1000
             "></div>
-            
+
             {/* Contenido principal */}
             <div className="
                 max-w-7xl
@@ -74,7 +74,8 @@ const Benefits = () => {
 
                 {/* Título principal */}
                 <h2 className="
-                    text-4xl
+                    text-2xl
+                    lg:text-4xl
                     font-bold
                     text-gray-900
                     mb-6
@@ -95,7 +96,7 @@ const Benefits = () => {
 
                 {/* Subtítulo */}
                 <p className="
-                    text-xl
+                    text-lg
                     text-gray-600
                     max-w-3xl
                     mx-auto
@@ -104,8 +105,8 @@ const Benefits = () => {
                     animate-fade-in-up
                     delay-100
                 ">
-                    Para médicos y centros de salud, nuestra plataforma es la herramienta clave 
-                    para <span className="font-semibold text-gray-800">optimizar tu gestión</span> 
+                    Para médicos y centros de salud, nuestra plataforma es la herramienta clave
+                    para <span className="font-semibold text-gray-800">optimizar tu gestión</span>
                     {' '}y mejorar la experiencia de tus pacientes.
                 </p>
 
@@ -121,39 +122,39 @@ const Benefits = () => {
                     animate-fade-in-up
                     delay-200
                 ">
-                    <div className="animate-fade-in-up" style={{animationDelay: '300ms'}}>
-                        <Benefit 
-                            icono={<FcCalendar />} 
-                            titulo={'Todo organizado'} 
-                            contenido={'Reduce la carga administrativa y evita sobrecargas con un sistema de turnos 24/7.'} 
+                    <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                        <Benefit
+                            icono={<FcCalendar />}
+                            titulo={'Todo organizado'}
+                            contenido={'Reduce la carga administrativa y evita sobrecargas con un sistema de turnos 24/7.'}
                         />
                     </div>
-                    <div className="animate-fade-in-up" style={{animationDelay: '400ms'}}>
-                        <Benefit 
-                            icono={<FcBullish />} 
-                            titulo={'Mayor Visibilidad'} 
-                            contenido={'Atrae nuevos pacientes y expande tu práctica profesional apareciendo en nuestro directorio.'} 
+                    <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                        <Benefit
+                            icono={<FcBullish />}
+                            titulo={'Mayor Visibilidad'}
+                            contenido={'Atrae nuevos pacientes y expande tu práctica profesional apareciendo en nuestro directorio.'}
                         />
                     </div>
-                    <div className="animate-fade-in-up" style={{animationDelay: '500ms'}}>
-                        <Benefit 
-                            icono={<FcSms />} 
-                            titulo={'Comunicación Fluida'} 
-                            contenido={'Envía recordatorios automáticos y mantén a tus pacientes informados sin esfuerzo.'} 
+                    <div className="animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                        <Benefit
+                            icono={<FcSms />}
+                            titulo={'Comunicación Fluida'}
+                            contenido={'Envía recordatorios automáticos y mantén a tus pacientes informados sin esfuerzo.'}
                         />
                     </div>
-                    <div className="animate-fade-in-up" style={{animationDelay: '600ms'}}>
-                        <Benefit 
-                            icono={<FcSmartphoneTablet/>} 
-                            titulo={'Acceso móvil'} 
-                            contenido={'Tus pacientes pueden reservar, reprogramar o cancelar turnos desde su celular en cualquier momento.'} 
+                    <div className="animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                        <Benefit
+                            icono={<FcSmartphoneTablet />}
+                            titulo={'Acceso móvil'}
+                            contenido={'Tus pacientes pueden reservar, reprogramar o cancelar turnos desde su celular en cualquier momento.'}
                         />
                     </div>
-                    <div className="animate-fade-in-up" style={{animationDelay: '700ms'}}>
-                        <Benefit 
-                            icono={<FcLeave />} 
-                            titulo={'Reduce Ausencias'} 
-                            contenido={'Disminuye el ausentismo de pacientes con recordatorios de turno por WhatsApp.'} 
+                    <div className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
+                        <Benefit
+                            icono={<FcLeave />}
+                            titulo={'Reduce Ausencias'}
+                            contenido={'Disminuye el ausentismo de pacientes con recordatorios de turno por WhatsApp.'}
                         />
                     </div>
                 </div>
@@ -164,7 +165,7 @@ const Benefits = () => {
                     animate-fade-in-up
                     delay-300
                 ">
-                    <a 
+                    <a
                         href={whatsappLink}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -193,10 +194,10 @@ const Benefits = () => {
                         "
                     >
                         Comenzar Ahora
-                        <svg 
-                            className="w-4 h-4 transition-transform group-hover:translate-x-1" 
-                            fill="none" 
-                            stroke="currentColor" 
+                        <svg
+                            className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                            fill="none"
+                            stroke="currentColor"
                             viewBox="0 0 24 24"
                         >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />

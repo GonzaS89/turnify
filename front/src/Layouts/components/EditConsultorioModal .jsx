@@ -147,7 +147,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
               disabled={loading}
             />
           </div>
-
+{/* 
           <div>
             <label htmlFor="tipo" className="block text-gray-700 text-lg font-semibold mb-1">Tipo:</label>
             <select
@@ -161,7 +161,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
               <option value="propio">Consultorio Particular</option>
               <option value="centro_medico">Centro Médico</option>
             </select>
-          </div>
+          </div> */}
 
           <div>
             <label htmlFor="provincia" className="block text-gray-700 text-lg font-semibold mb-1">Provincia:</label>
@@ -227,7 +227,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="hora_inicio" className="block text-gray-700 text-lg font-semibold mb-1">Hora de Inicio:</label>
               <input
@@ -252,7 +252,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
                 disabled={loading}
               />
             </div>
-          </div>
+          </div> */}
 
           <div className="flex justify-center mt-6">
             <button

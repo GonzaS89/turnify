@@ -30,7 +30,7 @@ const App = () => {
         All routes, header, and footer should be within this to
         ensure consistent styling and proper layout.
       */}
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 font-sans text-gray-800">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-300 to-cyan-400 font-sans text-gray-800">
 
     
 

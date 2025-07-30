@@ -21,7 +21,7 @@ export const Header = ( { openLogin }) => {
         <div className="container mx-auto px-4 flex justify-between items-center relative z-10">
           {/* Logo Centrado en Mobile */}
           <a href="#inicio" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
-            <img src={logo} alt="TurniFy Logo" className='w-24 h-auto md:w-20'/>
+            <img src={logo} alt="TurniFy Logo" className='w-24 lg:w-16 h-auto md:w-20'/>
           </a>
 
           {/* Desktop Navigation */}
@@ -77,7 +77,7 @@ export const Header = ( { openLogin }) => {
             <div className="flex space-x-3">
               <button
                 onClick={() => { openLogin(true); closeMobileMenu(); }} // Close menu when login is clicked
-                className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg font-bold hover:bg-blue-50 transition-colors">
+                className="px-4 py-2 border bg-blue-500 text-slate-100 rounded-lg font-bold hover:bg-blue-900 transition-colors">
                 Iniciar Sesión
               </button>
             
@@ -171,7 +171,7 @@ export const Header = ( { openLogin }) => {
     <div className="mt-auto pt-6 border-t border-gray-200 flex flex-col gap-4">
       <button
         onClick={() => { openLogin(true); closeMobileMenu(); }}
-        className="w-full px-5 py-3 border border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 text-base shadow-sm hover:shadow-md" > {/* Slightly more rounded, added subtle shadow */}
+        className="w-full px-5 py-3 border bg-blue-500 text-slate-100 rounded-lg font-bold hover:bg-blue-900  transition-colors duration-200 text-base shadow-sm hover:shadow-md" > {/* Slightly more rounded, added subtle shadow */}
         Iniciar Sesión
       </button>
     

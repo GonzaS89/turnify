@@ -1,164 +1,135 @@
 import React, { useState } from 'react';
-import { FaPencilAlt, FaUserEdit } from 'react-icons/fa'; // Cambiamos FaUser por FaUserEdit para el nuevo botón
-import { IoIosClose } from "react-icons/io";
-import EditConsultorioModal from './EditConsultorioModal ';
-import EditCredentialsModal from './EditCredentialsModal';
-// **Necesitarás crear este nuevo componente de modal por separado**
-// import EditCredentialsModal from './EditCredentialsModal';
+import { FaBuilding, FaUserShield, FaEdit, FaKey, FaTimes } from 'react-icons/fa';
+import EditConsultorioModal from '../components/EditConsultorioModal ';
+import EditCredentialsModal from '../components/EditCredentialsModal';
 
 const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
   const [isEditConsultorioModalOpen, setIsEditConsultorioModalOpen] = useState(false);
-  const [isEditCredentialsModalOpen, setIsEditCredentialsModalOpen] = useState(false); // Nuevo estado para el modal de credenciales
+  const [isEditCredentialsModalOpen, setIsEditCredentialsModalOpen] = useState(false);
 
   if (!isOpen) return null;
 
-  // Funciones para el modal de edición de consultorio
-  const handleOpenEditConsultorioModal = () => {
-    setIsEditConsultorioModalOpen(true);
-  };
-
-  const handleCloseEditConsultorioModal = () => {
-    setIsEditConsultorioModalOpen(false);
-  };
-
+  const handleOpenEditConsultorioModal = () => setIsEditConsultorioModalOpen(true);
+  const handleCloseEditConsultorioModal = () => setIsEditConsultorioModalOpen(false);
   const handleSaveEditedConsultorio = (updatedData) => {
-    console.log('Datos actualizados del consultorio:', updatedData);
-    // Aquí enviar a la API para actualizar los datos del consultorio
+    console.log('Datos del consultorio actualizados:', updatedData);
     setIsEditConsultorioModalOpen(false);
-    // Puedes llamar a una función de refresco de datos del consultorio si es necesario
   };
 
-  // Funciones para el nuevo modal de edición de credenciales
-  const handleOpenEditCredentialsModal = () => {
-    setIsEditCredentialsModalOpen(true);
-  };
-
-  const handleCloseEditCredentialsModal = () => {
-    setIsEditCredentialsModalOpen(false);
-  };
-
-  // Esta función recibirá los datos actualizados del modal EditCredentialsModal
+  const handleOpenEditCredentialsModal = () => setIsEditCredentialsModalOpen(true);
+  const handleCloseEditCredentialsModal = () => setIsEditCredentialsModalOpen(false);
   const handleSaveEditedCredentials = (updatedCredentials) => {
     console.log('Credenciales actualizadas:', updatedCredentials);
-    // Aquí es donde deberías enviar los datos actualizados (usuario/email y contraseña) a tu API
-    // Por ejemplo: updateUserCredentials(updatedCredentials);
-    setIsEditCredentialsModalOpen(false); // Cierra el modal de credenciales después de guardar
+    setIsEditCredentialsModalOpen(false);
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
-        <div className={`
-          bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full
-          max-w-md md:max-w-xl lg:max-w-3xl xl:max-w-4xl
-          flex flex-col gap-6 relative
-          max-h-[90vh] overflow-hidden
-        `}>
-          {/* Botón de cerrar del modal de ajustes principal */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
-            aria-label="Cerrar modal de ajustes"
-          >
-            <IoIosClose className="w-6 h-6" />
-          </button>
+      {/* Fondo oscuro */}
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 xlp-4 transition-all duration-300">
+        <div className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-4xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden animate-fade-up">
+          
+          {/* Encabezado con gradiente */}
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 mb-8">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-600 rounded-full text-white">
+                <FaUserShield className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Ajustes del Consultorio</h2>
+                <p className="text-gray-600 text-sm">Gestiona la información de tu consultorio y tus credenciales</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              aria-label="Cerrar modal"
+            >
+              <FaTimes className="w-6 h-6" />
+            </button>
+          </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-indigo-800 text-center mb-4 leading-tight">
-            Ajustes del Consultorio
-          </h2>
-
-          <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
+          {/* Contenido con scroll */}
+          <div className="flex-grow overflow-y-auto px-6 pb-6 custom-scrollbar">
             {consultorio ? (
-              // Contenedor principal para las dos columnas en escritorio
-              <div className="flex flex-col lg:flex-row lg:gap-8 xl:gap-12 text-gray-700">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-                {/* --- Columna Izquierda: Datos Generales del Consultorio --- */}
-                <div className="lg:w-1/2 pb-4 lg:pb-0 border-b lg:border-b-0 lg:border-r border-gray-200 lg:pr-8 mb-6 lg:mb-0">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">Datos Generales</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Nombre del Consultorio:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.nombre || 'No especificado'}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Tipo:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.tipo === 'propio' ? 'Consultorio Particular' : `Centro Médico: ${consultorio.nombre}`}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Dirección:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.direccion || 'No especificado'}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Localidad:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.localidad || 'No especificado'}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Provincia:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.provincia || 'No especificado'}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Horario de Atención:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.inicio || 'N/A'} - {consultorio.cierre || 'N/A'} Hs.</p>
-                    </div>
+                {/* --- Sección: Datos del Consultorio --- */}
+                <section>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <FaBuilding className="text-blue-500 mr-2 w-5 h-5" />
+                    Información del Consultorio
+                  </h3>
+                  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
+                    <DetailItem label="Nombre" value={consultorio.nombre || 'No especificado'} />
+                    <DetailItem 
+                      label="Tipo" 
+                      value={
+                        consultorio.tipo === 'propio' 
+                          ? 'Consultorio Particular' 
+                          : `Centro Médico: ${consultorio.nombre}`
+                      } 
+                    />
+                    <DetailItem label="Dirección" value={consultorio.direccion || 'No especificado'} />
+                    <DetailItem label="Localidad" value={consultorio.localidad || 'No especificado'} />
+                    <DetailItem label="Provincia" value={consultorio.provincia || 'No especificado'} />
+                   
                   </div>
-                  <div className="flex justify-center mt-6">
+                  <div className="mt-4 flex justify-center">
                     <button
                       onClick={handleOpenEditConsultorioModal}
-                      className="py-2.5 px-7 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-md flex items-center justify-center text-base sm:text-lg"
-                      aria-label="Editar datos generales del consultorio"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <FaPencilAlt className="mr-2" />
-                      Editar Datos
+                      <FaEdit /> Editar Datos
                     </button>
                   </div>
-                </div>
+                </section>
 
-                {/* --- Columna Derecha: Cuenta de Usuario --- */}
-                <div className="lg:w-1/2 pt-6 lg:pt-0 lg:pl-8">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">Mi Cuenta</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Usuario:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.usuario || 'No especificado'}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-base sm:text-lg">Contraseña:</p>
-                      <p className="text-lg sm:text-xl text-gray-900">{consultorio.contrasena}</p> {/* Siempre ocultar la contraseña */}
-                    </div>
+                {/* --- Sección: Cuenta de Usuario --- */}
+                <section>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <FaUserShield className="text-purple-500 mr-2 w-5 h-5" />
+                    Credenciales de Acceso
+                  </h3>
+                  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
+                    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
+                    <DetailItem label="Contraseña" value="••••••••" hint="Oculta por seguridad" />
                   </div>
-                  <div className="flex justify-center mt-6"> {/* Eliminar gap si solo hay un botón */}
+                  <div className="mt-4 flex justify-center">
                     <button
-                      onClick={handleOpenEditCredentialsModal} // Llama al nuevo handler
-                      className="py-2.5 px-7 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md flex items-center justify-center text-base sm:text-lg"
-                      aria-label="Cambiar usuario y contraseña"
+                      onClick={handleOpenEditCredentialsModal}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                      <FaUserEdit className="mr-2" /> {/* Icono más genérico para "editar usuario" */}
-                      Cambiar Credenciales
+                      <FaKey /> Cambiar Credenciales
                     </button>
                   </div>
-                </div>
+                </section>
 
               </div>
             ) : (
-              <p className="text-red-500 text-center py-4">No se pudieron cargar los datos del consultorio.</p>
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-5 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <p className="font-bold">Error al cargar los datos</p>
+                <p className="text-sm mt-1">No se pudieron obtener los datos del consultorio. Intenta más tarde.</p>
+              </div>
             )}
           </div>
 
-          {/* Botón de cerrar ajustes principal */}
-          <div className="flex justify-center mt-6">
+          {/* Pie del modal */}
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
             <button
               onClick={onClose}
-              className="py-3 px-8 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-md text-base sm:text-lg"
+              className="px-6 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
             >
-              Cerrar Ajustes
+              Cerrar
             </button>
           </div>
         </div>
       </div>
 
-      {/* Modales secundarios (renderizados condicionalmente) */}
-
-      {/* Modal de Edición de Datos del Consultorio */}
+      {/* Modales secundarios */}
       <EditConsultorioModal
         isOpen={isEditConsultorioModalOpen}
         onClose={handleCloseEditConsultorioModal}
@@ -166,26 +137,24 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
         onSave={handleSaveEditedConsultorio}
       />
 
-<EditCredentialsModal
-  consultorioId={consultorio.id}
-  isOpen={isEditCredentialsModalOpen}
-  onClose={handleCloseEditCredentialsModal}
-  currentUsername={consultorio.usuario} // Pasa el usuario/email actual desde `consultorio`
-  onSave={handleSaveEditedCredentials} // La función que manejará el guardado en ConsultorioSettingsModal
-/>
-
-      {/* Nuevo Modal de Edición de Credenciales (Usuario y Contraseña) */}
-      {/* Debes crear este componente: */}
-      {/*
       <EditCredentialsModal
+        consultorioId={consultorio?.id}
         isOpen={isEditCredentialsModalOpen}
         onClose={handleCloseEditCredentialsModal}
-        currentUsername={consultorio.usuario} // Pasa el usuario/email actual
-        onSave={handleSaveEditedCredentials} // Recibe { username, newPassword } o similar
+        currentUsername={consultorio?.usuario}
+        onSave={handleSaveEditedCredentials}
       />
-      */}
     </>
   );
 };
+
+// Componente auxiliar para mostrar pares label/valor
+const DetailItem = ({ label, value, hint }) => (
+  <div>
+    <p className="text-sm font-semibold text-gray-700 mb-1">{label}</p>
+    <p className="text-base font-medium text-gray-900">{value}</p>
+    {hint && <p className="text-xs text-gray-500 italic mt-1">{hint}</p>}
+  </div>
+);
 
 export default ConsultorioSettingsModal;

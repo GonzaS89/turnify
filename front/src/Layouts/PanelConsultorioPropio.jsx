@@ -30,7 +30,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   const actualizarTurnos = () => {
     setRefreshTrigger((prev) => prev + 1);
-    setTimeout(() => setRefreshTrigger(0), 2000);
+    setTimeout(() => setRefreshTrigger(0), 100);
   };
 
   // Turnos reservados para hoy
@@ -155,25 +155,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-green-600">{isLoadingTurnos ? '...' : turnsToday}</span>
               <span className="text-xs text-gray-500">hoy</span>
-            </div>
-          </div>
-
-          {/* Habilitar Turnos */}
-          <div
-            onClick={() => setShowModal(true)}
-            className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg text-white">
-                <FaClock className="w-6 h-6" />
-              </div>
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1">Habilitar Turnos</h3>
-            <p className="text-gray-600 text-sm mb-3">Abre nuevos horarios para que los pacientes reserven.</p>
-            <div className="flex items-center justify-between">
-              <span className="inline-block bg-indigo-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
-                Gestionar
-              </span>
             </div>
           </div>
 
