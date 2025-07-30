@@ -38,6 +38,13 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
 
+  const formatearHora = ( hora ) => {
+    if (!hora) return '';
+    const [horaParte, minutoParte] = hora.split(':');
+    const horaFormateada = `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
+    return horaFormateada;
+  }
+
   // Establecer fecha por defecto
   useEffect(() => {
     if (fechasOrdenadas.length > 0 && !fechaSeleccionada) {
@@ -66,7 +73,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   if (isLoading || isLoadingCoberturas) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center xl:p-6 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center xl:p-6 z-[150]">
         <div className="bg-white rounded-2xl shadow-2xl p-10 text-center max-w-xs">
           <div className="flex justify-center mb-4">
             <div className="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-blue-500"></div>
@@ -79,7 +86,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   if (error || errorCoberturas) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-6 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-6 z-[150]">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs text-center">
           <div className="text-red-500 text-5xl mb-4">❌</div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Error</h2>
@@ -99,7 +106,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
 
   if (turnos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-6 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-6 z-[150]">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs w-full">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-gray-800">Tu Agenda</h3>
@@ -282,7 +289,7 @@ const TurnList = ({ profesionalId, consultorioId, onClose, openModalHabilitarTur
                           >
                             #{idx + 1}
                           </span>
-                          {turno.hora && <span className="text-gray-600 font-medium">{turno.hora}</span>}
+                          {turno.hora && <span className="text-gray-600 font-medium">{formatearHora(turno.hora)}</span>}
                         </div>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${turno.estado === 'reservado'

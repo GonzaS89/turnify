@@ -225,6 +225,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
               onClose={() => setShowTurnosList(false)}
               openModalHabilitarTurnos={() => setShowModal(true)}
               refreshTrigger={refreshTrigger}
+              handleActualizarTurnos={actualizarTurnos}
             />
           </div>
         )}

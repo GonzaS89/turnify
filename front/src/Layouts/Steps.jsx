@@ -22,7 +22,7 @@ const Steps = () => {
     ];
 
     return (
-        <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-white to-gray-50" id='info'>
+        <section className="py-16 sm:py-20 lg:py-24 bg-white/70 rounded-2xl" id='info'>
             <div className="container mx-auto px-4">
                 <div className="text-center mb-14 sm:mb-16">
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">

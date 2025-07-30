@@ -1,9 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { FaUserDoctor } from "react-icons/fa6";
 import { BiFilterAlt, BiSearch } from "react-icons/bi";
-import BotonesConsultorios from './BotonesConsultorios';
+import BotonesConsultorios from "./BotonesConsultorios";
 
-const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, enviarIds }) => {
+const SearchModal = ({
+  showModal,
+  onClose,
+  profesionales,
+  isLoading,
+  error,
+  enviarIds,
+}) => {
   const [specialty, setSpecialty] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredDoctors, setFilteredDoctors] = useState([]);
@@ -11,7 +18,12 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
   const firstDoctorRef = useRef(null);
 
   const normalizeString = (str) => {
-    return str?.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase() || "";
+    return (
+      str
+        ?.normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase() || ""
+    );
   };
 
   useEffect(() => {
@@ -28,14 +40,15 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
     let results = [...profesionales];
 
     if (specialty) {
-      results = results.filter(doc => doc.especialidad === specialty);
+      results = results.filter((doc) => doc.especialidad === specialty);
     }
 
     if (searchQuery) {
       const query = normalizeString(searchQuery);
-      results = results.filter(doc =>
-        normalizeString(doc.nombre).includes(query) ||
-        normalizeString(doc.apellido).includes(query)
+      results = results.filter(
+        (doc) =>
+          normalizeString(doc.nombre).includes(query) ||
+          normalizeString(doc.apellido).includes(query)
       );
     }
 
@@ -44,8 +57,8 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
     if (results.length > 0) {
       setTimeout(() => {
         firstDoctorRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
+          behavior: "smooth",
+          block: "center",
         });
       }, 100);
     }
@@ -56,7 +69,6 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 flex items-center justify-center p-4 z-50">
       <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 w-full max-w-6xl max-h-[90vh] overflow-y-auto relative">
-        
         {/* Botón de cierre */}
         <button
           onClick={onClose}
@@ -81,7 +93,10 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
           <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4">
             {/* Especialidad */}
             <div className="flex flex-col">
-              <label htmlFor="specialty" className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+              <label
+                htmlFor="specialty"
+                className="text-sm font-semibold text-gray-700 mb-1 flex items-center"
+              >
                 <BiFilterAlt className="mr-1 text-indigo-500" /> Especialidad
               </label>
               <select
@@ -90,18 +105,25 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
                 onChange={(e) => setSpecialty(e.target.value)}
                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition-shadow bg-white shadow-sm"
               >
-                <option value="" disabled>Selecciona una especialidad</option>
-                {[...new Set(profesionales?.map(p => p.especialidad))]
+                <option value="" disabled>
+                  Selecciona una especialidad
+                </option>
+                {[...new Set(profesionales?.map((p) => p.especialidad))]
                   .sort()
-                  .map(spec => (
-                    <option key={spec} value={spec}>{spec}</option>
+                  .map((spec) => (
+                    <option key={spec} value={spec}>
+                      {spec}
+                    </option>
                   ))}
               </select>
             </div>
 
             {/* Búsqueda */}
             <div className="flex flex-col">
-              <label htmlFor="searchQuery" className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+              <label
+                htmlFor="searchQuery"
+                className="text-sm font-semibold text-gray-700 mb-1 flex items-center"
+              >
                 <BiSearch className="mr-1 text-indigo-500" /> Nombre o Apellido
               </label>
               <input
@@ -137,60 +159,78 @@ const SearchModal = ({ showModal, onClose, profesionales, isLoading, error, envi
               {!hasSearched && (
                 <div className="text-center py-16">
                   <FaUserDoctor className="text-6xl text-indigo-200 mx-auto mb-4" />
-                  <h3 className="text-gray-700 font-semibold text-lg">¿A quién estás buscando?</h3>
+                  <h3 className="text-gray-700 font-semibold text-lg">
+                    ¿A quién estás buscando?
+                  </h3>
                   <p className="text-gray-500 mt-2 max-w-md mx-auto">
-                    Usa los filtros de arriba para encontrar médicos por especialidad o nombre.
+                    Usa los filtros de arriba para encontrar médicos por
+                    especialidad o nombre.
                   </p>
                 </div>
               )}
 
               {/* Resultados encontrados */}
               {hasSearched && filteredDoctors.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {filteredDoctors.map((doctor, index) => (
                     <div
                       key={doctor.id}
                       ref={index === 0 ? firstDoctorRef : null}
-                      className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-md border border-gray-200 hover:border-indigo-300 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full group"
+                      class="relative bg-white/90 backdrop-blur-md rounded-3xl shadow-xl border border-gray-100 hover:border-indigo-400 hover:shadow-2xl transform transition-all duration-500 hover:scale-[1.02] flex flex-col h-full group overflow-hidden w-80"
                     >
-                      {/* Cabecera */}
-                      <div className="p-5 pb-3 border-b border-gray-100">
-                        <div className="flex items-start gap-4">
-                          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl text-white flex-shrink-0 shadow-sm group-hover:from-indigo-600 group-hover:to-purple-700 transition-all duration-300">
-                            <FaUserDoctor className="text-2xl" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-700 transition-colors truncate">
-                              {doctor.apellido}, {doctor.nombre}
-                            </h3>
-                            <p className="text-indigo-600 font-semibold text-sm mt-1">{doctor.especialidad}</p>
-                            <p className="text-gray-500 text-xs mt-1">Mat: {doctor.matricula}</p>
-                            {doctor.consultorios && doctor.consultorios.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {doctor.consultorios.slice(0, 2).map((consultorio) => (
-                                  <span
-                                    key={consultorio.id}
-                                    className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-medium truncate max-w-[120px]"
-                                    title={consultorio.nombre}
-                                  >
-                                    {consultorio.nombre}
-                                  </span>
-                                ))}
-                                {doctor.consultorios.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{doctor.consultorios.length - 2}</span>
+                      <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 opacity-50 z-0"></div>
+
+                      <div class="relative z-10 flex flex-col h-full">
+                        <div class="p-6 pb-4 border-b border-gray-100/70">
+                          <div class="flex items-start gap-5">
+                            <div
+                              class="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-xl text-white flex-shrink-0 shadow-lg 
+                 group-hover:from-indigo-600 group-hover:to-purple-700 transition-all duration-300 transform group-hover:scale-105"
+                            >
+                              <FaUserDoctor class="text-3xl" />
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <h3 class="text-xl font-extrabold text-gray-900 group-hover:text-indigo-800 transition-colors duration-300 truncate mb-1">
+                                {doctor.apellido}, {doctor.nombre}
+                              </h3>
+                              <p class="text-indigo-700 font-bold text-md mt-1">
+                                {doctor.especialidad}
+                              </p>
+                              <p class="text-gray-500 text-sm mt-1">
+                                Matrícula: {doctor.matricula}
+                              </p>
+                              {doctor.consultorios &&
+                                doctor.consultorios.length > 0 && (
+                                  <div class="mt-3 flex flex-wrap gap-2">
+                                    {doctor.consultorios
+                                      .slice(0, 2)
+                                      .map((consultorio) => (
+                                        <span
+                                          key={consultorio.id}
+                                          class="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-semibold truncate max-w-[150px] 
+                         hover:bg-indigo-200 transition-colors cursor-help"
+                                          title={consultorio.nombre}
+                                        >
+                                          {consultorio.nombre}
+                                        </span>
+                                      ))}
+                                    {doctor.consultorios.length > 2 && (
+                                      <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                                        +{doctor.consultorios.length - 2} más
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
-                              </div>
-                            )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Botones de consultorios */}
-                      <div className="p-4 bg-gray-50/70 rounded-b-2xl border-t border-gray-100 transition-all duration-300">
-                        <BotonesConsultorios
-                          idProfesional={doctor.id}
-                          enviarIds={enviarIds}
-                        />
+                        <div class="p-5 bg-gray-50/80 rounded-b-3xl border-t border-gray-100/70 mt-auto">
+                          <BotonesConsultorios
+                            idProfesional={doctor.id}
+                            enviarIds={enviarIds}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}

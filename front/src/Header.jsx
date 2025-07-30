@@ -42,7 +42,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='info'
                 delay={100}
-                offset={-100}
+                offset={-150}
                 smooth={true}
                 duration={1000}
                 >
@@ -54,7 +54,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='beneficios'
                 delay={100}
-                offset={-100}
+                offset={-150}
                 smooth={true}
                 duration={1000}
                 >
@@ -66,7 +66,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='preguntas-frecuentes'
                 delay={100}
-                offset={-100}
+                offset={-150}
                 smooth={true}
                 duration={1000}
                 >
@@ -115,42 +115,56 @@ export const Header = ( { openLogin }) => {
       </button>
     </div>
     <nav className="flex-grow">
-      <ul className="flex flex-col space-y-2"> {/* Tighter vertical spacing for links */}
+      <ul className="flex flex-col"> {/* Tighter vertical spacing for links */}
         <li>
-          <a
-            href="#hero-section"
+          <Link
+            to='hero-section'
+            smooth={true}
+            duration={500}
+            offset={-150}
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200" // Added horizontal padding and rounded hover background
             onClick={closeMobileMenu}
           >
             Inicio
-          </a>
+          </Link>
         </li>
         <li>
-          <a
-            href="#info"
+          <Link
+          to='info'
+            smooth={true}
+            duration={500}
+            offset={-150}
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}
           >
             Info
-          </a>
+          </Link>
         </li>
         <li>
-          <a
+          <Link
+            to='beneficios'
+            smooth={true}
+            duration={500}
+            offset={-150}
             href="#beneficios"
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}
           >
             Beneficios
-          </a>
+          </Link>
         </li>
         <li>
-          <a
+          <Link
+            to='preguntas-frecuentes'
+            smooth={true}
+            duration={500}
+            offset={-150}
             href="#preguntas-frecuentes"
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}
           >
             Preguntas Frecuentes
-          </a>
+          </Link>
         </li>
       </ul>
     </nav>

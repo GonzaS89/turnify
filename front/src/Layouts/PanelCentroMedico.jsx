@@ -92,23 +92,7 @@ const PanelCentroMedico = ({ consultorioData: consultorio }) => {
           </div>
         </div>
 
-        {/* Agregar Turno */}
-        <div
-          onClick={() => setShowModalTurnos(true)}
-          className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg text-white">
-              <FaCalendarPlus className="w-6 h-6" />
-            </div>
-          </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-1">Agregar Turno</h3>
-          <p className="text-gray-600 text-sm mb-3">Registra un nuevo turno manualmente.</p>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-green-600">+</span>
-            <span className="text-xs text-gray-500">nuevo turno</span>
-          </div>
-        </div>
+  
 
         {/* Coberturas Médicas */}
         <div

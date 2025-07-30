@@ -104,7 +104,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
   return (
     <>
       {/* Modal principal */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">

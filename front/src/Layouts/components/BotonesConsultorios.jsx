@@ -33,7 +33,7 @@ const BotonesConsultorios = ({ idProfesional, enviarIds }) => {
     );
 
   return (
-    <div className="flex flex-wrap justify-center gap-3 p-3">
+    <div className="flex flex-wrap justify-center gap-3">
       {consultorios.map((consultorio) => (
         <button
           key={consultorio.id}
@@ -49,22 +49,7 @@ const BotonesConsultorios = ({ idProfesional, enviarIds }) => {
         >
           {/* Icono y título */}
           <div className="flex items-center gap-3 w-full mb-2">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-lg text-white shadow-sm group-hover:from-blue-600 group-hover:to-indigo-700 transition-all duration-300">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-2m-2 0H9m2 0h2m4 0h2"
-                />
-              </svg>
-            </div>
+            
             <h4 className="font-semibold text-gray-800 truncate flex-1 text-sm capitalize">
               {consultorio.tipo === 'propio'
                 ? 'Consultorio Particular'
@@ -74,12 +59,12 @@ const BotonesConsultorios = ({ idProfesional, enviarIds }) => {
           </div>
 
           {/* Dirección */}
-          <p className="text-gray-600 text-xs text-center pl-7 -mt-1 leading-tight">
-            {consultorio.direccion}, {consultorio.localidad}
+          <p className="text-gray-600 text-opacity-75 text-xs text-center -mt-1 leading-tight">
+            {consultorio.direccion} <br /> {consultorio.localidad}
           </p>
 
           {/* Badge de disponibilidad */}
-          <div className="pl-7 w-full mt-2">
+          <div className="w-full mt-2">
             <Turnosdisponibles idProfesional={idProfesional} idConsultorio={consultorio.id} />
           </div>
 

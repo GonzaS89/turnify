@@ -13,10 +13,8 @@ const Benefits = () => {
         className="
             py-20
             px-4
-            bg-gradient-to-br
-            from-gray-50
-            via-white
-            to-indigo-50
+            bg-white/70
+            rounded-2xl
             text-center
             relative
             overflow-hidden
