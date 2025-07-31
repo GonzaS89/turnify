@@ -447,6 +447,36 @@ app.delete("/api/borrarTurno/:idTurno", async (req, res) => {
     }
 });
 
+// BORRAR TODOS TURNOS DE UNA FECHA POR ID CONSULTORIO Y ID PROFESIONAL //
+
+app.delete("/api/borrarTodosLosTurnos", async (req, res) => {
+    const { IdConsultorio, idProfesional, fecha } = req.body;
+
+    try {
+        
+       
+        // Consulta SQL para eliminar la relación en la tabla intermedia
+        const query = `
+        DELETE FROM turnos
+        WHERE consultorio_id = ? AND profesional_id = ? AND fecha = ? AND estado = 'disponible'
+        `;
+        const [resultado] = await pool.execute(query, [IdConsultorio, idProfesional, fecha]);
+
+        // 'affectedRows' indica cuántas filas fueron eliminadas
+        if (resultado.affectedRows === 0) {
+            // Si no se eliminó ninguna fila, es probable que la relación no existiera
+            return res.status(404).json({ message: "Turnos no encontrados." });
+        }
+
+        // Éxito: retorna un estado 200 OK y un mensaje
+        res.status(200).json({ message: "Turnos eliminados exitosamente." });
+
+    } catch (error) {
+        console.error("Error al eliminar turnos:", error);
+        res.status(500).json({ message: "Error interno del servidor al eliminar turnos." });
+    }
+});
+
 // AGREGAR COBERTURA Al CONSULTORIO //
 
 app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
