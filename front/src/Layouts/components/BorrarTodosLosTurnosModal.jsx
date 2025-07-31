@@ -1,11 +1,5 @@
 import axios from 'axios';
-const BorrarTodosLosTurnosModal = ( { idConsultorio, idProfesional, fecha, onClose } ) => {
-
-    const formatearFecha = (fechaString) => {
-        if (!fechaString) return '';
-        const [year, month, day] = fechaString.split('-');
-        return `${day}-${month}-${year}`;
-      };
+const BorrarTodosLosTurnosModal = ( { idConsultorio, idProfesional, fecha, onClose, actualizarTurnos, resetearFecha } ) => {
 
       async function borrarTodosLosTurnos() {
         try {
@@ -19,6 +13,12 @@ const BorrarTodosLosTurnosModal = ( { idConsultorio, idProfesional, fecha, onClo
       
           console.log("Éxito:", response.data.message);
           onClose(); // Cierra el modal
+      
+          setTimeout(() => {
+            actualizarTurnos()
+            resetearFecha()
+          }, 1000); // Espera 1 segundo antes de actualizar los turnos
+         
           // Actualiza el estado, refresca turnos, etc.
         } catch (error) {
           if (error.response) {

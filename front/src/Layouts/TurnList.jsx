@@ -97,6 +97,8 @@ const TurnList = ({
     console.log('clickeado borrar todos los turnos', consultorioId, profesionalId, fechaSeleccionada);
   }
 
+  console.log(fechaSeleccionada)
+
 
 
   if (overallLoading) {
@@ -432,6 +434,7 @@ const TurnList = ({
           fecha={fechaSeleccionada}
           onClose={() => setShowModalBorrarTodosLosTurnos(false)}
           actualizarTurnos={handleActualizarTurnos}
+          resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
     </div>
