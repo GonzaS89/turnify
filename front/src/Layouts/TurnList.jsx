@@ -97,7 +97,20 @@ const TurnList = ({
     console.log('clickeado borrar todos los turnos', consultorioId, profesionalId, fechaSeleccionada);
   }
 
-  console.log(fechaSeleccionada)
+ const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+
+    // Ejecutar al montar
+    handleResize();
+
+    // Escuchar cambios en el tamaño
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
 
 
@@ -105,9 +118,9 @@ const TurnList = ({
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-white p-6 flex justify-between items-center">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <FaCalendarAlt className="w-5 h-5" />
+              <FaCalendarAlt className="w-5 h-5 text-blue-500" />
               Tu Agenda
             </h2>
             <button onClick={onClose} className="text-white hover:text-gray-200">
@@ -127,10 +140,10 @@ const TurnList = ({
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-white p-6 flex justify-between items-center">
             <h2 className="text-xl font-bold">Tu Agenda</h2>
             <button onClick={onClose} className="text-white hover:text-gray-200">
-              <FaTimes className="w-5 h-5" />
+              <FaTimes className="w-5 h-5 text-blue-500" />
             </button>
           </div>
           <div className="p-8 text-center">
@@ -151,9 +164,9 @@ const TurnList = ({
     return (
       <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[200] p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 text-white p-6 flex justify-between items-center">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <FaCalendarAlt className="w-5 h-5" />
+              <FaCalendarAlt className="w-5 h-5 text-blue-500" />
               Tu Agenda
             </h2>
             <button onClick={onClose} className="text-white hover:text-gray-200">
@@ -191,15 +204,15 @@ const TurnList = ({
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[150] xl:p-4 animate-fade-in">
       <div className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-6xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Encabezado */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 flex justify-between items-center">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <FaCalendarAlt className="w-5 h-5" />
+            <FaCalendarAlt className="w-5 h-5 text-blue-500" />
             {tipoConsultorio === 'propio' ? 'Tu Agenda' : `Agenda de ${nombreMedico}`}
           </h2>
           <div className="flex items-center gap-2">
             <button
               onClick={handleActualizarTurnos}
-              className="flex items-center gap-1 px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-sm transition"
+              className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-opacity-30 rounded-lg text-sm transition text-white font-medium"
               aria-label="Actualizar turnos"
             >
               <TbRefresh className="w-4 h-4" />
@@ -207,7 +220,7 @@ const TurnList = ({
             </button>
             <button
               onClick={handleAgregarTurnoClick}
-              className="flex items-center gap-1 px-3 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-sm font-medium transition"
+              className="flex items-center gap-1 px-3 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-sm font-medium transition text-white"
               aria-label="Agregar turnos"
             >
               <FaPlus className="w-4 h-4" />
@@ -215,7 +228,7 @@ const TurnList = ({
             </button>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 p-1.5 rounded-full hover:bg-white hover:bg-opacity-20 transition"
+              className="text-gray-600 hover:text-gray-200 p-1.5 rounded-full hover:bg-white hover:bg-opacity-20 transition"
               aria-label="Cerrar"
             >
               <FaTimes className="w-5 h-5" />
@@ -295,12 +308,9 @@ const TurnList = ({
 
           {/* Detalles de turnos */}
           <div className="w-full lg:w-2/3 overflow-y-auto p-6 relative">
-            <h4 className="text-xl font-semibold text-gray-800 mb-6">
-              <button 
-              className='absolute right-0 mr-4 bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors'
-              onClick={()=> handleBorrarTodosLosTurnos()}
-              >Borrar todos los turnos
-              </button>
+          <div className='flex items-center justify-between mb-4'>
+              <h4 className="text-xl font-semibold text-gray-800">
+              
               {fechaSeleccionada
                 ? (() => {
                     const [year, month, day] = fechaSeleccionada.split('-');
@@ -316,6 +326,13 @@ const TurnList = ({
                   })()
                 : 'Seleccioná una fecha'}
             </h4>
+            <button 
+              className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
+              onClick={()=> handleBorrarTodosLosTurnos()}
+              >{isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
+              </button>
+          </div>
+            
 
             {turnosDeLaFecha.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
