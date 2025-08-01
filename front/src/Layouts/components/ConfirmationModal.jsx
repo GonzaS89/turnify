@@ -10,8 +10,6 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
     const [isSuccess, setIsSuccess] = useState(false); // Controla si la reserva fue exitosa
     const [confirmedTurnoId, setConfirmedTurnoId] = useState(null); // Guarda el ID del turno confirmado
 
-    console.log(selectedTurno.hora)
-
     const { coberturas } = useAllCoberturas(); // Hook para obtener las coberturas médicas
 
     const coberturaElegida = coberturas.find(cobertura => cobertura.id == formData.selectedOption); // Asegúrate de que selectedOption sea un ID válido
@@ -32,7 +30,9 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
         setSubmitError(null); // Limpia cualquier error previo
         setIsSuccess(false); // Reinicia el estado de éxito
 
-        const turnoId = selectedTurno?.turno_id; 
+        const turnoId = selectedTurno?.id; 
+
+        console.log(turnoId)
 
         try {
             const response = await axios.put(`http://localhost:3006/api/reservarturno/${turnoId}`, {

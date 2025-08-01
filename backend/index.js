@@ -547,6 +547,45 @@ app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
     }
 });
 
+// MODIFICAR ESTADO DE TURNO //
+
+app.put('/api/modificarestadoturno/:turnoId', async (req, res) => {
+
+    const { turnoId } = req.params; 
+
+    if (!turnoId || isNaN(turnoId)) {
+        return res.status(400).json({ message: 'Turno no encontrado.' });
+    }
+
+    const query = `
+        UPDATE turnos
+        SET
+        estado = 'finalizado'
+        WHERE id = ?;
+    `;
+
+    // Los valores se pasan como un array para la consulta preparada
+
+
+    try {
+        const [result] = await pool.query(query,[turnoId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
+        }
+
+        res.status(200).json({
+            message: 'Estado del turno actualizado exitosamente.',
+            updatedId: turnoId,
+            changes: result.affectedRows
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar el estado del turno:', error);
+        res.status(500).json({ message: 'Error interno del servidor al actualizar el estado del turno.' });
+    }
+})
+
 app.put('/api/cambiarcredenciales', async (req, res) => {
     // Aquí asumimos que el ID del consultorio a actualizar se envía en el cuerpo.
     // En un sistema real, el ID vendría del token de autenticación del usuario logueado.

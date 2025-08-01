@@ -103,10 +103,9 @@ const UserDashboard = ({ onLogout }) => {
 
   // ✅ Si todo está bien, mostramos el dashboard
   const consultorioToUse = consultorio || storedConsultorio;
-  const consultorioName = consultorioToUse?.nombre || 'tu consultorio';
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <header className="flex justify-between items-center bg-white p-6 rounded-t-2xl shadow-md border-b border-gray-200 mb-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800">

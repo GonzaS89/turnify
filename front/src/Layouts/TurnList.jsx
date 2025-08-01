@@ -1,4 +1,5 @@
 // src/components/TurnList.jsx
+import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
 import { TbRefresh } from "react-icons/tb";
@@ -17,7 +18,6 @@ const TurnList = ({
   tipoConsultorio, 
   handleActualizarTurnos 
 }) => {
-  const [actualizarTurnos, setActualizarTurnos] = useState(refreshTrigger);
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
@@ -40,11 +40,11 @@ const TurnList = ({
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
 
   // Seleccionar la primera fecha por defecto
-  useEffect(() => {
-    if (fechasOrdenadas.length > 0 && !fechaSeleccionada) {
-      setFechaSeleccionada(fechasOrdenadas[0]);
-    }
-  }, [fechasOrdenadas, fechaSeleccionada]);
+  // useEffect(() => {
+  //   if (fechasOrdenadas.length > 0 && !fechaSeleccionada) {
+  //     setFechaSeleccionada(fechasOrdenadas[0]);
+  //   }
+  // }, [fechasOrdenadas, fechaSeleccionada]);
 
   // Scroll automático al centro en mobile
   useEffect(() => {
@@ -112,7 +112,22 @@ const TurnList = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleModificarEstadoTurno = async (idTurno) => {
 
+
+    try {
+      const response = await axios.put(`http://localhost:3006/api/modificarestadoturno/${idTurno}`);
+      if (response.status === 200) {
+        console.log('Estado del turno actualizado correctamente:', response.data);
+        handleActualizarTurnos();
+      } else {
+        console.error('Error al actualizar el estado del turno:', response.status, response.data);
+      }
+    } catch (error) {
+      console.error('Error al actualizar el estado del turno:', error);
+      alert('Error al actualizar el estado del turno. Por favor, intenta nuevamente más tarde.');
+    }
+  };
 
   if (overallLoading) {
     return (
@@ -294,7 +309,8 @@ const TurnList = ({
                           <div
                             key={t.id}
                             className={`w-3 h-3 rounded-full ${
-                              t.estado === 'reservado' ? 'bg-red-400' : 'bg-green-400'
+                              t.estado === 'reservado' ? 'bg-red-400' : 
+                              t.estado === 'disponible' ? 'bg-green-400' : 'bg-blue-400'}
                             }`}
                           />
                         ))}
@@ -309,23 +325,22 @@ const TurnList = ({
           {/* Detalles de turnos */}
           <div className="w-full lg:w-2/3 overflow-y-auto p-6 relative">
           <div className='flex items-center justify-between mb-4'>
-              <h4 className="text-xl font-semibold text-gray-800">
-              
-              {fechaSeleccionada
-                ? (() => {
-                    const [year, month, day] = fechaSeleccionada.split('-');
-                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                    return isNaN(date.getTime())
-                      ? 'Fecha inválida'
-                      : date.toLocaleDateString('es-AR', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        });
-                  })()
-                : 'Seleccioná una fecha'}
-            </h4>
+          <h4 className="text-xl font-semibold text-gray-800">
+  {fechaSeleccionada
+    ? (() => {
+        const [year, month, day] = fechaSeleccionada.split('-');
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        return isNaN(date.getTime())
+          ? 'Fecha inválida'
+          : date.toLocaleDateString('es-AR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            });
+      })()
+    : 'Seleccioná una fecha en el panel izquierdo'}
+</h4>
             <button 
               className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
               onClick={()=> handleBorrarTodosLosTurnos()}
@@ -334,18 +349,26 @@ const TurnList = ({
           </div>
             
 
-            {turnosDeLaFecha.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
-                <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
-                <button
-                  onClick={handleAgregarTurnoClick}
-                  className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
-                >
-                  <FaPlus /> Agregar Turnos
-                </button>
-              </div>
-            ) : (
+          {!fechaSeleccionada ? (
+  <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+    <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
+    <p className="text-gray-600 mb-4 text-lg">Seleccioná una fecha para ver los turnos.</p>
+  </div>
+) : turnosDeLaFecha.length === 0 ? (
+  <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+    <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
+    <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
+    <button
+      onClick={handleAgregarTurnoClick}
+      className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
+    >
+      <FaPlus /> Agregar Turnos
+    </button>
+  </div>
+) : 
+  // Renderizar turnos...
+
+             (
               <div className="space-y-4">
                 {turnosDeLaFecha
                   .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
@@ -354,15 +377,17 @@ const TurnList = ({
                       key={turno.id}
                       className={`p-5 rounded-xl border-l-4 transition-all ${
                         turno.estado === 'reservado'
-                          ? 'bg-red-50 border-red-500'
-                          : 'bg-green-50 border-green-500'
+                          ? 'bg-red-50 border-red-500' :
+                        turno.estado === 'disponible' ? 'bg-green-50 border-green-500'  
+                          : 'bg-blue-100 border-blue-500'
                       }`}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
                           <span
                             className={`font-bold text-lg ${
-                              turno.estado === 'reservado' ? 'text-red-600' : 'text-green-600'
+                              turno.estado === 'reservado' ? 'text-red-600' : 
+                              turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
                             }`}
                           >
                             #{idx + 1}
@@ -375,11 +400,14 @@ const TurnList = ({
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
                               turno.estado === 'reservado'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-green-100 text-green-800'
+                                ? 'bg-red-100 text-red-800' :
+                              turno.estado === 'disponible'
+                              ? 'bg-green-100 text-green-800' : 
+                              'bg-white text-blue-800'
                             }`}
                           >
-                            {turno.estado === 'reservado' ? 'Ocupado' : 'Disponible'}
+                            {turno.estado === 'reservado' ? 'Ocupado' : 
+                            turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
                           </span>
                           {turno.estado === 'disponible' && (
                             <button
@@ -391,6 +419,15 @@ const TurnList = ({
                             </button>
                           )}
                         </div>
+                        {turno.estado === 'reservado' && (
+                          <button className='px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-semibold rounded-lg  text-xs lg:text-sm hover:from-blue-800 hover:to-cyan-600 duration-200 ease-in-out transition-all'
+                
+                            onClick={() => 
+                              handleModificarEstadoTurno(turno.id)
+                            }>
+                            Marcar como finalizado
+                          </button>  
+                        )}
                       </div>
 
                       {turno.DNI ? (
@@ -403,20 +440,20 @@ const TurnList = ({
                           </div>
                           <div className="flex items-center gap-3">
                             <FaIdCard className="text-gray-600 w-4 h-4" />
-                            <span>DNI: {turno.DNI}</span>
+                            <span className='font-medium'>{turno.DNI}</span>
                           </div>
                           {turno.cobertura && (
                             <div className="flex items-center gap-3">
                               <FaShieldAlt className="text-purple-500 w-4 h-4" />
                               <span>
-                                Cobertura: <strong>{coberturaElegida(turno.cobertura)}</strong>
+                                <span className='font-medium'>{coberturaElegida(turno.cobertura)}</span>
                               </span>
                             </div>
                           )}
                           {turno.telefono && (
                             <div className="flex items-center gap-3">
                               <FaPhone className="text-orange-500 w-4 h-4" />
-                              <span>Tel: {turno.telefono}</span>
+                              <span className='font-medium'>{turno.telefono}</span>
                             </div>
                           )}
                         </div>
