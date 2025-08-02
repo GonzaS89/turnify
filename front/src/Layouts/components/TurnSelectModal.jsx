@@ -39,7 +39,13 @@ const TurnSelectModal = ({
     setFechaSeleccionada(event.target.value);
   };
 
-  const fechasUnicas = [...new Set(turnos?.map((turno) => turno.fecha))]
+  const fechasUnicas = [
+    ...new Set(
+      turnos
+        ?.filter((turno) => turno.estado === 'disponible') // Solo si está disponible
+        .map((turno) => turno.fecha)
+    )
+  ]
     .filter((fecha) => fecha >= getTodayDate())
     .sort();
 

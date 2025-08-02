@@ -25,7 +25,7 @@ const Hero = ({ enviarIds }) => {
     }, [images.length]);
 
     return (
-        <section id="hero-section" className="relative pt-24 pb-20 overflow-hidden mt-28">
+        <section id="hero-section" className="relative pt-24 pb-20 overflow-hidden mt-24">
             {/* Fondos decorativos (opcionales) */}
             <div className="absolute -top-24 -left-32 w-[500px] h-[500px] bg-cyan-100 rounded-full blur-[180px] opacity-30 -z-10"></div>
             <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-purple-100 rounded-full blur-[120px] opacity-30 -z-10"></div>

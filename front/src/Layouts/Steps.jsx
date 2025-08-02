@@ -129,6 +129,7 @@ const Steps = () => {
                         {contenidoSteps.map((step, index) => (
                             <div
                                 key={index}
+                                index={index+1}
                                 className={`
                                     relative
                                     transform
@@ -139,43 +140,7 @@ const Steps = () => {
                                 `}
                                 style={{ transitionDelay: `${400 + index * 250}ms` }}
                             >
-                                {/* Círculo del paso */}
-                                <div className="
-                                    absolute
-                                    -top-6
-                                    left-1/2
-                                    transform
-                                    -translate-x-1/2
-                                    md:left-auto
-                                    md:top-1/2
-                                    md:-translate-y-1/2
-                                    md:-translate-x-1/2
-                                    w-14
-                                    h-14
-                                    rounded-full
-                                    bg-gradient-to-br
-                                    from-white
-                                    to-gray-50
-                                    shadow-xl
-                                    border
-                                    border-gray-200
-                                    flex
-                                    items-center
-                                    justify-center
-                                    z-20
-                                ">
-                                    <div className="
-                                        text-xl
-                                        font-bold
-                                        bg-gradient-to-r
-                                        from-indigo-600
-                                        to-blue-600
-                                        text-transparent
-                                        bg-clip-text
-                                    ">
-                                        {index + 1}
-                                    </div>
-                                </div>
+                               
                                 {/* Tarjeta */}
                                 <div className="
                                     bg-white

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaBriefcaseMedical, FaCalendarAlt, FaCheckCircle } from "react-icons/fa";
 
-const Step = ({ referencia, titulo, contenido }) => {
+const Step = ({ referencia, titulo, contenido, index }) => {
   const obtenerIcono = () => {
     switch (referencia) {
       case 'medico':
@@ -31,6 +31,7 @@ const Step = ({ referencia, titulo, contenido }) => {
       w-full
       max-w-xs
       mx-auto
+   
     ">
       <div className="
         w-16 h-16
@@ -62,6 +63,7 @@ const Step = ({ referencia, titulo, contenido }) => {
       ">
         {contenido}
       </p>
+      
     </div>
   );
 };

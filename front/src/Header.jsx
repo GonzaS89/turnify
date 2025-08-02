@@ -18,7 +18,7 @@ export const Header = ( { openLogin }) => {
   return (
     <div>
       <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-sm py-4 z-[30] transition-all duration-300" >
-        <div className="container mx-auto px-4 flex justify-between items-center relative z-10">
+        <div className="container mx-auto px-4 flex justify-evenly items-center relative z-10 xl:max-w-7xl">
           {/* Logo Centrado en Mobile */}
           <a href="#inicio" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
             <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-24'/>
@@ -42,7 +42,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='info'
                 delay={100}
-                offset={-150}
+                offset={-100}
                 smooth={true}
                 duration={1000}
                 >
@@ -54,7 +54,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='beneficios'
                 delay={100}
-                offset={-150}
+                offset={-100}
                 smooth={true}
                 duration={1000}
                 >
@@ -66,7 +66,7 @@ export const Header = ( { openLogin }) => {
                 className="text-gray-600 hover:text-blue-600 font-medium whitespace-nowrap cursor-pointer"
                 to='preguntas-frecuentes'
                 delay={100}
-                offset={-150}
+                offset={-100}
                 smooth={true}
                 duration={1000}
                 >

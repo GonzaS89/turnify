@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
 
 const Turnosdisponibles = ({ idProfesional, idConsultorio }) => {
