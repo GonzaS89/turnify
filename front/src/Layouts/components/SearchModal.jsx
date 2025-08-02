@@ -75,8 +75,8 @@ const SearchModal = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-300 to-purple-500 bg-black flex items-center justify-center xl:p-4 z-50">
-      <div className="bg-white/70 backdrop-blur-sm xl:rounded-3xl shadow-xl border border-gray-200/50 w-screen xl:max-w-6xl h-screen  xl:max-h-[90vh] overflow-y-auto relative">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center xl:p-4 z-50 backdrop-blur-md">
+      <div className="bg-white backdrop-blur-sm xl:rounded-3xl shadow-xl border border-gray-200/50 w-screen xl:max-w-6xl h-screen  xl:max-h-[90vh] overflow-y-auto relative">
         {/* Botón de cierre */}
         <button
           onClick={cerrarModal}

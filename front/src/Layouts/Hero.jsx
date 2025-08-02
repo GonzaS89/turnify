@@ -1,74 +1,90 @@
 // src/components/Hero.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
-import SearchModal from "./components/SearchModal"; // Modal de búsqueda
-import img from "../assets/medic.png"; // Imagen de fondo (opcional)
+import SearchModal from "./components/SearchModal";
+import img from "../assets/medic.png";
+import img2 from "../assets/medic2.png";
+import img3 from "../assets/medic4.png";
+import img4 from "../assets/medic3.png";
 
 const Hero = ({ enviarIds }) => {
     const { profesionales, isLoading, error } = useAllProfesionals();
     const [showModal, setShowModal] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
+    const images = [img, img2, img3, img4];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [images.length]);
+
     return (
-        <section className="pt-20 mt-32 lg:mt-0 pb-16 sm:pt-24 sm:pb-20 lg:pt-32" id="hero-section">
-            <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                {/* Contenedor en dos columnas */}
-                <div className="flex flex-col items-center lg:flex-row gap-12 lg:gap-16">
-                    {/* Columna de texto */}
-                    <div className="flex-1 text-center lg:text-left">
-                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-800 leading-tight mb-5">
-                            Agenda tu turno médico{" "}
-                            <span className="bg-gradient-to-r from-purple-500 to-blue-600 text-transparent bg-clip-text">fácil y rápido</span>
+        <section id="hero-section" className="relative pt-24 pb-20 overflow-hidden mt-28">
+            {/* Fondos decorativos (opcionales) */}
+            <div className="absolute -top-24 -left-32 w-[500px] h-[500px] bg-cyan-100 rounded-full blur-[180px] opacity-30 -z-10"></div>
+            <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-purple-100 rounded-full blur-[120px] opacity-30 -z-10"></div>
+
+            <div className="relative px-6 mx-auto max-w-7xl">
+                {/* Layout para móviles: columna, luego fila en lg */}
+                <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-10 lg:gap-16">
+                    
+                    {/* Texto (arriba en móvil) */}
+                    <div className="flex-1 text-center lg:text-left max-w-lg space-y-6 order-2 lg:order-1">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
+                            Turnos médicos{" "}
+                            <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 text-transparent bg-clip-text">
+                                sin complicaciones
+                            </span>
                         </h1>
-                        <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 mb-8">
-                            Encuentra profesionales de confianza, consulta disponibilidad en tiempo real y reserva tu cita en línea sin complicaciones.
+
+                        <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                            Consultá profesionales disponibles y reservá tu cita en solo unos clics. Rápido, claro y seguro.
                         </p>
 
-                        <button
-                            onClick={openModal}
-                            className="
-                                px-6 py-3 sm:px-8 sm:py-4
-                                bg-gradient-to-r from-sky-500 to-sky-700
-                                text-white font-bold text-lg rounded-xl
-                                shadow-lg hover:shadow-xl
-                                hover:from-blue-500 hover:to-blue-900
-                                transition-all duration-300 transform hover:scale-105
-                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-100 focus:ring-green-400
-                                border border-green-400/30
-                                mx-auto lg:mx-0
-                            "
-                        >
-                            Buscar Profesionales
-                        </button>
+                        <div className="mt-4">
+                            <button
+                                onClick={openModal}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium text-lg rounded-full shadow-md hover:from-blue-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105"
+                            >
+                                🔍 Buscar Profesionales
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Columna de imagen */}
-                    <div className="flex-1 flex justify-center lg:justify-end">
-                        <div className="relative w-full max-w-md lg:max-w-lg">
-                            {/* Imagen de médico o salud */}
-                            <img
-                                src={img}
-                                alt="Doctor atendiendo paciente"
-                                className="rounded-2xl object-cover w-full h-auto"
-                                style={{ aspectRatio: "4/5" }}
-                            />
+                    {/* Carrusel de imágenes (abajo en móvil, arriba en escritorio) */}
+                    <div className="flex-1 flex justify-center order-1 lg:order-2 w-full">
+                        <div 
+                            className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-lg aspect-[4/5] max-h-[500px]"
+                            style={{ height: "auto", aspectRatio: "4 / 5" }}
+                        >
+                            {/* Fondo de profundidad */}
+                            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-cyan-100 to-teal-100 rounded-3xl blur-xl opacity-40 scale-110 pointer-events-none"></div>
 
-                            {/* Badge decorativo */}
-                            <div className="absolute -bottom-4 -right-4 bg-white px-5 py-2 rounded-full shadow-lg flex items-center gap-2">
-                                <span className="text-green-600 font-bold text-sm">✔️</span>
-                                <span className="text-gray-700 text-sm font-medium">Turnos online</span>
-                            </div>
+                            {/* Imágenes rotativas */}
+                            {images.map((src, index) => (
+                                <img
+                                    key={index}
+                                    src={src}
+                                    alt={`Profesional médico ${index + 1}`}
+                                    className={`absolute inset-0 w-full h-full object-contain rounded-3xl transition-all duration-1000 ease-in-out ${
+                                        index === currentIndex
+                                            ? "opacity-100 scale-100 z-10"
+                                            : "opacity-0 scale-95 z-0"
+                                    }`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
-
-                {/* Efecto de fondo suave opcional */}
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50 via-white to-green-50 opacity-70 rounded-3xl"></div>
             </div>
 
-            {/* Modal de búsqueda */}
+            {/* Modal */}
             <SearchModal
                 showModal={showModal}
                 onClose={closeModal}

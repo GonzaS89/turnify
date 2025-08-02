@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; // Import useState
 import { IoMdMenu } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
-import logo from '/turnify.png';
+import logo from './assets/logo.png'; // Adjust the path to your logo
 import { Link } from 'react-scroll';
 
 export const Header = ( { openLogin }) => {
@@ -21,7 +21,7 @@ export const Header = ( { openLogin }) => {
         <div className="container mx-auto px-4 flex justify-between items-center relative z-10">
           {/* Logo Centrado en Mobile */}
           <a href="#inicio" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
-            <img src={logo} alt="TurniFy Logo" className='w-24 h-auto md:w-20 lg:w-24'/>
+            <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-24'/>
           </a>
 
           {/* Desktop Navigation */}

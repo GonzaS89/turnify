@@ -19,6 +19,6 @@
     "mercadopago": "^2.7.0",
     "mysql2": "^3.14.1",
     "nodemon": "^3.1.10",
-    "twilio": "^5.6.1"
+    "twilio": "^5.8.0"
   }
 }
