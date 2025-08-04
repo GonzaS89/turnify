@@ -350,6 +350,8 @@ Puedes hacerlo fácilmente aquí:
 ${linkCancelar} 
 
 
+
+
 Gracias por confiar en nosotros. ¡Te esperamos! 🙌
 `;
             // `✅ Turno el ${new Date().toLocaleDateString('es-AR')}`;
