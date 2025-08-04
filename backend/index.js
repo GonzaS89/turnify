@@ -347,7 +347,7 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 
 ❌ *¿Necesitás cancelar?*
 Puedes hacerlo fácilmente aquí:
-${linkCancelar} con tu codigo de turno: ${turnoId}
+${linkCancelar} 
 
 
 Gracias por confiar en nosotros. ¡Te esperamos! 🙌
