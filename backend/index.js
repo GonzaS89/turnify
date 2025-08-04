@@ -2,7 +2,12 @@ import express from "express";
 import pool from "./db.js";
 import dotenv from "dotenv";
 import cors from "cors";
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs';
+import twilio from "twilio";
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
 
 dotenv.config()
 
@@ -11,42 +16,44 @@ const PORT = process.env.PORT || 3006;
 
 app.use(cors({ origin: "*" }));
 
-app.use(express.json()) 
+app.use(express.json());
+
+const client = twilio(accountSid, authToken);
 
 //OBTENER TODOS LOS PROFESIONALES //
 
 app.get("/api/profesionales", async (req, res) => {
-        try {
-            const [resultado] = await pool.execute("SELECT * FROM profesionales");
-            res.json(resultado);
-        } catch {
-            console.error("Error al obtener profesionales");
-            res.status(500).send("Error al obtener profesionales");
-        }
+    try {
+        const [resultado] = await pool.execute("SELECT * FROM profesionales");
+        res.json(resultado);
+    } catch {
+        console.error("Error al obtener profesionales");
+        res.status(500).send("Error al obtener profesionales");
+    }
 })
 
-    //OBTENER TODOS LOS CONSULTORIOS //
+//OBTENER TODOS LOS CONSULTORIOS //
 
 app.get("/api/consultorios", async (req, res) => {
-        try {
-            const [resultado] = await pool.execute("SELECT * FROM consultorios");
-            res.json(resultado);
-        } catch {
-            console.error("Error al obtener consultorios");
-            res.status(500).send("Error al obtener consultorios");
-        }
+    try {
+        const [resultado] = await pool.execute("SELECT * FROM consultorios");
+        res.json(resultado);
+    } catch {
+        console.error("Error al obtener consultorios");
+        res.status(500).send("Error al obtener consultorios");
+    }
 })
 
 //OBTENER TODAS LAS COBERTURAS //
 
 app.get("/api/coberturas", async (req, res) => {
-        try {
-            const [resultado] = await pool.execute("SELECT * FROM cobertura_medica");
-            res.json(resultado);
-        } catch {
-            console.error("Error al obtener coberturas");
-            res.status(500).send("Error al obtener coberturas");
-        }
+    try {
+        const [resultado] = await pool.execute("SELECT * FROM cobertura_medica");
+        res.json(resultado);
+    } catch {
+        console.error("Error al obtener coberturas");
+        res.status(500).send("Error al obtener coberturas");
+    }
 })
 
 //OBTENER TODAS LAS PROVINCIAS //
@@ -283,14 +290,14 @@ WHERE id = ?
 // RESERVAR TURNO //
 
 app.put('/api/reservarturno/:turnoId', async (req, res) => {
-    const { turnoId } = req.params; 
-    const { nombre_paciente, apellido_paciente, DNI, cobertura, telefono, estado } = req.body; 
+    const { turnoId } = req.params;
+    const { nombre_paciente, apellido_paciente, DNI, cobertura, telefono, estado, fecha, hora, profesionalID, consultorioID } = req.body;
 
+    // Validación de campos
     if (!nombre_paciente || !apellido_paciente || !DNI || !cobertura || !telefono || !estado) {
         return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
     }
 
-    
     const query = `
         UPDATE turnos
         SET
@@ -303,7 +310,6 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
         WHERE id = ?;
     `;
 
-    // Los valores se pasan como un array para la consulta preparada
     const values = [nombre_paciente, apellido_paciente, DNI, cobertura, telefono, estado, turnoId];
 
     try {
@@ -313,10 +319,58 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
             return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
         }
 
+        // ✅ Si el estado es "reservado", enviamos WhatsApp al admin
+        if (estado === 'reservado') {
+
+            const [datosConsultorio] = await pool.execute('SELECT c.nombre, c.direccion,l.nombre AS localidad FROM consultorios AS c JOIN localidades AS l ON l.id = c.localidad WHERE c.id = ?', [consultorioID]);
+
+            const [datosProfesional] = await pool.execute('SELECT nombre, apellido FROM profesionales WHERE id = ?', [profesionalID]);
+
+            const [datosCoberturas] = await pool.execute('SELECT nombre, siglas FROM cobertura_medica WHERE id = ?', [cobertura]);
+
+
+            const linkCancelar = `http://localhost:5173/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
+
+            const mensaje = `
+🔔 *¡Nuevo Turno Reservado!* 🔔
+
+✅ *Paciente:* ${nombre_paciente} ${apellido_paciente}
+🆔 *DNI:* ${DNI}
+📞 *Teléfono:* ${telefono}
+🩺 *Cobertura:* ${datosCoberturas[0].siglas}
+
+📅 *Fecha:* ${fecha}
+⏰ *Hora:* ${hora}
+👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${datosProfesional[0].apellido}
+🏥 *Consultorio:* ${datosConsultorio[0].nombre}
+📍 *Dirección:* ${datosConsultorio[0].direccion}, ${datosConsultorio[0].localidad}
+
+❌ *¿Necesitás cancelar?*
+Puedes hacerlo fácilmente aquí:
+${linkCancelar} con tu codigo de turno: ${turnoId}
+
+
+Gracias por confiar en nosotros. ¡Te esperamos! 🙌
+`;
+            // `✅ Turno el ${new Date().toLocaleDateString('es-AR')}`;
+
+            try {
+                await client.messages.create({
+                    body: mensaje,
+                    from: twilioWhatsApp,     // whatsapp:+14155238886
+                    to: `whatsapp:+5493815588504`         // Tu número de WhatsApp
+                });
+                console.log('✅ Notificación enviada por WhatsApp al administrador');
+            } catch (error) {
+                console.error('❌ Error al enviar WhatsApp:', error.message);
+            }
+        }
+
         res.status(200).json({
             message: 'Turno actualizado exitosamente.',
             updatedId: turnoId,
-            changes: result.affectedRows
+            changes: result.affectedRows,
+            notified: estado === 'reservado' ? 'Notificación enviada al admin' : 'No se envió notificación'
         });
 
     } catch (error) {
@@ -330,56 +384,56 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 
 app.post('/api/habilitarturnos', async (req, res) => {
     const { consultorioId, profesionalId, fecha, cantidadTurnos, horaInicio, duracionTurno = 30 } = req.body;
-  
+
     // Validación básica
     if (!consultorioId || !profesionalId || !fecha || !cantidadTurnos || cantidadTurnos <= 0) {
-      return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
+        return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
     }
-  
+
     // Validar formato de horaInicio (espera "HH:MM")
     if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horaInicio)) {
-      return res.status(400).json({ message: 'Formato de hora de inicio inválido. Usa HH:MM.' });
+        return res.status(400).json({ message: 'Formato de hora de inicio inválido. Usa HH:MM.' });
     }
-  
+
     let connection;
     try {
-      connection = await pool.getConnection();
-      await connection.beginTransaction();
-  
-      const insertQuery = `
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        const insertQuery = `
         INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora)
         VALUES (?, ?, ?, ?)
       `;
-  
-      let currentHour = horaInicio; // "08:30"
-  
-      for (let i = 0; i < cantidadTurnos; i++) {
-        // Insertar turno
-        await connection.execute(insertQuery, [consultorioId, profesionalId, fecha, currentHour]);
-  
-        // Calcular próxima hora
-        const [hours, minutes] = currentHour.split(':').map(Number);
-        const date = new Date();
-        date.setHours(hours, minutes, 0, 0);
-        date.setMinutes(date.getMinutes() + duracionTurno);
-  
-        // Formatear como "HH:MM"
-        const nextHours = String(date.getHours()).padStart(2, '0');
-        const nextMinutes = String(date.getMinutes()).padStart(2, '0');
-        currentHour = `${nextHours}:${nextMinutes}`;
-      }
-  
-      await connection.commit();
-      res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
-  
+
+        let currentHour = horaInicio; // "08:30"
+
+        for (let i = 0; i < cantidadTurnos; i++) {
+            // Insertar turno
+            await connection.execute(insertQuery, [consultorioId, profesionalId, fecha, currentHour]);
+
+            // Calcular próxima hora
+            const [hours, minutes] = currentHour.split(':').map(Number);
+            const date = new Date();
+            date.setHours(hours, minutes, 0, 0);
+            date.setMinutes(date.getMinutes() + duracionTurno);
+
+            // Formatear como "HH:MM"
+            const nextHours = String(date.getHours()).padStart(2, '0');
+            const nextMinutes = String(date.getMinutes()).padStart(2, '0');
+            currentHour = `${nextHours}:${nextMinutes}`;
+        }
+
+        await connection.commit();
+        res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
+
     } catch (error) {
-      if (connection) await connection.rollback();
-      console.error('Error al habilitar turnos en la base de datos:', error);
-      res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
+        if (connection) await connection.rollback();
+        console.error('Error al habilitar turnos en la base de datos:', error);
+        res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
     } finally {
-      if (connection) connection.release();
+        if (connection) connection.release();
     }
-  });
+});
 
 // BORRAR COBERTURA DEL CONSULTORIO //
 
@@ -453,8 +507,8 @@ app.delete("/api/borrarTodosLosTurnos", async (req, res) => {
     const { IdConsultorio, idProfesional, fecha } = req.body;
 
     try {
-        
-       
+
+
         // Consulta SQL para eliminar la relación en la tabla intermedia
         const query = `
         DELETE FROM turnos
@@ -508,8 +562,8 @@ app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId",
 // MODIFICAR DATOS DEL CONSUTORIO //
 
 app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
-    const { consultorioId } = req.params; 
-    const { nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre } = req.body; 
+    const { consultorioId } = req.params;
+    const { nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre } = req.body;
 
     const query = `
         UPDATE consultorios
@@ -551,7 +605,7 @@ app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
 
 app.put('/api/modificarestadoturno/:turnoId', async (req, res) => {
 
-    const { turnoId } = req.params; 
+    const { turnoId } = req.params;
 
     if (!turnoId || isNaN(turnoId)) {
         return res.status(400).json({ message: 'Turno no encontrado.' });
@@ -568,7 +622,7 @@ app.put('/api/modificarestadoturno/:turnoId', async (req, res) => {
 
 
     try {
-        const [result] = await pool.query(query,[turnoId]);
+        const [result] = await pool.query(query, [turnoId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
@@ -609,7 +663,7 @@ app.put('/api/cambiarcredenciales', async (req, res) => {
 
         const consultorio = rows[0];
 
-        
+
         // 2. Verificar la contraseña actual
         const isPasswordValid = await bcrypt.compare(currentContrasena, consultorio.contrasena);
         if (!isPasswordValid) {
@@ -669,7 +723,7 @@ app.put('/api/cambiarcredenciales', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 });
-    
+
 
 
 app.listen(PORT, "0.0.0.0", () => {

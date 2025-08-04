@@ -24,6 +24,13 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
         return date.toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
+    const formatearHora = ( hora ) => {
+        if (!hora) return '';
+        const [horaParte, minutoParte] = hora.split(':');
+        const horaFormateada = `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
+        return horaFormateada;
+      }
+
     // Función que realiza la llamada a la API para reservar el turno
     const reservarTurno = async () => {
         setIsSubmitting(true); // Activa el estado de carga
@@ -32,8 +39,6 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
 
         const turnoId = selectedTurno?.id; 
 
-        console.log(turnoId)
-
         try {
             const response = await axios.put(`http://localhost:3006/api/reservarturno/${turnoId}`, {
                 nombre_paciente: formData.nombre,
@@ -41,7 +46,11 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
                 DNI: formData.dni,
                 cobertura: formData.selectedOption,
                 telefono: formData.telefono,
-                estado: 'reservado' // Estado fijo para la reserva
+                estado: 'reservado' ,
+                fecha: formatearFechaSQL(selectedTurno?.fecha),
+                consultorioID: consultorio?.id,
+                profesionalID: profesional?.id,
+                hora: formatearHora(selectedTurno?.hora), // Asegúrate de que la hora esté en el formato correcto
             });
 
             console.log('Turno actualizado:', response.data);
@@ -74,12 +83,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
         setSubmitError(null); // Limpia cualquier error
     };
 
-    const formatearHora = ( hora ) => {
-        if (!hora) return '';
-        const [horaParte, minutoParte] = hora.split(':');
-        const horaFormateada = `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
-        return horaFormateada;
-      }
+    
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-50 backdrop-blur-md p-4 animate-fade-in"> {/* Ajuste de padding */}
