@@ -1,3 +1,4 @@
-# .gitignore
+# Archivos de entorno
 backend/.env
 .env
+.env.local
