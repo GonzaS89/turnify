@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs';
 import twilio from "twilio";
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
 
 dotenv.config()
@@ -287,6 +286,22 @@ WHERE id = ?
     }
 });
 
+//OBTENER TURNO POR ID DE TURNO //
+
+app.get("/api/todoslosturnos/:turnoID" ,async (req, res) => {
+    const { turnoID } = req.params;
+    const query = `SELECT * FROM turnos
+     WHERE id = ?`
+  
+    try {
+        const [resultados] = await pool.execute(query, [turnoID]);
+        res.json(resultados);
+    } catch (error) {
+        console.error("Error al obtener turno:", error); // Mensaje más específico
+        res.status(500).send("Error interno del servidor al obtener turno");
+    }
+})
+
 // RESERVAR TURNO //
 
 app.put('/api/reservarturno/:turnoId', async (req, res) => {
@@ -380,6 +395,8 @@ Gracias por confiar en nosotros. ¡Te esperamos! 🙌
         res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
     }
 });
+
+
 
 
 // HABILITAR TURNOS //

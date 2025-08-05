@@ -91,7 +91,11 @@ const TurnSelectModal = ({
                 ) : errorProfesional ? (
                   <span className="text-red-500 text-sm">Error al cargar profesional</span>
                 ) : (
-                  `Dr/a ${medico?.nombre || "N/A"} ${medico?.apellido || "N/A"}`
+                  <span>
+                    <p className="m-0">Dr/a {medico?.nombre || "N/A"} {medico?.apellido || "N/A"}</p>
+                    <p className="text-xs text-gray-600">{medico?.especialidad}</p>
+                  </span>
+                 
                 )}
               </h1>
               {consultorio && (
