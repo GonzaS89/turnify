@@ -242,7 +242,9 @@ c.tipo,
 c.hora_inicio AS inicio,
 c.hora_cierre AS cierre,
 c.usuario,
-c.contrasena
+c.contrasena,
+c.sena AS seña,
+c.importe_sena AS importeSeña
 FROM consultorios AS c
 JOIN
 provincias AS p ON p.id = c.provincia
@@ -288,11 +290,11 @@ WHERE id = ?
 
 //OBTENER TURNO POR ID DE TURNO //
 
-app.get("/api/todoslosturnos/:turnoID" ,async (req, res) => {
+app.get("/api/todoslosturnos/:turnoID", async (req, res) => {
     const { turnoID } = req.params;
-    const query = `SELECT * FROM turnos
-     WHERE id = ?`
-  
+    const query = `SELECT t.id, CONCAT(t.nombre_paciente, ' ', t.apellido_paciente) AS paciente, t.dni,t.estado,t.fecha, t.hora, CONCAT(p.nombre, ' ', p.apellido) AS profesional, p.especialidad FROM turnos AS t JOIN profesionales AS p ON t.profesional_id = p.id
+     WHERE t.id = ?`
+
     try {
         const [resultados] = await pool.execute(query, [turnoID]);
         res.json(resultados);
@@ -397,355 +399,375 @@ Gracias por confiar en nosotros. ¡Te esperamos! 🙌
 });
 
 
+// CANCELAR TURNOS //
 
+app.put('/api/cancelarturno/:turnoId', async (req, res) => {
+    const { turnoId } = req.params;
 
-// HABILITAR TURNOS //
-
-app.post('/api/habilitarturnos', async (req, res) => {
-    const { consultorioId, profesionalId, fecha, cantidadTurnos, horaInicio, duracionTurno = 30 } = req.body;
-
-    // Validación básica
-    if (!consultorioId || !profesionalId || !fecha || !cantidadTurnos || cantidadTurnos <= 0) {
-        return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
+    if (!turnoId || isNaN(turnoId)) {
+        return res.status(400).json({ message: 'ID de turno inválido.' });
     }
-
-    // Validar formato de horaInicio (espera "HH:MM")
-    if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horaInicio)) {
-        return res.status(400).json({ message: 'Formato de hora de inicio inválido. Usa HH:MM.' });
-    }
-
-    let connection;
+    const query = `
+        UPDATE turnos
+        SET estado = 'disponible', nombre_paciente = NULL, apellido_paciente = NULL, DNI = NULL, cobertura = NULL, telefono = NULL
+        WHERE id = ?;
+    `;
     try {
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        const insertQuery = `
-        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora)
-        VALUES (?, ?, ?, ?)
-      `;
-
-        let currentHour = horaInicio; // "08:30"
-
-        for (let i = 0; i < cantidadTurnos; i++) {
-            // Insertar turno
-            await connection.execute(insertQuery, [consultorioId, profesionalId, fecha, currentHour]);
-
-            // Calcular próxima hora
-            const [hours, minutes] = currentHour.split(':').map(Number);
-            const date = new Date();
-            date.setHours(hours, minutes, 0, 0);
-            date.setMinutes(date.getMinutes() + duracionTurno);
-
-            // Formatear como "HH:MM"
-            const nextHours = String(date.getHours()).padStart(2, '0');
-            const nextMinutes = String(date.getMinutes()).padStart(2, '0');
-            currentHour = `${nextHours}:${nextMinutes}`;
+        const [result] = await pool.query(query, [turnoId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
         }
-
-        await connection.commit();
-        res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
-
     } catch (error) {
-        if (connection) await connection.rollback();
-        console.error('Error al habilitar turnos en la base de datos:', error);
-        res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
-    } finally {
-        if (connection) connection.release();
-    }
-});
-
-// BORRAR COBERTURA DEL CONSULTORIO //
-
-app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
-    const { coberturaMedicaId, consultorioId } = req.params;
-
-    try {
-        // Validación básica de los IDs
-        if (!coberturaMedicaId || isNaN(coberturaMedicaId && !consultorioId || isNaN(consultorioId))) {
-            return res.status(400).json({ message: "ID cobertura médica inválidos." });
-        }
-
-        // Consulta SQL para eliminar la relación en la tabla intermedia
-        const query = `
-            DELETE FROM consultorio_cobertura AS cc
-            WHERE  cc.cobertura_medica_id = ? AND cc.consultorio_id = ?
-        `;
-        const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
-
-        // 'affectedRows' indica cuántas filas fueron eliminadas
-        if (resultado.affectedRows === 0) {
-            // Si no se eliminó ninguna fila, es probable que la relación no existiera
-            return res.status(404).json({ message: "Relación de cobertura no encontrada para este consultorio." });
-        }
-
-        // Éxito: retorna un estado 200 OK y un mensaje
-        res.status(200).json({ message: "Cobertura eliminada del consultorio exitosamente." });
-
-    } catch (error) {
-        console.error("Error al eliminar cobertura del consultorio:", error);
-        res.status(500).json({ message: "Error interno del servidor al eliminar la cobertura." });
-    }
-});
-
-// BORRAR TURNO //
-
-app.delete("/api/borrarTurno/:idTurno", async (req, res) => {
-    const { idTurno } = req.params;
-
-    try {
-        // Validación básica de los IDs
-        if (!idTurno || isNaN(idTurno)) {
-            return res.status(400).json({ message: "ID turno inválido." });
-        }
-
-        // Consulta SQL para eliminar la relación en la tabla intermedia
-        const query = `
-            DELETE FROM turnos AS t
-            WHERE  t.id = ?
-        `;
-        const [resultado] = await pool.execute(query, [idTurno]);
-
-        // 'affectedRows' indica cuántas filas fueron eliminadas
-        if (resultado.affectedRows === 0) {
-            // Si no se eliminó ninguna fila, es probable que la relación no existiera
-            return res.status(404).json({ message: "Turno no encontrado." });
-        }
-
-        // Éxito: retorna un estado 200 OK y un mensaje
-        res.status(200).json({ message: "Turno eliminado exitosamente." });
-
-    } catch (error) {
-        console.error("Error al eliminar turno:", error);
-        res.status(500).json({ message: "Error interno del servidor al eliminar turno." });
-    }
-});
-
-// BORRAR TODOS TURNOS DE UNA FECHA POR ID CONSULTORIO Y ID PROFESIONAL //
-
-app.delete("/api/borrarTodosLosTurnos", async (req, res) => {
-    const { IdConsultorio, idProfesional, fecha } = req.body;
-
-    try {
-
-
-        // Consulta SQL para eliminar la relación en la tabla intermedia
-        const query = `
-        DELETE FROM turnos
-        WHERE consultorio_id = ? AND profesional_id = ? AND fecha = ? AND estado = 'disponible'
-        `;
-        const [resultado] = await pool.execute(query, [IdConsultorio, idProfesional, fecha]);
-
-        // 'affectedRows' indica cuántas filas fueron eliminadas
-        if (resultado.affectedRows === 0) {
-            // Si no se eliminó ninguna fila, es probable que la relación no existiera
-            return res.status(404).json({ message: "Turnos no encontrados." });
-        }
-
-        // Éxito: retorna un estado 200 OK y un mensaje
-        res.status(200).json({ message: "Turnos eliminados exitosamente." });
-
-    } catch (error) {
-        console.error("Error al eliminar turnos:", error);
-        res.status(500).json({ message: "Error interno del servidor al eliminar turnos." });
-    }
-});
-
-// AGREGAR COBERTURA Al CONSULTORIO //
-
-app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
-    const { coberturaMedicaId, consultorioId } = req.params;
-
-    // Validación básica de los IDs
-    if (!coberturaMedicaId || isNaN(coberturaMedicaId) || !consultorioId || isNaN(consultorioId)) {
-        return res.status(400).json({ message: "ID cobertura médica o consultorio inválidos." });
-    }
-
-    try {
-        // Consulta SQL para insertar la relación en la tabla intermedia
-        const query = `
-            INSERT INTO consultorio_cobertura (cobertura_medica_id, consultorio_id)
-            VALUES (?, ?)
-        `;
-        const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
-
-        // Éxito: retorna un estado 201 Created y un mensaje
-        res.status(201).json({ message: "Cobertura agregada al consultorio exitosamente.", insertId: resultado.insertId });
-
-    } catch (error) {
-        console.error("Error al agregar cobertura al consultorio:", error);
-        res.status(500).json({ message: "Error interno del servidor al agregar la cobertura." });
+        console.error('Error al cancelar el turno:', error);
+        return res.status(500).json({ message: 'Error interno del servidor al cancelar el turno.' });
     }
 })
 
 
-// MODIFICAR DATOS DEL CONSUTORIO //
 
-app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
-    const { consultorioId } = req.params;
-    const { nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre } = req.body;
 
-    const query = `
+        // HABILITAR TURNOS //
+
+        app.post('/api/habilitarturnos', async (req, res) => {
+            const { consultorioId, profesionalId, fecha, cantidadTurnos, horaInicio, duracionTurno = 30 } = req.body;
+
+            // Validación básica
+            if (!consultorioId || !profesionalId || !fecha || !cantidadTurnos || cantidadTurnos <= 0) {
+                return res.status(400).json({ message: 'Faltan datos requeridos o cantidad de turnos inválida.' });
+            }
+
+            // Validar formato de horaInicio (espera "HH:MM")
+            if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horaInicio)) {
+                return res.status(400).json({ message: 'Formato de hora de inicio inválido. Usa HH:MM.' });
+            }
+
+            let connection;
+            try {
+                connection = await pool.getConnection();
+                await connection.beginTransaction();
+
+                const insertQuery = `
+        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora)
+        VALUES (?, ?, ?, ?)
+      `;
+
+                let currentHour = horaInicio; // "08:30"
+
+                for (let i = 0; i < cantidadTurnos; i++) {
+                    // Insertar turno
+                    await connection.execute(insertQuery, [consultorioId, profesionalId, fecha, currentHour]);
+
+                    // Calcular próxima hora
+                    const [hours, minutes] = currentHour.split(':').map(Number);
+                    const date = new Date();
+                    date.setHours(hours, minutes, 0, 0);
+                    date.setMinutes(date.getMinutes() + duracionTurno);
+
+                    // Formatear como "HH:MM"
+                    const nextHours = String(date.getHours()).padStart(2, '0');
+                    const nextMinutes = String(date.getMinutes()).padStart(2, '0');
+                    currentHour = `${nextHours}:${nextMinutes}`;
+                }
+
+                await connection.commit();
+                res.status(200).json({ message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.` });
+
+            } catch (error) {
+                if (connection) await connection.rollback();
+                console.error('Error al habilitar turnos en la base de datos:', error);
+                res.status(500).json({ message: 'Error interno del servidor al habilitar turnos.' });
+            } finally {
+                if (connection) connection.release();
+            }
+        });
+
+        // BORRAR COBERTURA DEL CONSULTORIO //
+
+        app.delete("/api/borrarCoberturaDeConsulotorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
+            const { coberturaMedicaId, consultorioId } = req.params;
+
+            try {
+                // Validación básica de los IDs
+                if (!coberturaMedicaId || isNaN(coberturaMedicaId && !consultorioId || isNaN(consultorioId))) {
+                    return res.status(400).json({ message: "ID cobertura médica inválidos." });
+                }
+
+                // Consulta SQL para eliminar la relación en la tabla intermedia
+                const query = `
+            DELETE FROM consultorio_cobertura AS cc
+            WHERE  cc.cobertura_medica_id = ? AND cc.consultorio_id = ?
+        `;
+                const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
+
+                // 'affectedRows' indica cuántas filas fueron eliminadas
+                if (resultado.affectedRows === 0) {
+                    // Si no se eliminó ninguna fila, es probable que la relación no existiera
+                    return res.status(404).json({ message: "Relación de cobertura no encontrada para este consultorio." });
+                }
+
+                // Éxito: retorna un estado 200 OK y un mensaje
+                res.status(200).json({ message: "Cobertura eliminada del consultorio exitosamente." });
+
+            } catch (error) {
+                console.error("Error al eliminar cobertura del consultorio:", error);
+                res.status(500).json({ message: "Error interno del servidor al eliminar la cobertura." });
+            }
+        });
+
+        // BORRAR TURNO //
+
+        app.delete("/api/borrarTurno/:idTurno", async (req, res) => {
+            const { idTurno } = req.params;
+
+            try {
+                // Validación básica de los IDs
+                if (!idTurno || isNaN(idTurno)) {
+                    return res.status(400).json({ message: "ID turno inválido." });
+                }
+
+                // Consulta SQL para eliminar la relación en la tabla intermedia
+                const query = `
+            DELETE FROM turnos AS t
+            WHERE  t.id = ?
+        `;
+                const [resultado] = await pool.execute(query, [idTurno]);
+
+                // 'affectedRows' indica cuántas filas fueron eliminadas
+                if (resultado.affectedRows === 0) {
+                    // Si no se eliminó ninguna fila, es probable que la relación no existiera
+                    return res.status(404).json({ message: "Turno no encontrado." });
+                }
+
+                // Éxito: retorna un estado 200 OK y un mensaje
+                res.status(200).json({ message: "Turno eliminado exitosamente." });
+
+            } catch (error) {
+                console.error("Error al eliminar turno:", error);
+                res.status(500).json({ message: "Error interno del servidor al eliminar turno." });
+            }
+        });
+
+        // BORRAR TODOS TURNOS DE UNA FECHA POR ID CONSULTORIO Y ID PROFESIONAL //
+
+        app.delete("/api/borrarTodosLosTurnos", async (req, res) => {
+            const { IdConsultorio, idProfesional, fecha } = req.body;
+
+            try {
+
+
+                // Consulta SQL para eliminar la relación en la tabla intermedia
+                const query = `
+        DELETE FROM turnos
+        WHERE consultorio_id = ? AND profesional_id = ? AND fecha = ? AND estado = 'disponible'
+        `;
+                const [resultado] = await pool.execute(query, [IdConsultorio, idProfesional, fecha]);
+
+                // 'affectedRows' indica cuántas filas fueron eliminadas
+                if (resultado.affectedRows === 0) {
+                    // Si no se eliminó ninguna fila, es probable que la relación no existiera
+                    return res.status(404).json({ message: "Turnos no encontrados." });
+                }
+
+                // Éxito: retorna un estado 200 OK y un mensaje
+                res.status(200).json({ message: "Turnos eliminados exitosamente." });
+
+            } catch (error) {
+                console.error("Error al eliminar turnos:", error);
+                res.status(500).json({ message: "Error interno del servidor al eliminar turnos." });
+            }
+        });
+
+        // AGREGAR COBERTURA Al CONSULTORIO //
+
+        app.post("/api/agregarCoberturaAlConsultorio/:coberturaMedicaId/:consultorioId", async (req, res) => {
+            const { coberturaMedicaId, consultorioId } = req.params;
+
+            // Validación básica de los IDs
+            if (!coberturaMedicaId || isNaN(coberturaMedicaId) || !consultorioId || isNaN(consultorioId)) {
+                return res.status(400).json({ message: "ID cobertura médica o consultorio inválidos." });
+            }
+
+            try {
+                // Consulta SQL para insertar la relación en la tabla intermedia
+                const query = `
+            INSERT INTO consultorio_cobertura (cobertura_medica_id, consultorio_id)
+            VALUES (?, ?)
+        `;
+                const [resultado] = await pool.execute(query, [coberturaMedicaId, consultorioId]);
+
+                // Éxito: retorna un estado 201 Created y un mensaje
+                res.status(201).json({ message: "Cobertura agregada al consultorio exitosamente.", insertId: resultado.insertId });
+
+            } catch (error) {
+                console.error("Error al agregar cobertura al consultorio:", error);
+                res.status(500).json({ message: "Error interno del servidor al agregar la cobertura." });
+            }
+        })
+
+
+        // MODIFICAR DATOS DEL CONSUTORIO //
+
+        app.put('/api/modificardatosconsultorio/:consultorioId', async (req, res) => {
+            const { consultorioId } = req.params;
+            const { telefono, sena } = req.body;
+
+            const query = `
         UPDATE consultorios
         SET
-            nombre = ?,
-            tipo = ?,
-            provincia = ?,
-            localidad = ?,
-            direccion = ?,
+            
             telefono = ?,
-            hora_inicio = ?,
-            hora_cierre = ?
+            sena = ?
             WHERE id = ?;
     `;
 
-    // Los valores se pasan como un array para la consulta preparada
-    const values = [nombre, tipo, provincia, localidad, direccion, telefono, hora_inicio, hora_cierre, consultorioId];
+            // Los valores se pasan como un array para la consulta preparada
+            const values = [telefono, sena, consultorioId];
 
-    try {
-        const [result] = await pool.query(query, values);
+            try {
+                const [result] = await pool.query(query, values);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: `Consultorio con ID ${consultorioId} no encontrado.` });
-        }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ message: `Consultorio con ID ${consultorioId} no encontrado.` });
+                }
 
-        res.status(200).json({
-            message: 'Datos actualizados exitosamente.',
-            updatedId: consultorioId,
-            changes: result.affectedRows
+                res.status(200).json({
+                    message: 'Datos actualizados exitosamente.',
+                    updatedId: consultorioId,
+                    changes: result.affectedRows
+                });
+
+            } catch (error) {
+                console.error('Error al actualizar el turno:', error);
+                res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
+            }
         });
 
-    } catch (error) {
-        console.error('Error al actualizar el turno:', error);
-        res.status(500).json({ message: 'Error interno del servidor al actualizar el turno.' });
-    }
-});
+        // MODIFICAR ESTADO DE TURNO //
 
-// MODIFICAR ESTADO DE TURNO //
+        app.put('/api/modificarestadoturno/:turnoId', async (req, res) => {
 
-app.put('/api/modificarestadoturno/:turnoId', async (req, res) => {
+            const { turnoId } = req.params;
 
-    const { turnoId } = req.params;
+            if (!turnoId || isNaN(turnoId)) {
+                return res.status(400).json({ message: 'Turno no encontrado.' });
+            }
 
-    if (!turnoId || isNaN(turnoId)) {
-        return res.status(400).json({ message: 'Turno no encontrado.' });
-    }
-
-    const query = `
+            const query = `
         UPDATE turnos
         SET
         estado = 'finalizado'
         WHERE id = ?;
     `;
 
-    // Los valores se pasan como un array para la consulta preparada
+            // Los valores se pasan como un array para la consulta preparada
 
 
-    try {
-        const [result] = await pool.query(query, [turnoId]);
+            try {
+                const [result] = await pool.query(query, [turnoId]);
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
-        }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
+                }
 
-        res.status(200).json({
-            message: 'Estado del turno actualizado exitosamente.',
-            updatedId: turnoId,
-            changes: result.affectedRows
+                res.status(200).json({
+                    message: 'Estado del turno actualizado exitosamente.',
+                    updatedId: turnoId,
+                    changes: result.affectedRows
+                });
+
+            } catch (error) {
+                console.error('Error al actualizar el estado del turno:', error);
+                res.status(500).json({ message: 'Error interno del servidor al actualizar el estado del turno.' });
+            }
+        })
+
+        app.put('/api/cambiarcredenciales', async (req, res) => {
+            // Aquí asumimos que el ID del consultorio a actualizar se envía en el cuerpo.
+            // En un sistema real, el ID vendría del token de autenticación del usuario logueado.
+            const { id, currentUsuario, newUsuario, currentContrasena, newContrasena } = req.body;
+
+            if (!id) {
+                return res.status(400).json({ message: 'ID del consultorio es requerido para la actualización.' });
+            }
+
+            try {
+                // 1. Buscar el consultorio por su ID y usuario actual
+                // Necesitamos el usuario actual para la verificación de contraseña
+                const [rows] = await pool.execute(
+                    'SELECT id, usuario, contrasena FROM consultorios WHERE id = ? AND usuario = ?',
+                    [id, currentUsuario]
+                );
+
+                if (rows.length === 0) {
+                    return res.status(401).json({ message: 'Credenciales inválidas o consultorio no encontrado.' });
+                }
+
+                const consultorio = rows[0];
+
+
+                // 2. Verificar la contraseña actual
+                const isPasswordValid = await bcrypt.compare(currentContrasena, consultorio.contrasena);
+                if (!isPasswordValid) {
+                    return res.status(401).json({ message: 'Contraseña actual incorrecta.' });
+                }
+
+                let updateFields = [];
+                let updateValues = [];
+
+                // 3. Preparar la actualización del usuario (nombre de usuario) si ha cambiado
+                if (newUsuario && newUsuario.trim() !== '' && newUsuario !== consultorio.usuario) {
+                    // Verificar si el nuevo usuario ya está en uso por otro consultorio
+                    const [usuarioExistsRows] = await pool.execute(
+                        'SELECT id FROM consultorios WHERE usuario = ? AND id != ?',
+                        [newUsuario, consultorio.id]
+                    );
+                    if (usuarioExistsRows.length > 0) {
+                        return res.status(409).json({ message: 'El nuevo usuario ya está en uso por otro consultorio.' });
+                    }
+                    updateFields.push('usuario = ?');
+                    updateValues.push(newUsuario);
+                    console.log(`Consultorio (ID: ${consultorio.id}) cambió su usuario a: ${newUsuario}`);
+                }
+
+                // 4. Preparar la actualización de la contraseña si se proporcionó una nueva
+                if (newContrasena && newContrasena.trim() !== '') {
+                    if (newContrasena.length < 6) {
+                        return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+                    }
+                    const newPasswordHash = await bcrypt.hash(newContrasena, 10);
+                    updateFields.push('contrasena = ?');
+                    updateValues.push(newPasswordHash);
+                    console.log(`Consultorio (ID: ${consultorio.id}) cambió su contraseña.`);
+                }
+
+                // Si no se cambió ni el usuario ni la contraseña
+                if (updateFields.length === 0) {
+                    return res.status(400).json({ message: 'No se proporcionaron cambios para actualizar.' });
+                }
+
+                // 5. Ejecutar el UPDATE en la base de datos
+                // Agregamos la actualización del timestamp updatedAt
+                updateFields.push('updatedAt = NOW()');
+                // El ID del consultorio va al final para la cláusula WHERE
+                updateValues.push(consultorio.id);
+
+                const updateQuery = `UPDATE consultorios SET ${updateFields.join(', ')} WHERE id = ?`;
+                await pool.execute(updateQuery, updateValues);
+
+                res.status(200).json({ message: 'Credenciales actualizadas con éxito.' });
+
+            } catch (error) {
+                console.error('Error al actualizar credenciales:', error);
+                if (error.code === 'ER_DUP_ENTRY') {
+                    return res.status(409).json({ message: 'El nuevo usuario ya está en uso.' });
+                }
+                res.status(500).json({ message: 'Error interno del servidor.' });
+            }
         });
 
-    } catch (error) {
-        console.error('Error al actualizar el estado del turno:', error);
-        res.status(500).json({ message: 'Error interno del servidor al actualizar el estado del turno.' });
-    }
-})
-
-app.put('/api/cambiarcredenciales', async (req, res) => {
-    // Aquí asumimos que el ID del consultorio a actualizar se envía en el cuerpo.
-    // En un sistema real, el ID vendría del token de autenticación del usuario logueado.
-    const { id, currentUsuario, newUsuario, currentContrasena, newContrasena } = req.body;
-
-    if (!id) {
-        return res.status(400).json({ message: 'ID del consultorio es requerido para la actualización.' });
-    }
-
-    try {
-        // 1. Buscar el consultorio por su ID y usuario actual
-        // Necesitamos el usuario actual para la verificación de contraseña
-        const [rows] = await pool.execute(
-            'SELECT id, usuario, contrasena FROM consultorios WHERE id = ? AND usuario = ?',
-            [id, currentUsuario]
-        );
-
-        if (rows.length === 0) {
-            return res.status(401).json({ message: 'Credenciales inválidas o consultorio no encontrado.' });
-        }
-
-        const consultorio = rows[0];
 
 
-        // 2. Verificar la contraseña actual
-        const isPasswordValid = await bcrypt.compare(currentContrasena, consultorio.contrasena);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Contraseña actual incorrecta.' });
-        }
-
-        let updateFields = [];
-        let updateValues = [];
-
-        // 3. Preparar la actualización del usuario (nombre de usuario) si ha cambiado
-        if (newUsuario && newUsuario.trim() !== '' && newUsuario !== consultorio.usuario) {
-            // Verificar si el nuevo usuario ya está en uso por otro consultorio
-            const [usuarioExistsRows] = await pool.execute(
-                'SELECT id FROM consultorios WHERE usuario = ? AND id != ?',
-                [newUsuario, consultorio.id]
-            );
-            if (usuarioExistsRows.length > 0) {
-                return res.status(409).json({ message: 'El nuevo usuario ya está en uso por otro consultorio.' });
-            }
-            updateFields.push('usuario = ?');
-            updateValues.push(newUsuario);
-            console.log(`Consultorio (ID: ${consultorio.id}) cambió su usuario a: ${newUsuario}`);
-        }
-
-        // 4. Preparar la actualización de la contraseña si se proporcionó una nueva
-        if (newContrasena && newContrasena.trim() !== '') {
-            if (newContrasena.length < 6) {
-                return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres.' });
-            }
-            const newPasswordHash = await bcrypt.hash(newContrasena, 10);
-            updateFields.push('contrasena = ?');
-            updateValues.push(newPasswordHash);
-            console.log(`Consultorio (ID: ${consultorio.id}) cambió su contraseña.`);
-        }
-
-        // Si no se cambió ni el usuario ni la contraseña
-        if (updateFields.length === 0) {
-            return res.status(400).json({ message: 'No se proporcionaron cambios para actualizar.' });
-        }
-
-        // 5. Ejecutar el UPDATE en la base de datos
-        // Agregamos la actualización del timestamp updatedAt
-        updateFields.push('updatedAt = NOW()');
-        // El ID del consultorio va al final para la cláusula WHERE
-        updateValues.push(consultorio.id);
-
-        const updateQuery = `UPDATE consultorios SET ${updateFields.join(', ')} WHERE id = ?`;
-        await pool.execute(updateQuery, updateValues);
-
-        res.status(200).json({ message: 'Credenciales actualizadas con éxito.' });
-
-    } catch (error) {
-        console.error('Error al actualizar credenciales:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'El nuevo usuario ya está en uso.' });
-        }
-        res.status(500).json({ message: 'Error interno del servidor.' });
-    }
-});
-
-
-
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
-});
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
+        });
 

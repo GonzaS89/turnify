@@ -13,16 +13,9 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
   const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
   const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
-
   const [formData, setFormData] = useState({
-    nombre: '',
-    tipo: '',
-    provincia: '',
-    localidad: '',
-    direccion: '',
     telefono: '',
-    hora_inicio: '',
-    hora_cierre: '',
+    sena: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -33,12 +26,8 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
       setFormData({
         nombre: consultorio.nombre || '',
         tipo: consultorio.tipo || 'propio',
-        provincia: consultorio.provincia || '',
-        localidad: consultorio.localidad || '',
-        direccion: consultorio.direccion || '',
         telefono: consultorio.telefono || '',
-        hora_inicio: consultorio.hora_inicio || '',
-        hora_cierre: consultorio.hora_cierre || '',
+        sena: consultorio.sena || '',
       });
       setIdProvinciaSelected(consultorio.provincia || '');
       setErrorSubmit(null);
@@ -49,9 +38,9 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'sena' ? (value === 'true') : value,
     }));
 
     if (name === 'provincia') {
@@ -69,16 +58,11 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
     setErrorSubmit(null);
 
     const dataToSend = {
-      nombre: formData.nombre,
-      tipo: formData.tipo,
-      provincia: formData.provincia ? parseInt(formData.provincia, 10) : null,
-      localidad: formData.localidad ? parseInt(formData.localidad, 10) : null,
-      direccion: formData.direccion,
       telefono: formData.telefono,
-      hora_inicio: formData.hora_inicio,
-      hora_cierre: formData.hora_cierre,
+      sena: formData.sena
     };
 
+    console.log(dataToSend)
 
     try {
       const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`,{
@@ -134,19 +118,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
           {loadingLocalidades && idProvinciaSelected && <p className="text-center text-gray-500">Cargando localidades...</p>}
           {errorLocalidades && idProvinciaSelected && <p className="text-center text-red-500">Error al cargar localidades: {errorLocalidades.message}</p>}
 
-          <div>
-            <label htmlFor="nombre" className="block text-gray-700 text-lg font-semibold mb-1">Nombre del Consultorio:</label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-              disabled={loading}
-            />
-          </div>
+        
 {/* 
           <div>
             <label htmlFor="tipo" className="block text-gray-700 text-lg font-semibold mb-1">Tipo:</label>
@@ -163,56 +135,8 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
             </select>
           </div> */}
 
-          <div>
-            <label htmlFor="provincia" className="block text-gray-700 text-lg font-semibold mb-1">Provincia:</label>
-            <select
-              id="provincia"
-              name="provincia"
-              value={formData.provincia}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={loading || loadingProvincias}
-            >
-              <option value="">Selecciona una provincia</option>
-              {provincias?.map((provincia) => (
-                <option key={provincia.id} value={provincia.id}>
-                  {provincia.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          <div>
-            <label htmlFor="localidad" className="block text-gray-700 text-lg font-semibold mb-1">Localidad:</label>
-            <select
-              id="localidad"
-              name="localidad"
-              value={formData.localidad}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={loading || loadingLocalidades || !idProvinciaSelected}
-            >
-              <option value="">Selecciona una localidad</option>
-              {localidades?.map((localidad) => (
-                <option key={localidad.id} value={localidad.id}>
-                  {localidad.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="direccion" className="block text-gray-700 text-lg font-semibold mb-1">Dirección:</label>
-            <input
-              type="text"
-              id="direccion"
-              name="direccion"
-              value={formData.direccion}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={loading}
-            />
-          </div>
+        
 
           <div>
             <label htmlFor="telefono" className="block text-gray-700 text-lg font-semibold mb-1">Teléfono:</label>
@@ -226,7 +150,33 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
               disabled={loading}
             />
           </div>
-
+          <div>
+            <label htmlFor="seña" className="block text-gray-700 text-lg font-semibold mb-1">Turnos con seña:</label>
+            <select
+              id="sena"
+              name="sena"
+              value={formData.sena}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              
+            >
+              <option value="">Elegí una opción</option>
+              <option value="true">Si</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="importesena" className="block text-gray-700 text-lg font-semibold mb-1">Importe seña:</label>
+            <input
+              type="number"
+              id="importe_sena"
+              name="importe_sena"
+              value={formData.importe_sena}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={consultorio?.sena === 0 && true}
+            />
+          </div>
           {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="hora_inicio" className="block text-gray-700 text-lg font-semibold mb-1">Hora de Inicio:</label>

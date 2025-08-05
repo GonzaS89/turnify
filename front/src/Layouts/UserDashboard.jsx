@@ -19,6 +19,7 @@ const UserDashboard = ({ onLogout }) => {
   const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
   const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
 
+
   // ✅ Guardar en localStorage si se cargó correctamente
   useEffect(() => {
     if (consultorio) {

@@ -9,6 +9,8 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
 
   if (!isOpen) return null;
 
+  console.log(consultorio)
+
   const handleOpenEditConsultorioModal = () => setIsEditConsultorioModalOpen(true);
   const handleCloseEditConsultorioModal = () => setIsEditConsultorioModalOpen(false);
   const handleSaveEditedConsultorio = (updatedData) => {
