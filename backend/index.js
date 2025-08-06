@@ -339,7 +339,7 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
         // ✅ Si el estado es "reservado", enviamos WhatsApp al admin
         if (estado === 'reservado') {
 
-            const [datosConsultorio] = await pool.execute('SELECT c.nombre, c.direccion,l.nombre AS localidad , c.sena AS seña, c.importe_sena AS importe FROM consultorios AS c JOIN localidades consultorios AS l ON l.id = c.localidad WHERE c.id = ?', [consultorioID]);
+            const [datosConsultorio] = await pool.execute('SELECT c.nombre, c.direccion,l.nombre AS localidad, c.telefono, c.sena AS seña, c.importe_sena AS importe, c.banco, c.cbu, c.alias, c.cuenta_nombre AS titular FROM consultorios AS c JOIN localidades AS l ON l.id = c.localidad WHERE c.id = ?', [consultorioID]);
 
             const [datosProfesional] = await pool.execute('SELECT nombre, apellido FROM profesionales WHERE id = ?', [profesionalID]);
 
@@ -352,9 +352,8 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 🔔 *¡Nuevo Turno Reservado!* 🔔
 
 ✅ *Paciente:* ${nombre_paciente} ${apellido_paciente}
-🆔 *DNI:* ${DNI}
+🆔 *DNI:* ${DNI} || 
 📞 *Teléfono:* ${telefono}
-🩺 *Cobertura:* ${datosCoberturas[0].siglas}
 
 📅 *Fecha:* ${fecha}
 ⏰ *Hora:* ${hora}
@@ -362,14 +361,20 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 🏥 *Consultorio:* ${datosConsultorio[0].nombre}
 📍 *Dirección:* ${datosConsultorio[0].direccion}, ${datosConsultorio[0].localidad}
 
-${datosConsultorio[0].seña ? `🔑 *Seña:* ${datosConsultorio[0].seña} (${datosConsultorio[0].importe} ARS)` : ''}
+${datosConsultorio[0].seña && `
+💰 *Importe de la seña:* $${datosConsultorio[0].importe}
+🏦 *Banco:* ${datosConsultorio[0].banco}
+🏧 *CBU:* ${datosConsultorio[0].cbu}
+🏷️ *Alias:* ${datosConsultorio[0].alias}
+👤 *Titular de la cuenta:* ${datosConsultorio[0].titular}
+
+Enviar comprobante a ${datosConsultorio[0].telefono} para que se haga efectivo el turno.
+`
+}
 
 ❌ *¿Necesitás cancelar?*
 Puedes hacerlo fácilmente aquí:
 ${linkCancelar} 
-
-
-
 
 Gracias por confiar en nosotros. ¡Te esperamos! 🙌
 `;
@@ -426,11 +431,6 @@ app.put('/api/cancelarturno/:id', async (req, res) => {
         return res.status(500).json({ message: 'Error del servidor' });
     }
 });
-
-
-
-
-
 
 
 // HABILITAR TURNOS //

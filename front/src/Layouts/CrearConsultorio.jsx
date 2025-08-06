@@ -1,0 +1,314 @@
+import React, { useState, useEffect } from 'react';
+import useAllProvincias from '../../customHooks/useAllProvincias';
+import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
+import bcrypt from 'bcryptjs'; // ← Importamos bcryptjs
+
+const CrearConsultorio = () => {
+
+  const [direccion, setDireccion] = useState('');
+  const [localidad, setLocalidad] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [tipo, setTipo] = useState('particular');
+  const [banco, setBanco] = useState('');
+  const [cbu, setCbu] = useState('');
+  const [alias, setAlias] = useState('');
+  const [titular, setTitular] = useState('');
+  const [seña, setSeña] = useState(false);
+  const [importe, setImporte] = useState('');
+  const [usuario, setUsuario] = useState(''); // ← Nuevo
+  const [contraseña, setContraseña] = useState(''); // ← Nuevo
+  const [repetirContraseña, setRepetirContraseña] = useState(''); // ← Nuevo
+  const [mensaje, setMensaje] = useState('');
+  const [error, setError] = useState('');
+  const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
+
+  const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
+  const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
+
+  // Desactivar seña si es centro médico
+  useEffect(() => {
+    if (tipo === 'centro_medico') {
+      setSeña(false);
+    }
+  }, [tipo]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validación básica
+    if (!direccion || !localidad || !usuario || !contraseña || !repetirContraseña) {
+      setError('Todos los campos son obligatorios.');
+      return;
+    }
+
+    if (contraseña !== repetirContraseña) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    if (contraseña.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (tipo === 'particular' && seña && (!importe || !banco || !cbu)) {
+      setError('Si requiere seña, complete importe, banco y CBU/alias.');
+      return;
+    }
+
+    setError('');
+    setMensaje('');
+
+    try {
+      // 🔐 Hashear la contraseña
+      const salt = await bcrypt.genSalt(10);
+      const contraseñaHash = await bcrypt.hash(contraseña, salt);
+
+      const nuevoConsultorio = {
+        direccion,
+        localidad, // ID de la localidad
+        provincia: idProvinciaSelected,
+        telefono,
+        tipo,
+        usuario, // ← enviado
+        contraseña: contraseñaHash, // ← solo el hash, nunca la original
+        seña,
+        importe: seña ? parseFloat(importe) : null,
+        banco: seña ? banco : null,
+        cbu: seña ? cbu : null,
+        alias: seña ? alias : null,
+        titular: seña ? titular : null,
+      };
+
+      const response = await axios.post('http://localhost:3006/api/crearconsultorio', nuevoConsultorio);
+
+      if (response.ok) {
+        const data = await response.json();
+        setMensaje(`✅ ${data.nombre} fue creado con éxito.`);
+        // Resetear formulario
+        setDireccion('');
+        setLocalidad('');
+        setTelefono('');
+        setTipo('particular');
+        setUsuario('');
+        setContraseña('');
+        setRepetirContraseña('');
+        setSeña(false);
+        setImporte('');
+        setBanco('');
+        setCbu('');
+        setAlias('');
+        setTitular('');
+      } else {
+        const errorData = await response.json();
+        setError(`❌ Error: ${errorData.message || 'No se pudo crear el consultorio.'}`);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('❌ Error de conexión. Intente más tarde.');
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Crear Nuevo Establecimiento</h2>
+
+      {error && <div className="mb-4 p-3 text-red-700 bg-red-100 rounded text-sm">{error}</div>}
+      {mensaje && <div className="mb-4 p-3 text-green-700 bg-green-100 rounded text-sm">{mensaje}</div>}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Usuario */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Usuario (email o nombre de usuario) *</label>
+          <input
+            type="text"
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="ej: dr.perez o perez@gmail.com"
+          />
+        </div>
+
+        {/* Contraseña */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Contraseña *</label>
+          <input
+            type="password"
+            value={contraseña}
+            onChange={(e) => setContraseña(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+            placeholder="••••••"
+          />
+        </div>
+
+        {/* Repetir Contraseña */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Repetir Contraseña *</label>
+          <input
+            type="password"
+            value={repetirContraseña}
+            onChange={(e) => setRepetirContraseña(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="••••••"
+          />
+        </div>
+
+        {/* Tipo */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Tipo de Establecimiento *</label>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="particular">Consultorio Particular</option>
+            <option value="centro_medico">Centro Médico</option>
+          </select>
+        </div>
+
+        {/* Dirección */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Dirección *</label>
+          <input
+            type="text"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Av. Libertador 1000"
+          />
+        </div>
+
+        {/* Provincia */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Provincia *</label>
+          <select
+            value={idProvinciaSelected}
+            onChange={(e) => setIdProvinciaSelected(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Seleccionar provincia</option>
+            {loadingProvincias && <option disabled>Cargando provincias...</option>}
+            {errorProvincias && <option disabled>Error al cargar provincias</option>}
+            {!loadingProvincias && !errorProvincias && provincias.map((provincia) => (
+              <option key={provincia.id} value={provincia.id}>
+                {provincia.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Localidad */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Localidad *</label>
+          <select
+            value={localidad}
+            onChange={(e) => setLocalidad(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+          >
+            <option value="">Seleccionar localidad</option>
+            {loadingLocalidades && <option disabled>Cargando localidades...</option>}
+            {errorLocalidades && <option disabled>Error al cargar localidades</option>}
+            {!loadingLocalidades && !errorLocalidades && localidades.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Teléfono */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Teléfono (opcional)</label>
+          <input
+            type="tel"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="11-1234-5678"
+          />
+        </div>
+
+        {/* Seña */}
+        {tipo === 'particular' && (
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="seña"
+              checked={seña}
+              onChange={(e) => setSeña(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="seña" className="ml-2 text-sm text-gray-700">
+              ¿Requiere seña para reservar turno?
+            </label>
+          </div>
+        )}
+
+        {tipo === 'particular' && seña && (
+          <div className="bg-gray-50 p-4 rounded-md space-y-4 border border-gray-200">
+            <h3 className="font-medium text-gray-800">Datos para Seña</h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Importe de la seña *</label>
+              <input
+                type="number"
+                value={importe}
+                onChange={(e) => setImporte(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                placeholder="5000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Banco *</label>
+              <input
+                type="text"
+                value={banco}
+                onChange={(e) => setBanco(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                placeholder="Banco Nación"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">CBU o Alias *</label>
+              <input
+                type="text"
+                value={cbu}
+                onChange={(e) => setCbu(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                placeholder="2850590940091234567890 o JUAN.PEREZ.CBU"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Titular de la cuenta</label>
+              <input
+                type="text"
+                value={titular}
+                onChange={(e) => setTitular(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                placeholder="Juan Pérez"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Nota centro médico */}
+        {tipo === 'centro_medico' && (
+          <p className="text-sm text-gray-500 italic">
+            Nota: Los centros médicos generalmente no requieren seña directa al consultorio.
+          </p>
+        )}
+
+        {/* Botón */}
+        <div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+          >
+            Crear Establecimiento
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default CrearConsultorio;

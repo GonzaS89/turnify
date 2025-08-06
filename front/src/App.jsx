@@ -6,6 +6,7 @@ import UserDashboard from "./Layouts/UserDashboard";
 import { Footer } from "./Footer";
 import Login from "./Layouts/Login";
 import Main from "./Layouts/Main";
+import CrearConsultorio from "./Layouts/CrearConsultorio";
 
 // 👉 Importamos el nuevo componente de cancelación
 import CancelarTurno from "./Layouts/CancelarTurno"; // Ajusta la ruta según donde lo guardes
@@ -28,12 +29,14 @@ const App = () => {
         
         {/* Modal de login (condicional) */}
         {openLoginModal && <Login closeLogin={closeLogin} />}
+        
 
         {/* Contenido principal */}
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Main openLogin={openLogin} />} />
             <Route path="/micuenta" element={<UserDashboard />} />
+            <Route path="/crearconsultorio" element={<CrearConsultorio />}></Route>
             
             {/* ✅ Nueva ruta para cancelar turno */}
             <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />

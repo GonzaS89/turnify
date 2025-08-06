@@ -10,8 +10,7 @@ const API_BASE_URL = window.location.hostname === 'localhost' ? serverLocal : se
 
 const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess }) => {
   const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
-  const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
-  const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
+
 
   const [formData, setFormData] = useState({
     telefono: '',
@@ -118,24 +117,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
           {loadingLocalidades && idProvinciaSelected && <p className="text-center text-gray-500">Cargando localidades...</p>}
           {errorLocalidades && idProvinciaSelected && <p className="text-center text-red-500">Error al cargar localidades: {errorLocalidades.message}</p>}
 
-        
-{/* 
-          <div>
-            <label htmlFor="tipo" className="block text-gray-700 text-lg font-semibold mb-1">Tipo:</label>
-            <select
-              id="tipo"
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={loading}
-            >
-              <option value="propio">Consultorio Particular</option>
-              <option value="centro_medico">Centro Médico</option>
-            </select>
-          </div> */}
-
-
+    
         
 
           <div>
