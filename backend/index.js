@@ -362,6 +362,8 @@ app.put('/api/reservarturno/:turnoId', async (req, res) => {
 🏥 *Consultorio:* ${datosConsultorio[0].nombre}
 📍 *Dirección:* ${datosConsultorio[0].direccion}, ${datosConsultorio[0].localidad}
 
+${datosConsultorio[0].seña ? `🔑 *Seña:* ${datosConsultorio[0].seña} (${datosConsultorio[0].importe} ARS)` : ''}
+
 ❌ *¿Necesitás cancelar?*
 Puedes hacerlo fácilmente aquí:
 ${linkCancelar} 
