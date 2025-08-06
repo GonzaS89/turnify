@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import useAllProvincias from '../../customHooks/useAllProvincias';
 import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
-import bcrypt from 'bcryptjs'; // ← Importamos bcryptjs
+import bcrypt from 'bcryptjs';
 
 const CrearConsultorio = () => {
-
   const [direccion, setDireccion] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -15,9 +14,11 @@ const CrearConsultorio = () => {
   const [titular, setTitular] = useState('');
   const [seña, setSeña] = useState(false);
   const [importe, setImporte] = useState('');
-  const [usuario, setUsuario] = useState(''); // ← Nuevo
-  const [contraseña, setContraseña] = useState(''); // ← Nuevo
-  const [repetirContraseña, setRepetirContraseña] = useState(''); // ← Nuevo
+  const [usuario, setUsuario] = useState('');
+  const [contraseña, setContraseña] = useState('');
+  const [repetirContraseña, setRepetirContraseña] = useState('');
+  const [mostrarContraseña, setMostrarContraseña] = useState(false);
+  const [mostrarRepetir, setMostrarRepetir] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
@@ -35,7 +36,6 @@ const CrearConsultorio = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación básica
     if (!direccion || !localidad || !usuario || !contraseña || !repetirContraseña) {
       setError('Todos los campos son obligatorios.');
       return;
@@ -60,18 +60,17 @@ const CrearConsultorio = () => {
     setMensaje('');
 
     try {
-      // 🔐 Hashear la contraseña
       const salt = await bcrypt.genSalt(10);
       const contraseñaHash = await bcrypt.hash(contraseña, salt);
 
       const nuevoConsultorio = {
         direccion,
-        localidad, // ID de la localidad
+        localidad,
         provincia: idProvinciaSelected,
         telefono,
         tipo,
-        usuario, // ← enviado
-        contraseña: contraseñaHash, // ← solo el hash, nunca la original
+        usuario,
+        contraseña: contraseñaHash,
         seña,
         importe: seña ? parseFloat(importe) : null,
         banco: seña ? banco : null,
@@ -80,11 +79,17 @@ const CrearConsultorio = () => {
         titular: seña ? titular : null,
       };
 
-      const response = await axios.post('http://localhost:3006/api/crearconsultorio', nuevoConsultorio);
+      const response = await fetch('http://localhost:3006/api/crearconsultorio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevoConsultorio),
+      });
 
       if (response.ok) {
         const data = await response.json();
-        setMensaje(`✅ ${data.nombre} fue creado con éxito.`);
+        setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
         // Resetear formulario
         setDireccion('');
         setLocalidad('');
@@ -93,6 +98,8 @@ const CrearConsultorio = () => {
         setUsuario('');
         setContraseña('');
         setRepetirContraseña('');
+        setMostrarContraseña(false);
+        setMostrarRepetir(false);
         setSeña(false);
         setImporte('');
         setBanco('');
@@ -129,28 +136,46 @@ const CrearConsultorio = () => {
           />
         </div>
 
-        {/* Contraseña */}
+        {/* Contraseña con ojo */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Contraseña *</label>
-          <input
-            type="password"
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
-            placeholder="••••••"
-          />
+          <div className="mt-1 flex">
+            <input
+              type={mostrarContraseña ? 'text' : 'password'}
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              className="block w-full px-4 py-2 border border-gray-300 rounded-l-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              placeholder="••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setMostrarContraseña(!mostrarContraseña)}
+              className="px-4 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md text-gray-700 hover:bg-gray-300 focus:outline-none"
+            >
+              {mostrarContraseña ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
 
-        {/* Repetir Contraseña */}
+        {/* Repetir Contraseña con ojo */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Repetir Contraseña *</label>
-          <input
-            type="password"
-            value={repetirContraseña}
-            onChange={(e) => setRepetirContraseña(e.target.value)}
-            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="••••••"
-          />
+          <div className="mt-1 flex">
+            <input
+              type={mostrarRepetir ? 'text' : 'password'}
+              value={repetirContraseña}
+              onChange={(e) => setRepetirContraseña(e.target.value)}
+              className="block w-full px-4 py-2 border border-gray-300 rounded-l-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              placeholder="••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setMostrarRepetir(!mostrarRepetir)}
+              className="px-4 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md text-gray-700 hover:bg-gray-300 focus:outline-none"
+            >
+              {mostrarRepetir ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
 
         {/* Tipo */}
