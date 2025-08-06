@@ -98,8 +98,8 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             {/* Info del médico */}
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Panel de Control</h1>
-              <p className="text-gray-600 mt-1">Bienvenido , Doc. {medico?.nombre} {medico?.apellido}.</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Consultorio virtual</h1>
+         
 
               {medico && (
                 <div className="mt-4 flex items-center space-x-4">
@@ -207,6 +207,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
               openModalHabilitarTurnos={() => setShowModal(true)}
               refreshTrigger={refreshTrigger}
               handleActualizarTurnos={actualizarTurnos}
+             
             />
           </div>
         )}

@@ -7,13 +7,11 @@ import img2 from "../assets/medic2.png";
 import img3 from "../assets/medic4.png";
 import img4 from "../assets/medic3.png";
 
-const Hero = ({ enviarIds }) => {
+const Hero = ({ enviarIds, openModalProf }) => {
     const { profesionales, isLoading, error } = useAllProfesionals();
-    const [showModal, setShowModal] = useState(false);
+    const [showModal, setShowModal] = useState(openModalProf);
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    const openModal = () => setShowModal(true);
-    const closeModal = () => setShowModal(false);
 
     const images = [img, img2, img3, img4];
 
@@ -49,7 +47,7 @@ const Hero = ({ enviarIds }) => {
 
                         <div className="mt-4">
                             <button
-                                onClick={openModal}
+                                onClick={()=>setShowModal(true)}
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium text-lg rounded-full shadow-md hover:from-blue-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105"
                             >
                                 🔍 Buscar Profesionales
@@ -87,7 +85,7 @@ const Hero = ({ enviarIds }) => {
             {/* Modal */}
             <SearchModal
                 showModal={showModal}
-                onClose={closeModal}
+                onClose={() => setShowModal(false)}
                 profesionales={profesionales}
                 isLoading={isLoading}
                 error={error}

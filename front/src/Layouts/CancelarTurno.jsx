@@ -57,13 +57,17 @@ export default function CancelarTurno() {
       // Si llega aquí, fue exitoso
       toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {
         position: 'top-right',
-        autoClose: 5000,
+        autoClose: 1800,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
       });
       setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
+
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (err) {
       // Manejamos el error
       const mensajeError =

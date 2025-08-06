@@ -3,6 +3,7 @@ import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 import useAllCoberturas from '../../../customHooks/useAllCoberturas'; // Asegúrate de que esta ruta sea correcta
 
+
 const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno }) => {
     // Estados internos para la lógica de la API y la UI
     const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
@@ -12,10 +13,11 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
 
     const { coberturas } = useAllCoberturas(); // Hook para obtener las coberturas médicas
 
-    const coberturaElegida = coberturas.find(cobertura => cobertura.id == formData.selectedOption); // Asegúrate de que selectedOption sea un ID válido
+    const coberturaElegida = coberturas?.find(cobertura => cobertura.id == formData?.selectedOption); // Asegúrate de que selectedOption sea un ID válido
 
     // Si el modal no está abierto, no renderiza nada
     if (!isOpen) return null;
+
 
     // Función para formatear la fecha
     const formatearFechaSQL = (fecha) => {
@@ -57,13 +59,16 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
             setIsSuccess(true); // Marca la reserva como exitosa
             setConfirmedTurnoId(response.data.updatedId); 
 
+             // Cierra el modal de selección de turnos
             // Opcional: Cerrar el modal de éxito automáticamente después de unos segundos
             setTimeout(() => {
                 onCloseAndReset(); // Llama a la función de cierre y reseteo
-                onClose(); // Llama a la prop onClose del padre
-                window.location.reload(); // Recarga la página para reflejar los cambios
+                // Llama a la prop onClose del padre
+                onClose(); 
+               
+                // Recarga la página para reflejar los cambios
                 window.scrollTo(0, 0); // Vuelve al inicio de la página
-            }, 3000); // Cierra después de 3 segundos
+            }, 2000); // Cierra después de 3 segundos
 
         } catch (error) {
             console.error('Error al actualizar el turno:', error);
@@ -86,7 +91,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
     
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-50 backdrop-blur-md p-4 animate-fade-in"> {/* Ajuste de padding */}
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-[200] backdrop-blur-md p-4 animate-fade-in"> {/* Ajuste de padding */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col gap-5 border border-blue-100 transform scale-95 animate-scale-in max-h-[90vh] overflow-y-auto"> {/* Ajuste de padding y gap */}
                 {isSuccess ? (
                     // Contenido para el estado de éxito

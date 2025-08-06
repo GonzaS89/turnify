@@ -98,7 +98,7 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
 
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh] overflow-hidden">
                 {/* Botón de cerrar */}
                 <button

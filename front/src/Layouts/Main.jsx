@@ -25,7 +25,7 @@ const Main = ({ openLogin }) => {
 
   // NUEVOS ESTADOS para el modal de confirmación
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [userFormData, setUserFormData] = useState(null); // Almacena los datos del formulario de usuario temporalmente
+  const [userFormData, setUserFormData] = useState(null); // Almacena los datos del formulario de usuario temporalmente}
 
 
   // DECLARACION DE FUNCIONES
@@ -37,7 +37,11 @@ const Main = ({ openLogin }) => {
     console.log("Turno recibido:", turno, "Orden:", orden);
   };
 
+  const [openModalProf, setOpenModalProf] = useState(false); // Estado para controlar la apertura del modal de turnos
+
   const cerrarModalTurnos = () => {
+    setOpenModalProf(false)
+    setShowConfirmationModal(false); // Cierra el modal de confirmación si está abierto
     setShowModalTurnos(false); // Cierra el modal de turnos
     setConsultorio(null); // Limpia el ID del consultorio al cerrar el modal
     setIdProfesional(null); // Limpia el ID del profesional al cerrar el modal
@@ -98,7 +102,7 @@ const Main = ({ openLogin }) => {
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-      <Header openLogin={openLogin} />
+      <Header openLogin={openLogin} openModalProf={openModalProf}/>
       <Hero enviarIds={recibirIds} />
 
       <Steps />
@@ -111,7 +115,7 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-200 border-t-2" />
     
 
-      {showModalTurnos && !showUserFormModal && !showConfirmationModal && (
+      {showModalTurnos &&  (
         <TurnSelectModal
           consultorio={consultorio} // Pasamos el consultorio para mostrar su información
           idProfesional={idProfesional} // Pasamos el ID del profesional

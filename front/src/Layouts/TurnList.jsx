@@ -1,13 +1,17 @@
 // src/components/TurnList.jsx
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
+import { FaTimesCircle,FaCheckCircle, FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
 import { TbRefresh } from "react-icons/tb";
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import useAllCoberturas from '../../customHooks/useAllCoberturas';
 import useProfesionalxId from '../../customHooks/useProfesionalxId';
 import BorrarTurno from './components/BorrarTurno';
 import BorrarTodosLosTurnosModal from './components/BorrarTodosLosTurnosModal';
+import UserFormModal from './components/UserFormModal';
+import ConfirmationModal from './components/ConfirmationModal';
+import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
+import useConsultorioxId from '../../customHooks/useConsultorioxId';
 
 const TurnList = ({ 
   profesionalId, 
@@ -21,10 +25,16 @@ const TurnList = ({
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
+  const { consultorio, isLoading: isLoadingConsultorio, error: errorConsultorio } = useConsultorioxId(consultorioId);
+
+
+
+  const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
 
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
+  const [showUserFormModal,  setShowUserFormModal] = useState(false);
 
   const datesListRef = useRef(null);
 
@@ -36,6 +46,15 @@ const TurnList = ({
     acc[clave].push(turno);
     return acc;
   }, {});
+
+  const [selectedTurno, setSelectedTurno] = useState(null);
+  const [ordenTurno, setOrdenTurno] = useState(null);
+
+  const tapButtonAsignar = (turno, idx) => {
+    setOrdenTurno(idx + 1);
+    setShowUserFormModal(true);
+    setSelectedTurno(turno);
+  }
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
 
@@ -99,6 +118,16 @@ const TurnList = ({
 
  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
+ const [userFormData, setUserFormData] = useState(null);
+ const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+
+ const handleUserFormSubmit = (formData) => {
+  // Aquí no se envía aún, solo se guardan los datos y se abre el modal de confirmación
+  setUserFormData(formData); // Guarda los datos del formulario
+  setShowUserFormModal(false); // Cierra el formulario de usuario
+  setShowConfirmationModal(true); // Abre el modal de confirmación
+};
+
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
@@ -126,6 +155,22 @@ const TurnList = ({
     } catch (error) {
       console.error('Error al actualizar el estado del turno:', error);
       alert('Error al actualizar el estado del turno. Por favor, intenta nuevamente más tarde.');
+    }
+  };
+
+  const handleLiberarTurno = async (idTurno) => {
+    try {
+      const response = await axios.put(`http://localhost:3006/api/cancelarturno/${idTurno}`);
+      if (response.status === 200) {
+        console.log('Turno liberado correctamente:', response.data);
+        handleActualizarTurnos();
+      } else {
+        console.error('Error al liberar el turno:', response.status, response.data);
+        alert('Error al liberar el turno. Por favor, intenta nuevamente más tarde.');
+      }
+    } catch (error) {
+      console.error('Error al liberar el turno:', error);
+      alert('Error al liberar el turno. Por favor, intenta nuevamente más tarde.');
     }
   };
 
@@ -227,7 +272,7 @@ const TurnList = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleActualizarTurnos}
-              className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-opacity-30 rounded-lg text-sm transition text-white font-medium"
+              className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-blue-700 rounded-lg text-sm transition text-white font-medium"
               aria-label="Actualizar turnos"
             >
               <TbRefresh className="w-4 h-4" />
@@ -265,7 +310,8 @@ const TurnList = ({
               {fechasOrdenadas.map((fecha) => {
                 const turnos = turnosAgrupados[fecha];
                 const ocupados = turnos.filter(t => t.estado === 'reservado').length;
-                const disponibles = turnos.length - ocupados;
+                const finalizados = turnos.filter(t => t.estado === 'finalizado').length;
+                const disponibles = turnos.length - ocupados - finalizados;
                 const isSelected = fecha === fechaSeleccionada;
 
                 return (
@@ -419,15 +465,39 @@ const TurnList = ({
                             </button>
                           )}
                         </div>
-                        {turno.estado === 'reservado' && (
-                          <button className='px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-semibold rounded-lg  text-xs lg:text-sm hover:from-blue-800 hover:to-cyan-600 duration-200 ease-in-out transition-all'
-                
-                            onClick={() => 
-                              handleModificarEstadoTurno(turno.id)
-                            }>
-                            Marcar como finalizado
-                          </button>  
-                        )}
+                        {turno.estado === 'reservado' ? (
+  <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
+    {/* Botón: Marcar como finalizado */}
+    <button
+      onClick={() => handleModificarEstadoTurno(turno.id)}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
+      title="Marcar como finalizado"
+    >
+      <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+      <span className="hidden sm:inline">Marcar como finalizado</span>
+      <span className="inline sm:hidden">Fin</span>
+    </button>
+
+    {/* Botón: Liberar turno */}
+    <button
+      onClick={() => handleLiberarTurno(turno.id)}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
+      title="Liberar turno"
+    >
+      <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
+      <span className="hidden sm:inline">Liberar</span>
+      <span className="inline sm:hidden">Lib</span>
+    </button>
+  </div>
+) : turno.estado === 'disponible' && (
+  <button
+    onClick={() => tapButtonAsignar(turno, idx)}
+    className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-8"
+  >
+    <FaPlus className="w-3.5 h-3.5" />
+    <span>Asignar turno</span>
+  </button>
+)}
                       </div>
 
                       {turno.DNI ? (
@@ -488,9 +558,43 @@ const TurnList = ({
           fecha={fechaSeleccionada}
           onClose={() => setShowModalBorrarTodosLosTurnos(false)}
           actualizarTurnos={handleActualizarTurnos}
+      
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
+
+      { showUserFormModal && (
+        <UserFormModal
+          profesionalId={profesionalId}
+          onSubmit={handleUserFormSubmit}
+          consultorioId={consultorioId}
+          fechaSeleccionada={fechaSeleccionada}
+          onClose={() =>  setShowUserFormModal(false)}
+
+          isOpen={showUserFormModal}
+          coberturas={ coberturasConsultorio } // Asegúrate de pasar las coberturas del consultorio
+        />
+      )} 
+      { showConfirmationModal && (
+        <ConfirmationModal
+          isOpen={showConfirmationModal}
+          cerrarModalTurnos = {()=> onClose()} // Cierra todos los modales si se cancela desde aquí
+    // Pasamos la función para actualizar los turnos
+          onClose={() => setShowConfirmationModal(false)}
+          onConfirm={handleUserFormSubmit}
+          selectedTurno={selectedTurno} // Pasamos el turno seleccionado para mostrarlo en la confirmación
+          ordenTurno={ordenTurno}
+          onEdit={() => {
+            setShowConfirmationModal(false); // Cierra el modal de confirmación
+            setShowUserFormModal(true); // Reabre el formulario de usuario para editar
+          }}
+          formData={userFormData} // Pasamos los datos del formulario de usuario
+          coberturasOptions={coberturasConsultorio} // Pasamos las coberturas del consultorio
+          profesional={profesional[0]} // Pasamos el profesional para mostrar su nombre
+          consultorio={consultorio[0]} // Pasamos el ID del consultorio
+        />
+      )}
+      
     </div>
   );
 };
