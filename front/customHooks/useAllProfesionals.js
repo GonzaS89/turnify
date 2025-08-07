@@ -1,34 +1,37 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-
+// customHooks/useAllProfesionals.js
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const useAllProfesionals = () => {
+  const [profesionales, setProfesionales] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const [profesionales, setProfesionales] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+  // Función para recargar los profesionales
+  const actualizarProfesionales = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('http://localhost:3006/api/profesionales');
+      setProfesionales(response.data);
+    } catch (err) {
+      setError('No se pudieron cargar los profesionales');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const serverLocal = 'http://localhost:3006';
-    const serverExterno = 'https://turnogol.site';
+  // Cargar al inicio
+  useEffect(() => {
+    actualizarProfesionales();
+  }, []);
 
-    useEffect(() => {
-        const obtenerTurnos = async () => {
-            try {
-                const res = await axios.get(`${serverLocal}/api/profesionales`);
-                setProfesionales(res.data);
-            } catch (err) {
-                console.error("Error al obtener turnos:", err);
-                setError(err.message || "Hubo un error al cargar los turnos");
-            } finally {
-                setIsLoading(false);
-            }
-        };
+  return {
+    profesionales,
+    isLoading,
+    error,
+    actualizarProfesionales, // ← Exponemos esta función
+  };
+};
 
-        obtenerTurnos();
-    }, []);
-
-
-  return { profesionales, isLoading, error}
-}
-
-export default useAllProfesionals
+export default useAllProfesionals;

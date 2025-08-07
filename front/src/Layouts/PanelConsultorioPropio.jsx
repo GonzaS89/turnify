@@ -7,13 +7,15 @@ import TurnList from './TurnList';
 import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import GestionCoberturas from './components/GestionCoberturas';
-import CrearProfesionalModal from './components/CrearProfesionalModal';
+import CrearProfesional from './cards/CrearProfesional';
+import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);
   const [showTurnosList, setShowTurnosList] = useState(false);
+  const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
 
   const consultorioID = consultorio?.id;
   const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
@@ -21,8 +23,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   const medico = profesional ? profesional[0] : null;
   const medicoID = medico?.id;
-
-  
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
     medicoID,
@@ -198,7 +198,14 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
               </span>
             </div>
           </div>
+          {!medico && (
+            <CrearProfesional ejecutarCard={()=> setShowModalAsociarProfesional(true)}/>
+          )}
         </div>
+
+            {showModalAsociarProfesional && (
+              <AsociarProfesionalAConsultorio consultorioID={consultorioID} onClose={()=> setShowModalAsociarProfesional(false)}/>
+            )}
 
         {/* ===== LISTA DE TURNOS (Modal integrado) ===== */}
         {showTurnosList && (
@@ -238,10 +245,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           consultorioId={consultorio?.id}
         />
 
-        {/* Modal para crear profesional */}
-        {medico === undefined && (
-          <CrearProfesionalModal />
-        )}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { Footer } from "./Footer";
 import Login from "./Layouts/Login";
 import Main from "./Layouts/Main";
 import CrearConsultorio from "./Layouts/CrearConsultorio";
+import CrearProfesional from './Layouts/CrearProfesionalModal'
 
 // 👉 Importamos el nuevo componente de cancelación
 import CancelarTurno from "./Layouts/CancelarTurno"; // Ajusta la ruta según donde lo guardes
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/" element={<Main openLogin={openLogin} />} />
             <Route path="/micuenta" element={<UserDashboard />} />
             <Route path="/crearconsultorio" element={<CrearConsultorio />}></Route>
+            <Route path="/crearprofesional" element={<CrearProfesional />}></Route>
             
             {/* ✅ Nueva ruta para cancelar turno */}
             <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />

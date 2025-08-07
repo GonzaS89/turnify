@@ -100,7 +100,7 @@ const TurnSelectModal = ({
               </h1>
               {consultorio && (
                 <div className="mt-1 text-xs sm:text-sm text-gray-600">
-                  <p className="font-medium">{consultorio.tipo === "propio" ? "Consultorio Particular" : `Centro Médico ${consultorio.nombre}`}</p>
+                  <p className="font-medium">{consultorio.tipo === "particular" ? "Consultorio Particular" : `Centro Médico ${consultorio.nombre}`}</p>
                   <p>{consultorio.direccion}, {consultorio.localidad}</p>
                   {/* <p className="mt-1">Horario: <span className="font-semibold">{consultorio.inicio} a {consultorio.cierre} Hs</span></p> */}
                 </div>

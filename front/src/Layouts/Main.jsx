@@ -7,12 +7,12 @@ import Testimonials from "./Testimonials";
 import { Header } from "../Header";
 import UserFormModal from "./components/UserFormModal";
 import ConfirmationModal from "./components/ConfirmationModal";
-import Separator from "./components/Separator";
+
 import TurnSelectModal from "./components/TurnSelectModal";
 // Importamos los custom hooks necesarios   
 
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
-import useProfessionalConsultorios from '../../customHooks/useProfessionalConsultorios';
+
 import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 
 const Main = ({ openLogin }) => {
