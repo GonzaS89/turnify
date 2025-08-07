@@ -122,7 +122,7 @@ const UserDashboard = ({ onLogout }) => {
           </button>
         </header>
 
-        {consultorioToUse?.tipo === 'propio' ? (
+        {consultorioToUse?.tipo === 'particular' ? (
           <PanelConsultorioPropio consultorioData={consultorioToUse} onLogout={handleLogout} />
         ) : (
           <PanelCentroMedico consultorioData={consultorioToUse} />

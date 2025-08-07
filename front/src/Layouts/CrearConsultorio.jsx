@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import useAllProvincias from '../../customHooks/useAllProvincias';
 import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
 import bcrypt from 'bcryptjs';
+import axios from 'axios'
 
 const CrearConsultorio = () => {
   const [direccion, setDireccion] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('particular');
   const [banco, setBanco] = useState('');
   const [cbu, setCbu] = useState('');
@@ -28,7 +30,7 @@ const CrearConsultorio = () => {
 
   // Desactivar seña si es centro médico
   useEffect(() => {
-    if (tipo === 'centro_medico') {
+    if (tipo === 'centro médico') {
       setSeña(false);
     }
   }, [tipo]);
@@ -60,60 +62,57 @@ const CrearConsultorio = () => {
     setMensaje('');
 
     try {
-      const salt = await bcrypt.genSalt(10);
-      const contraseñaHash = await bcrypt.hash(contraseña, salt);
+  const nuevoConsultorio = {
+    direccion,
+    localidad,
+    provincia: idProvinciaSelected,
+    telefono,
+    tipo,
+    nombre,
+    usuario,
+    contraseña, // Enviar sin hash (el backend debe hacerlo)
+    seña,
+    importe: seña ? parseFloat(importe) : null,
+    banco: seña ? banco : null,
+    cbu: seña ? cbu : null,
+    alias: seña ? alias : null,
+    titular: seña ? titular : null,
+  };
 
-      const nuevoConsultorio = {
-        direccion,
-        localidad,
-        provincia: idProvinciaSelected,
-        telefono,
-        tipo,
-        usuario,
-        contraseña: contraseñaHash,
-        seña,
-        importe: seña ? parseFloat(importe) : null,
-        banco: seña ? banco : null,
-        cbu: seña ? cbu : null,
-        alias: seña ? alias : null,
-        titular: seña ? titular : null,
-      };
+  const response = await axios.post('http://localhost:3006/api/crearconsultorio', nuevoConsultorio);
 
-      const response = await fetch('http://localhost:3006/api/crearconsultorio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(nuevoConsultorio),
-      });
+  // Si llega aquí, es porque el status es 2xx
+  const data = response.data;
+  setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
+  
+  // Resetear formulario
+  setDireccion('');
+  setLocalidad('');
+  setTelefono('');
+  setTipo('propio');
+  setUsuario('');
+  setContraseña('');
+  setRepetirContraseña('');
+  setMostrarContraseña(false);
+  setMostrarRepetir(false);
+  setSeña(false);
+  setImporte('');
+  setBanco('');
+  setCbu('');
+  setAlias('');
+  setTitular('');
+  setNombre('')
 
-      if (response.ok) {
-        const data = await response.json();
-        setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
-        // Resetear formulario
-        setDireccion('');
-        setLocalidad('');
-        setTelefono('');
-        setTipo('particular');
-        setUsuario('');
-        setContraseña('');
-        setRepetirContraseña('');
-        setMostrarContraseña(false);
-        setMostrarRepetir(false);
-        setSeña(false);
-        setImporte('');
-        setBanco('');
-        setCbu('');
-        setAlias('');
-        setTitular('');
-      } else {
-        const errorData = await response.json();
-        setError(`❌ Error: ${errorData.message || 'No se pudo crear el consultorio.'}`);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      setError('❌ Error de conexión. Intente más tarde.');
-    }
+} catch (err) {
+  // Aquí manejas tanto errores de red como respuestas 4xx/5xx
+  if (axios.isAxiosError(err)) {
+    const errorMessage = err.response?.data?.message || err.response?.statusText || 'Error desconocido';
+    setError(`❌ Error: ${errorMessage}`);
+  } else {
+    setError('❌ Error de conexión. Intente más tarde.');
+  }
+  console.error('Error al crear consultorio:', err);
+}
   };
 
   return (
@@ -186,8 +185,8 @@ const CrearConsultorio = () => {
             onChange={(e) => setTipo(e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="particular">Consultorio Particular</option>
-            <option value="centro_medico">Centro Médico</option>
+            <option value="propio">Consultorio Particular</option>
+            <option value="centro médico">Centro Médico</option>
           </select>
         </div>
 

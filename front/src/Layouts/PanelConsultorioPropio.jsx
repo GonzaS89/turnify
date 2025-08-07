@@ -1,13 +1,13 @@
 // src/components/PanelConsultorioPropio.jsx
-import React, { useState, useMemo } from 'react';
-import { FaCalendarAlt, FaClock, FaCog, FaShieldAlt, FaUserMd, FaStethoscope, FaIdCard } from 'react-icons/fa';
+import { useState, useMemo } from 'react';
+import { FaCalendarAlt, FaCog, FaShieldAlt, FaStethoscope, FaIdCard } from 'react-icons/fa';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import TurnList from './TurnList';
 import ConsultorioSettingsModal from './components/ConsultorioSettingsModal';
 import GenerarTurnosModal from './components/GenerarTurnosModal';
 import GestionCoberturas from './components/GestionCoberturas';
-import Coberturas from './cards/Coberturas';
+import CrearProfesionalModal from './components/CrearProfesionalModal';
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const [showModal, setShowModal] = useState(false);
@@ -18,8 +18,11 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
   const consultorioID = consultorio?.id;
   const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
 
+
   const medico = profesional ? profesional[0] : null;
   const medicoID = medico?.id;
+
+  
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
     medicoID,
@@ -113,10 +116,10 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
                     </h2>
                     <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-600">
                       <span className="flex items-center">
-                        <FaStethoscope className="mr-1 text-green-500" /> {medico.especialidad || 'Sin especialidad'}
+                        <FaStethoscope className="mr-1 text-green-500" /> {medico?.especialidad || 'Sin especialidad'}
                       </span>
                       <span className="flex items-center">
-                        <FaIdCard className="mr-1 text-blue-500" /> Matrícula: {medico.matricula || 'N/A'}
+                        <FaIdCard className="mr-1 text-blue-500" /> Matrícula: {medico?.matricula || 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -234,6 +237,11 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           onClose={() => setShowCoberturasModal(false)}
           consultorioId={consultorio?.id}
         />
+
+        {/* Modal para crear profesional */}
+        {medico === undefined && (
+          <CrearProfesionalModal />
+        )}
       </div>
     </div>
   );

@@ -67,7 +67,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
                     <DetailItem 
                       label="Tipo" 
                       value={
-                        consultorio.tipo === 'propio' 
+                        consultorio.tipo === 'particular' 
                           ? 'Consultorio Particular' 
                           : `Centro Médico: ${consultorio.nombre}`
                       } 

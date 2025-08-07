@@ -1,62 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAllConsultorios from "../../customHooks/useAllConsultorios";
+import axios from 'axios'
 
 const Login = ({ closeLogin }) => {
-  const { consultorios, isLoading, error: fetchError } = useAllConsultorios(); 
-  const navigate = useNavigate(); 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setLoginError('');
+    setLoginError("");
   }, [username, password]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setLoginError('');
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setLoginError('');
 
-    if (isLoading) {
-      setLoginError("Cargando datos de consultorios, por favor espera...");
-      setIsSubmitting(false);
-      return;
-    }
+  try {
+    const response = await axios.post('http://localhost:3006/api/login', {
+      usuario: username,
+      contraseña: password
+    });
 
-    if (fetchError) {
-      setLoginError(`Error al cargar datos: ${fetchError.message || 'Error desconocido'}`);
-      setIsSubmitting(false);
-      return;
-    }
+    const { consultorio, token } = response.data;
 
-    if (!consultorios || consultorios.length === 0) {
-      setLoginError("No hay consultorios registrados para verificar credenciales.");
-      setIsSubmitting(false);
-      return;
-    }
+    // Guardar token (en localStorage o context)
+    localStorage.setItem('authToken', token);
 
-    const consultorio = consultorios.find(
-      (c) => c.usuario === username && c.contrasena === password
-    );
+    // Redirigir
+    navigate('/micuenta', { state: { consultorio } });
+    closeLogin();
 
-    if (consultorio) {
-      // Simular un pequeño delay para mejor UX
-      setTimeout(() => {
-        navigate("/micuenta", { state: { consultorio } }); 
-        closeLogin();
-        setIsSubmitting(false);
-      }, 500);
-    } else {
-      setLoginError("Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.");
-      setIsSubmitting(false);
-    }
-  };
+  } catch (err) {
+    setLoginError(err.response?.data?.message || 'Usuario o contraseña incorrectos.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
-      <div className="
+      <div
+        className="
         relative
         max-h-[95vh]
         bg-white
@@ -72,10 +61,10 @@ const Login = ({ closeLogin }) => {
         duration-300
         ease-out
         animate-fade-in-up
-      ">
-       
-        
-        <div className="
+      "
+      >
+        <div
+          className="
           absolute
           -top-24
           -right-24
@@ -85,8 +74,10 @@ const Login = ({ closeLogin }) => {
           rounded-full
           opacity-50
           blur-3xl
-        "></div>
-        <div className="
+        "
+        ></div>
+        <div
+          className="
           absolute
           -bottom-24
           -left-24
@@ -96,7 +87,8 @@ const Login = ({ closeLogin }) => {
           rounded-full
           opacity-50
           blur-3xl
-        "></div>
+        "
+        ></div>
 
         {/* Botón de cerrar */}
         <button
@@ -139,7 +131,8 @@ const Login = ({ closeLogin }) => {
 
         {/* Header */}
         <div className="text-center mb-8 mt-4">
-          <div className="
+          <div
+            className="
             w-16
             h-16
             bg-gradient-to-br
@@ -154,24 +147,40 @@ const Login = ({ closeLogin }) => {
             text-white
             text-2xl
             shadow-lg
-          ">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          "
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
             </svg>
           </div>
-          
-          <h2 className="
+
+          <h2
+            className="
             text-2xl
             font-bold
             text-gray-900
             mb-2
-          ">
+          "
+          >
             Bienvenido a <span className="text-indigo-600">TurniFy</span>
           </h2>
-          <p className="
+          <p
+            className="
             text-gray-600
             text-sm
-          ">
+          "
+          >
             Ingresa tus credenciales para acceder a tu cuenta
           </p>
         </div>
@@ -180,21 +189,27 @@ const Login = ({ closeLogin }) => {
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Campo de usuario */}
           <div>
-            <label htmlFor="username" className="
+            <label
+              htmlFor="username"
+              className="
               block
               text-sm
               font-medium
               text-gray-700
               mb-2
-            ">
+            "
+            >
               Usuario
             </label>
-            <div className="
+            <div
+              className="
               relative
               rounded-lg
               shadow-sm
-            ">
-              <div className="
+            "
+            >
+              <div
+                className="
                 absolute
                 inset-y-0
                 left-0
@@ -203,9 +218,21 @@ const Login = ({ closeLogin }) => {
                 items-center
                 pointer-events-none
                 text-gray-400
-              ">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
               </div>
               <input
@@ -240,21 +267,27 @@ const Login = ({ closeLogin }) => {
 
           {/* Campo de contraseña */}
           <div>
-            <label htmlFor="password" className="
+            <label
+              htmlFor="password"
+              className="
               block
               text-sm
               font-medium
               text-gray-700
               mb-2
-            ">
+            "
+            >
               Contraseña
             </label>
-            <div className="
+            <div
+              className="
               relative
               rounded-lg
               shadow-sm
-            ">
-              <div className="
+            "
+            >
+              <div
+                className="
                 absolute
                 inset-y-0
                 left-0
@@ -263,9 +296,21 @@ const Login = ({ closeLogin }) => {
                 items-center
                 pointer-events-none
                 text-gray-400
-              ">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               </div>
               <input
@@ -300,37 +345,79 @@ const Login = ({ closeLogin }) => {
 
           {/* Mensajes de estado */}
           {(isLoading || fetchError || loginError) && (
-            <div className="
+            <div
+              className="
               p-3
               rounded-lg
               text-sm
               flex
               items-center
               gap-2
-            ">
+            "
+            >
               {isLoading && (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-4 w-4 text-blue-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   <span className="text-blue-600">Cargando datos...</span>
                 </>
               )}
-              
+
               {fetchError && (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-red-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
-                  <span className="text-red-500">Error: {fetchError.message}</span>
+                  <span className="text-red-500">
+                    Error: {fetchError.message}
+                  </span>
                 </>
               )}
-              
+
               {loginError && (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-red-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <span className="text-red-500">{loginError}</span>
                 </>
@@ -358,22 +445,39 @@ const Login = ({ closeLogin }) => {
               focus:ring-indigo-500
               disabled:opacity-70
               disabled:cursor-not-allowed
-              ${isSubmitting 
-                ? 'bg-indigo-400' 
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-[1.02] hover:shadow-lg'
+              ${
+                isSubmitting
+                  ? "bg-indigo-400"
+                  : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-[1.02] hover:shadow-lg"
               }
             `}
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 <span>Ingresando...</span>
               </div>
             ) : (
-              'Iniciar Sesión'
+              "Iniciar Sesión"
             )}
           </button>
         </form>
@@ -396,17 +500,21 @@ const Login = ({ closeLogin }) => {
         </div> */}
 
         {/* Footer */}
-        <div className="
+        <div
+          className="
           mt-8
           pt-6
           border-t
           border-gray-100
           text-center
-        ">
-          <p className="
+        "
+        >
+          <p
+            className="
             text-xs
             text-gray-500
-          ">
+          "
+          >
             © 2024 TurniFy. Todos los derechos reservados.
           </p>
         </div>
