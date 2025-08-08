@@ -397,7 +397,7 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
     // ✅ Si el estado es "reservado", enviamos WhatsApp al admin
     if (estado === "reservado") {
       const [datosConsultorio] = await pool.execute(
-        "SELECT c.nombre, c.direccion,l.nombre AS localidad, c.telefono, c.sena AS seña, c.importe_sena AS importe, c.banco, c.cbu, c.alias, c.cuenta_nombre AS titular FROM consultorios AS c JOIN localidades AS l ON l.id = c.localidad WHERE c.id = ?",
+        "SELECT c.nombre, c.direccion,l.nombre AS localidad, c.tipo, c.telefono, c.sena AS seña, c.importe_sena AS importe, c.banco, c.cbu, c.alias, c.cuenta_nombre AS titular FROM consultorios AS c JOIN localidades AS l ON l.id = c.localidad WHERE c.id = ?",
         [consultorioID]
       );
 
@@ -406,10 +406,7 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
         [profesionalID]
       );
 
-      const [datosCoberturas] = await pool.execute(
-        "SELECT nombre, siglas FROM cobertura_medica WHERE id = ?",
-        [cobertura]
-      );
+    
 
       const linkCancelar = `https://turnify1.netlify.app/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
 
@@ -425,12 +422,13 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
 👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${
         datosProfesional[0].apellido
       }
+🏥 *Consultorio:* ${datosConsultorio[0].tipo === 'Particular' ? datosConsultorio[0].tipo : `${datosConsultorio[0].tipo} ${datosConsultorio[0].nombre}`}
 📍 *Dirección:* ${datosConsultorio[0].direccion}, ${
         datosConsultorio[0].localidad
       }
 
 ${
-  datosConsultorio[0].seña === 1 &&
+  datosConsultorio[0].seña === 1 ?
   `
 💰 *Importe de la seña:* $${datosConsultorio[0].importe}
 🏦 *Banco:* ${datosConsultorio[0].banco}
@@ -439,7 +437,7 @@ ${
 👤 *Titular de la cuenta:* ${datosConsultorio[0].titular}
 
 Enviar comprobante a ${datosConsultorio[0].telefono} para que se haga efectivo el turno.
-`
+` : ""
 }
 
 ❌ *¿Necesitás cancelar?*
