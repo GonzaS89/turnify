@@ -1,16 +1,8 @@
 import useProfessionalConsultorios from '../../../customHooks/useProfessionalConsultorios';
 import Turnosdisponibles from './Turnosdisponibles';
-import { useNavigate } from 'react-router';
 
-const BotonesConsultorios = ({ idProfesional, enviarIds, onClose}) => {
+const BotonesConsultorios = ({ idProfesional, enviarIds }) => {
   const { consultorios, isLoading, error } = useProfessionalConsultorios(idProfesional);
-
-  const navigate = useNavigate();
-
-  const tapButtonConsultorio = (consultorio) => {
-    enviarIds(idProfesional, consultorio);
-    navigate('/seleccionfecha');
-  }
 
   if (isLoading)
     return (
@@ -45,7 +37,7 @@ const BotonesConsultorios = ({ idProfesional, enviarIds, onClose}) => {
       {consultorios.map((consultorio) => (
         <button
           key={consultorio.id}
-          onClick={() => tapButtonConsultorio(consultorio)}
+          onClick={() => enviarIds(idProfesional, consultorio)}
           className={`
             group relative px-5 py-3 rounded-2xl font-medium text-sm
             bg-white border border-gray-200 shadow-sm hover:shadow-lg

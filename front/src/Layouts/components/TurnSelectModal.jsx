@@ -3,7 +3,6 @@ import { useState } from "react";
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
 import Turno from "./Turno"; // Importación del componente Turno
-import { useNavigate } from "react-router-dom";
 // IMPORTACION DE ICONOS //
 
 const TurnSelectModal = ({
@@ -11,10 +10,7 @@ const TurnSelectModal = ({
   idProfesional,
   enviarTurnoYOrden,
   cerrarModalTurnos,
-  onClose
 }) => {
-
-  const navigate = useNavigate();
   // CARGA DE CUSTOM HOOKS
   const {
     turnos,
@@ -78,10 +74,7 @@ const TurnSelectModal = ({
   };
 
   const handleSelectTurno = (turno, index) => {
-    navigate('/formulario-usuario');
     enviarTurnoYOrden(turno, index + 1);
-    onClose;
-    
   };
 
   let titulo = "";

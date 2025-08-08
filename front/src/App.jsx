@@ -9,31 +9,16 @@ import Main from "./Layouts/Main";
 import CrearConsultorio from "./Layouts/CrearConsultorio";
 import CrearProfesional from "./Layouts/CrearProfesionalModal";
 import CancelarTurno from "./Layouts/CancelarTurno";
-import SearchModal from "./Layouts/components/SearchModal";
-import TurnSelectModal from "./Layouts/components/TurnSelectModal";
-import UserFormModal from "./Layouts/components/UserFormModal";
-import ConfirmationModal from "./Layouts/components/ConfirmationModal";
+
 
 
 const App = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
-  const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
-  const [consultorio, setConsultorio] = useState(null); // Estado para almacenar el consultorio seleccionado
-
+  const [password, setPassword] = useState("");
 
   const closeLogin = () => setOpenLoginModal(false);
   const openLogin = (value = true) => setOpenLoginModal(value);
   const recibirPass = (pass) => setPassword(pass);
-
-  const recibirIds = (idProfesional, consultorio) => {
-    setIdProfesional(idProfesional); // Actualiza el ID del profesional
-    setConsultorio(consultorio);
-  };
-
-  const recibirTurnoYOrden = (turno, orden) => {
-    setSelectedTurno(turno); // Actualiza el turno seleccionado
-    setOrdenTurno(orden); // Actualiza el índice del turno seleccionado
-  };
 
   return (
     <BrowserRouter>
@@ -65,11 +50,7 @@ const App = () => {
               <Route path="/crearconsultorio" element={<CrearConsultorio />} />
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
-              <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>
-              <Route path="/seleccionfecha" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/formulario-usuario" element={<UserFormModal consultorioId={consultorio?.id}/>}/>
-              <Route path="/confirmacionturno" element={<ConfirmationModal />}/>
- 
+
             </Routes>
           </main>
 

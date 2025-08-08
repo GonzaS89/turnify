@@ -6,14 +6,11 @@ import img from "../assets/medic.png";
 import img2 from "../assets/medic2.png";
 import img3 from "../assets/medic4.png";
 import img4 from "../assets/medic3.png";
-import { useNavigate } from "react-router";
 
 const Hero = ({ enviarIds, openModalProf }) => {
-
+    const { profesionales, isLoading, error } = useAllProfesionals();
     const [showModal, setShowModal] = useState(openModalProf);
     const [currentIndex, setCurrentIndex] = useState(0);
-
-    const navigate = useNavigate();
 
 
     const images = [img, img2, img3, img4];
@@ -50,7 +47,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
 
                         <div className="mt-4">
                             <button
-                                onClick={() => navigate("/buscarprofesionales")}
+                                onClick={()=>setShowModal(true)}
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 text-white font-medium text-lg rounded-full shadow-md hover:from-blue-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-105"
                             >
                                 🔍 Buscar Profesionales
@@ -84,6 +81,16 @@ const Hero = ({ enviarIds, openModalProf }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal */}
+            <SearchModal
+                showModal={showModal}
+                onClose={() => setShowModal(false)}
+                profesionales={profesionales}
+                isLoading={isLoading}
+                error={error}
+                enviarIds={enviarIds}
+            />
         </section>
     );
 };
