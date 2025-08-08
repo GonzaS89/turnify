@@ -13,6 +13,8 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
   document.body.style.overflow = 'hidden'; // Bloquea scroll del body
   // Si esto causa problemas, puedes manejarlo en el padre o con un effect
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
     setNumberOfTurns('');
@@ -58,7 +60,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:3006/api/habilitarturnos', {
+      const response = await fetch(`${API_URL}/api/habilitarturnos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

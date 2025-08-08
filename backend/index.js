@@ -253,7 +253,6 @@ app.get("/api/coberturas/:id", async (req, res) => {
 });
 
 
-
 // OBTENER CONSULTORIOS POR ID //
 
 app.get("/api/consultorio/:id", async (req, res) => {
@@ -303,7 +302,8 @@ p.id,
 p.nombre,
 p.apellido,
 p.especialidad,
-p.matricula
+p.matricula,
+p.titulo
 FROM profesionales AS p
 WHERE id = ?
     `;

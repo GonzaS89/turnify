@@ -77,6 +77,26 @@ const TurnSelectModal = ({
     enviarTurnoYOrden(turno, index + 1);
   };
 
+  let titulo = "";
+
+switch (medico?.titulo) {
+  case "doctor":
+    titulo = "Dr.";
+    break;
+  case "doctora":
+    titulo = "Dra.";
+    break;
+  case "licenciado":
+    titulo = "Lic.";
+    break;
+  case "licenciada":
+    titulo = "Lcda.";
+    break;
+  default:
+    titulo = "";
+    break;
+}
+
   return (
     <div className="fixed inset-0 bg-opacity-75 bg-black flex items-center justify-center p-4 z-50 backdrop-blur-md">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] overflow-hidden border border-gray-200">
@@ -92,7 +112,7 @@ const TurnSelectModal = ({
                   <span className="text-red-500 text-sm">Error al cargar profesional</span>
                 ) : (
                   <span>
-                    <p className="m-0">Dr/a {medico?.nombre || "N/A"} {medico?.apellido || "N/A"}</p>
+                    <p className="m-0">{titulo} {medico?.nombre || "N/A"} {medico?.apellido || "N/A"}</p>
                     <p className="text-xs text-gray-600">{medico?.especialidad}</p>
                   </span>
                  

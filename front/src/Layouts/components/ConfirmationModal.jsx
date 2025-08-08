@@ -18,6 +18,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
     // Si el modal no está abierto, no renderiza nada
     if (!isOpen) return null;
 
+    const API_URL = import.meta.env.VITE_API_URL;
 
     // Función para formatear la fecha
     const formatearFechaSQL = (fecha) => {
@@ -42,7 +43,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
         const turnoId = selectedTurno?.id; 
 
         try {
-            const response = await axios.put(`http://localhost:3006/api/reservarturno/${turnoId}`, {
+            const response = await axios.put(`${API_URL}/api/reservarturno/${turnoId}`, {
                 nombre_paciente: formData.nombre,
                 apellido_paciente: formData.apellido,
                 DNI: formData.dni,
@@ -129,7 +130,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
                                     <p></p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Con quién:</span> Dr/a {profesional ? `${profesional.nombre} ${profesional.apellido}` : 'No disponible'}</p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Especialidad:</span> {profesional ? profesional.especialidad : 'No disponible'}</p>
-                                    <p className="col-span-full"><span className="font-semibold text-blue-600">Dónde:</span> {consultorio ? (consultorio.tipo === 'propio' ? 'Consultorio Particular' : `Centro médico ${consultorio.nombre}`) : 'No disponible'}</p>
+                                    <p className="col-span-full"><span className="font-semibold text-blue-600">Dónde:</span> {consultorio ? (consultorio.tipo === 'particular' ? 'Consultorio Particular' : `Centro médico ${consultorio.nombre}`) : 'No disponible'}</p>
                                     <p className="col-span-full"><span className="font-semibold text-blue-600">Dirección:</span> {consultorio ? `${consultorio.direccion}, ${consultorio.localidad}` : 'No disponible'}</p>
                                 </div>
                             </div>

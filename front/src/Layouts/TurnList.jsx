@@ -1,7 +1,7 @@
 // src/components/TurnList.jsx
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { FaTimesCircle,FaCheckCircle, FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
+import { FaTimesCircle, FaCheckCircle, FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
 import { TbRefresh } from "react-icons/tb";
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import useAllCoberturas from '../../customHooks/useAllCoberturas';
@@ -13,14 +13,14 @@ import ConfirmationModal from './components/ConfirmationModal';
 import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 import useConsultorioxId from '../../customHooks/useConsultorioxId';
 
-const TurnList = ({ 
-  profesionalId, 
-  consultorioId, 
-  onClose, 
-  openModalHabilitarTurnos, 
-  refreshTrigger, 
-  tipoConsultorio, 
-  handleActualizarTurnos 
+const TurnList = ({
+  profesionalId,
+  consultorioId,
+  onClose,
+  openModalHabilitarTurnos,
+  refreshTrigger,
+  tipoConsultorio,
+  handleActualizarTurnos
 }) => {
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
@@ -34,7 +34,7 @@ const TurnList = ({
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
-  const [showUserFormModal,  setShowUserFormModal] = useState(false);
+  const [showUserFormModal, setShowUserFormModal] = useState(false);
 
   const datesListRef = useRef(null);
 
@@ -116,17 +116,20 @@ const TurnList = ({
     console.log('clickeado borrar todos los turnos', consultorioId, profesionalId, fechaSeleccionada);
   }
 
- const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
- const [userFormData, setUserFormData] = useState(null);
- const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [userFormData, setUserFormData] = useState(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
- const handleUserFormSubmit = (formData) => {
-  // Aquí no se envía aún, solo se guardan los datos y se abre el modal de confirmación
-  setUserFormData(formData); // Guarda los datos del formulario
-  setShowUserFormModal(false); // Cierra el formulario de usuario
-  setShowConfirmationModal(true); // Abre el modal de confirmación
-};
+  const handleUserFormSubmit = (formData) => {
+    // Aquí no se envía aún, solo se guardan los datos y se abre el modal de confirmación
+    setUserFormData(formData); // Guarda los datos del formulario
+    setShowUserFormModal(false); // Cierra el formulario de usuario
+    setShowConfirmationModal(true); // Abre el modal de confirmación
+  };
+
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const handleResize = () => {
@@ -145,7 +148,7 @@ const TurnList = ({
 
 
     try {
-      const response = await axios.put(`http://localhost:3006/api/modificarestadoturno/${idTurno}`);
+      const response = await axios.put(`${API_URL}/api/modificarestadoturno/${idTurno}`);
       if (response.status === 200) {
         console.log('Estado del turno actualizado correctamente:', response.data);
         handleActualizarTurnos();
@@ -160,7 +163,7 @@ const TurnList = ({
 
   const handleLiberarTurno = async (idTurno) => {
     try {
-      const response = await axios.put(`http://localhost:3006/api/cancelarturno/${idTurno}`);
+      const response = await axios.put(`${API_URL}/api/cancelarturno/${idTurno}`);
       if (response.status === 200) {
         console.log('Turno liberado correctamente:', response.data);
         handleActualizarTurnos();
@@ -319,11 +322,10 @@ const TurnList = ({
                     key={fecha}
                     data-date={fecha}
                     onClick={() => setFechaSeleccionada(fecha)}
-                    className={`min-w-36 lg:min-w-0 p-4 rounded-xl text-left transition-all duration-200 text-sm ${
-                      isSelected
+                    className={`min-w-36 lg:min-w-0 p-4 rounded-xl text-left transition-all duration-200 text-sm ${isSelected
                         ? 'bg-blue-500 text-white shadow-md'
                         : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200'
-                    }`}
+                      }`}
                   >
                     <div className="font-semibold">
                       {(() => {
@@ -332,20 +334,19 @@ const TurnList = ({
                         return isNaN(date.getTime())
                           ? 'Fecha inválida'
                           : date.toLocaleDateString('es-AR', {
-                              weekday: 'short',
-                              day: '2-digit',
-                              month: 'short',
-                            });
+                            weekday: 'short',
+                            day: '2-digit',
+                            month: 'short',
+                          });
                       })()}
                     </div>
                     <div
-                      className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
-                        isSelected
+                      className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${isSelected
                           ? 'bg-white text-blue-600'
                           : disponibles > 0
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                      }`}
+                        }`}
                     >
                       {disponibles} disp.
                     </div>
@@ -354,9 +355,8 @@ const TurnList = ({
                         {turnos.map((t) => (
                           <div
                             key={t.id}
-                            className={`w-3 h-3 rounded-full ${
-                              t.estado === 'reservado' ? 'bg-red-400' : 
-                              t.estado === 'disponible' ? 'bg-green-400' : 'bg-blue-400'}
+                            className={`w-3 h-3 rounded-full ${t.estado === 'reservado' ? 'bg-red-400' :
+                                t.estado === 'disponible' ? 'bg-green-400' : 'bg-blue-400'}
                             }`}
                           />
                         ))}
@@ -370,173 +370,170 @@ const TurnList = ({
 
           {/* Detalles de turnos */}
           <div className="w-full lg:w-2/3 overflow-y-auto p-6 relative">
-          <div className='flex items-center justify-between mb-4'>
-          <h4 className="text-xl font-semibold text-gray-800">
-  {fechaSeleccionada
-    ? (() => {
-        const [year, month, day] = fechaSeleccionada.split('-');
-        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        return isNaN(date.getTime())
-          ? 'Fecha inválida'
-          : date.toLocaleDateString('es-AR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            });
-      })()
-    : 'Seleccioná una fecha en el panel izquierdo'}
-</h4>
-            <button 
-              className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
-              onClick={()=> handleBorrarTodosLosTurnos()}
+            <div className='flex items-center justify-between mb-4'>
+              <h4 className="text-xl font-semibold text-gray-800">
+                {fechaSeleccionada
+                  ? (() => {
+                    const [year, month, day] = fechaSeleccionada.split('-');
+                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    return isNaN(date.getTime())
+                      ? 'Fecha inválida'
+                      : date.toLocaleDateString('es-AR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      });
+                  })()
+                  : 'Seleccioná una fecha en el panel izquierdo'}
+              </h4>
+              <button
+                className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
+                onClick={() => handleBorrarTodosLosTurnos()}
               >{isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
               </button>
-          </div>
-            
+            </div>
 
-          {!fechaSeleccionada ? (
-  <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-    <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
-    <p className="text-gray-600 mb-4 text-lg">Seleccioná una fecha para ver los turnos.</p>
-  </div>
-) : turnosDeLaFecha.length === 0 ? (
-  <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-    <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
-    <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
-    <button
-      onClick={handleAgregarTurnoClick}
-      className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
-    >
-      <FaPlus /> Agregar Turnos
-    </button>
-  </div>
-) : 
-  // Renderizar turnos...
 
-             (
-              <div className="space-y-4">
-                {turnosDeLaFecha
-                  .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
-                  .map((turno, idx) => (
-                    <div
-                      key={turno.id}
-                      className={`p-5 rounded-xl border-l-4 transition-all ${
-                        turno.estado === 'reservado'
-                          ? 'bg-red-50 border-red-500' :
-                        turno.estado === 'disponible' ? 'bg-green-50 border-green-500'  
-                          : 'bg-blue-100 border-blue-500'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-bold text-lg ${
-                              turno.estado === 'reservado' ? 'text-red-600' : 
-                              turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
-                            }`}
-                          >
-                            #{idx + 1}
-                          </span>
-                          {turno.hora && (
-                            <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
-                              turno.estado === 'reservado'
-                                ? 'bg-red-100 text-red-800' :
-                              turno.estado === 'disponible'
-                              ? 'bg-green-100 text-green-800' : 
-                              'bg-white text-blue-800'
-                            }`}
-                          >
-                            {turno.estado === 'reservado' ? 'Ocupado' : 
-                            turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
-                          </span>
-                          {turno.estado === 'disponible' && (
-                            <button
-                              onClick={() => handleBorrarTurno(turno.id)}
-                              className="text-red-500 hover:text-red-700 transition-colors"
-                              aria-label="Eliminar turno"
+            {!fechaSeleccionada ? (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
+                <p className="text-gray-600 mb-4 text-lg">Seleccioná una fecha para ver los turnos.</p>
+              </div>
+            ) : turnosDeLaFecha.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
+                <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
+                <button
+                  onClick={handleAgregarTurnoClick}
+                  className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
+                >
+                  <FaPlus /> Agregar Turnos
+                </button>
+              </div>
+            ) :
+              // Renderizar turnos...
+
+              (
+                <div className="space-y-4">
+                  {turnosDeLaFecha
+                    .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
+                    .map((turno, idx) => (
+                      <div
+                        key={turno.id}
+                        className={`p-5 rounded-xl border-l-4 transition-all ${turno.estado === 'reservado'
+                            ? 'bg-red-50 border-red-500' :
+                            turno.estado === 'disponible' ? 'bg-green-50 border-green-500'
+                              : 'bg-blue-100 border-blue-500'
+                          }`}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`font-bold text-lg ${turno.estado === 'reservado' ? 'text-red-600' :
+                                  turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
+                                }`}
                             >
-                              <FaTrashAlt className="w-4 h-4" />
+                              #{idx + 1}
+                            </span>
+                            {turno.hora && (
+                              <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${turno.estado === 'reservado'
+                                  ? 'bg-red-100 text-red-800' :
+                                  turno.estado === 'disponible'
+                                    ? 'bg-green-100 text-green-800' :
+                                    'bg-white text-blue-800'
+                                }`}
+                            >
+                              {turno.estado === 'reservado' ? 'Ocupado' :
+                                turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
+                            </span>
+                            {turno.estado === 'disponible' && (
+                              <button
+                                onClick={() => handleBorrarTurno(turno.id)}
+                                className="text-red-500 hover:text-red-700 transition-colors"
+                                aria-label="Eliminar turno"
+                              >
+                                <FaTrashAlt className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          {turno.estado === 'reservado' ? (
+                            <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
+                              {/* Botón: Marcar como finalizado */}
+                              <button
+                                onClick={() => handleModificarEstadoTurno(turno.id)}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
+                                title="Marcar como finalizado"
+                              >
+                                <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="hidden sm:inline">Marcar como finalizado</span>
+                                <span className="inline sm:hidden">Fin</span>
+                              </button>
+
+                              {/* Botón: Liberar turno */}
+                              <button
+                                onClick={() => handleLiberarTurno(turno.id)}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
+                                title="Liberar turno"
+                              >
+                                <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="hidden sm:inline">Liberar</span>
+                                <span className="inline sm:hidden">Lib</span>
+                              </button>
+                            </div>
+                          ) : turno.estado === 'disponible' && (
+                            <button
+                              onClick={() => tapButtonAsignar(turno, idx)}
+                              className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-8"
+                            >
+                              <FaPlus className="w-3.5 h-3.5" />
+                              <span>Asignar turno</span>
                             </button>
                           )}
                         </div>
-                        {turno.estado === 'reservado' ? (
-  <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
-    {/* Botón: Marcar como finalizado */}
-    <button
-      onClick={() => handleModificarEstadoTurno(turno.id)}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
-      title="Marcar como finalizado"
-    >
-      <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-      <span className="hidden sm:inline">Marcar como finalizado</span>
-      <span className="inline sm:hidden">Fin</span>
-    </button>
 
-    {/* Botón: Liberar turno */}
-    <button
-      onClick={() => handleLiberarTurno(turno.id)}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
-      title="Liberar turno"
-    >
-      <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
-      <span className="hidden sm:inline">Liberar</span>
-      <span className="inline sm:hidden">Lib</span>
-    </button>
-  </div>
-) : turno.estado === 'disponible' && (
-  <button
-    onClick={() => tapButtonAsignar(turno, idx)}
-    className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-8"
-  >
-    <FaPlus className="w-3.5 h-3.5" />
-    <span>Asignar turno</span>
-  </button>
-)}
-                      </div>
-
-                      {turno.DNI ? (
-                        <div className="space-y-2 text-sm text-gray-700">
-                          <div className="flex items-center gap-3">
-                            <FaUser className="text-blue-500 w-4 h-4" />
-                            <span className="font-medium">
-                              {turno.apellido_paciente}, {turno.nombre_paciente}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <FaIdCard className="text-gray-600 w-4 h-4" />
-                            <span className='font-medium'>{turno.DNI}</span>
-                          </div>
-                          {turno.cobertura && (
+                        {turno.DNI ? (
+                          <div className="space-y-2 text-sm text-gray-700">
                             <div className="flex items-center gap-3">
-                              <FaShieldAlt className="text-purple-500 w-4 h-4" />
-                              <span>
-                                <span className='font-medium'>{coberturaElegida(turno.cobertura)}</span>
+                              <FaUser className="text-blue-500 w-4 h-4" />
+                              <span className="font-medium">
+                                {turno.apellido_paciente}, {turno.nombre_paciente}
                               </span>
                             </div>
-                          )}
-                          {turno.telefono && (
                             <div className="flex items-center gap-3">
-                              <FaPhone className="text-orange-500 w-4 h-4" />
-                              <span className='font-medium'>{turno.telefono}</span>
+                              <FaIdCard className="text-gray-600 w-4 h-4" />
+                              <span className='font-medium'>{turno.DNI}</span>
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-yellow-600">
-                          <FaInfoCircle className="w-4 h-4" />
-                          <span className="text-sm">Este turno está disponible para agendar.</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
+                            {turno.cobertura && (
+                              <div className="flex items-center gap-3">
+                                <FaShieldAlt className="text-purple-500 w-4 h-4" />
+                                <span>
+                                  <span className='font-medium'>{coberturaElegida(turno.cobertura)}</span>
+                                </span>
+                              </div>
+                            )}
+                            {turno.telefono && (
+                              <div className="flex items-center gap-3">
+                                <FaPhone className="text-orange-500 w-4 h-4" />
+                                <span className='font-medium'>{turno.telefono}</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-yellow-600">
+                            <FaInfoCircle className="w-4 h-4" />
+                            <span className="text-sm">Este turno está disponible para agendar.</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
           </div>
         </div>
       </div>
@@ -558,28 +555,28 @@ const TurnList = ({
           fecha={fechaSeleccionada}
           onClose={() => setShowModalBorrarTodosLosTurnos(false)}
           actualizarTurnos={handleActualizarTurnos}
-      
+
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
 
-      { showUserFormModal && (
+      {showUserFormModal && (
         <UserFormModal
           profesionalId={profesionalId}
           onSubmit={handleUserFormSubmit}
           consultorioId={consultorioId}
           fechaSeleccionada={fechaSeleccionada}
-          onClose={() =>  setShowUserFormModal(false)}
+          onClose={() => setShowUserFormModal(false)}
 
           isOpen={showUserFormModal}
-          coberturas={ coberturasConsultorio } // Asegúrate de pasar las coberturas del consultorio
+          coberturas={coberturasConsultorio} // Asegúrate de pasar las coberturas del consultorio
         />
-      )} 
-      { showConfirmationModal && (
+      )}
+      {showConfirmationModal && (
         <ConfirmationModal
           isOpen={showConfirmationModal}
-          cerrarModalTurnos = {()=> onClose()} // Cierra todos los modales si se cancela desde aquí
-    // Pasamos la función para actualizar los turnos
+          cerrarModalTurnos={() => onClose()} // Cierra todos los modales si se cancela desde aquí
+          // Pasamos la función para actualizar los turnos
           onClose={() => setShowConfirmationModal(false)}
           onConfirm={handleUserFormSubmit}
           selectedTurno={selectedTurno} // Pasamos el turno seleccionado para mostrarlo en la confirmación
@@ -595,7 +592,7 @@ const TurnList = ({
           actualizarTurnos={handleActualizarTurnos}
         />
       )}
-      
+
     </div>
   );
 };

@@ -18,10 +18,10 @@ export const Header = ( { openLogin }) => {
   return (
     <div>
       <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-lg shadow-sm py-4 z-[30] transition-all duration-300" >
-        <div className="container mx-auto px-4 flex justify-evenly items-center relative z-10 xl:max-w-7xl">
+        <div className="container mx-auto px-8 flex justify-evenly items-center relative z-10 xl:max-w-7xl">
           {/* Logo Centrado en Mobile */}
           <a href="#inicio" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
-            <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-24 scale-125'/>
+            <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-22 xl:w-24 lg:scale-125'/>
           </a>
 
           {/* Desktop Navigation */}

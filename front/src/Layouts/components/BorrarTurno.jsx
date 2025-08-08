@@ -6,6 +6,8 @@ const BorrarTurno = ( { idTurno, onClose, actualizarTurnos }) => {
 
     const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
 
+    const API_URL = import.meta.env.VITE_API_URL;
+
     async function handleBorrarTurnos ()  {
 
         if(!idTurno) {
@@ -14,7 +16,7 @@ const BorrarTurno = ( { idTurno, onClose, actualizarTurnos }) => {
         }
 
       try {
-        const response = await axios.delete(`http://localhost:3006/api/borrarTurno/${idTurno}`);
+        const response = await axios.delete(`${API_URL}/api/borrarTurno/${idTurno}`);
         if (response.status === 200) {
             setTimeout(() => {
                 actualizarTurnos()

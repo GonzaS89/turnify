@@ -7,6 +7,8 @@ const useCoberturaxIdConsultorio = (consultorioId) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const API_URL = import.meta.env.VITE_API_URL;
+
     // Función para obtener los datos
     const fetchData = useCallback(async () => {
         if (!consultorioId) { // No intentar cargar si no hay ID
@@ -17,7 +19,7 @@ const useCoberturaxIdConsultorio = (consultorioId) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`http://localhost:3006/api/coberturas/${consultorioId}`);
+            const response = await axios.get(`${API_URL}/api/coberturas/${consultorioId}`);
             setCoberturas(response.data);
         } catch (err) {
             console.error("Error fetching coberturas by consultorio ID:", err);

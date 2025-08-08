@@ -7,18 +7,22 @@ import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
 import { RingLoader } from 'react-spinners';
 
-const UserDashboard = ({ onLogout, password }) => {
+const UserDashboard = ({ onLogout }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
   // ✅ Mejor manejo de datos del consultorio desde localStorage
   const storedConsultorio = JSON.parse(localStorage.getItem('consultorio') || 'null');
-  const consultorioId = location.state?.consultorio?.id || storedConsultorio?.id;
+  const consultorioId = storedConsultorio?.id;
+  
 
   // ⚠️ NOTA: Estás usando hardcoded ID (2) - debería ser consultorioId
   const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
   const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
 
+  const password = localStorage.getItem('userPassword') || '';
+
+  console.log(password)
 
   // ✅ Guardar en localStorage si se cargó correctamente
   useEffect(() => {

@@ -14,6 +14,8 @@ const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSelect = async (e) => {
     e.preventDefault();
     setMensajeError(null);
@@ -29,7 +31,7 @@ const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
     }
   
     try {
-      const response = await axios.post('http://localhost:3006/api/unionprofesionalconsultorio', {
+      const response = await axios.post(`${API_URL}/api/unionprofesionalconsultorio`, {
         profesionalID: selectedProfesional,
         consultorioID: consultorioID,
       });

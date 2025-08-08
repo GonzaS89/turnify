@@ -33,7 +33,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
                 <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-10 lg:gap-16">
                     
                     {/* Texto (arriba en móvil) */}
-                    <div className="flex-1 text-center lg:text-left max-w-lg space-y-6 order-2 lg:order-1">
+                    <div className="flex-1 flex flex-col justify-center text-center lg:text-left max-w-lg space-y-6 order-2 lg:order-1">
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight">
                             Turnos médicos{" "}
                             <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 text-transparent bg-clip-text">

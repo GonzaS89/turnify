@@ -11,38 +11,43 @@ const Login = ({ closeLogin, enviarPassword }) => {
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     setLoginError("");
   }, [username, password]);
 
- const handleLogin = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setLoginError('');
-
-  try {
-    const response = await axios.post('http://localhost:3006/api/login', {
-      usuario: username,
-      contraseña: password
-    });
-
-    const { consultorio, token } = response.data;
-
-    enviarPassword(password);
-
-    // Guardar token (en localStorage o context)
-    localStorage.setItem('authToken', token);
-
-    // Redirigir
-    navigate('/micuenta', { state: { consultorio } });
-    closeLogin();
-
-  } catch (err) {
-    setLoginError(err.response?.data?.message || 'Usuario o contraseña incorrectos.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setLoginError('');
+  
+    try {
+      const response = await axios.post(`${API_URL}/api/login`, {
+        usuario: username,
+        contraseña: password
+      });
+  
+      const { consultorio, token } = response.data;
+  
+      enviarPassword(password);
+  
+      // ✅ Guardar datos necesarios en localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('userPassword', password);
+      localStorage.setItem('consultorio', JSON.stringify(consultorio)); // ✅ Agregado
+  
+    
+      navigate('/micuenta');
+  
+      closeLogin();
+    } catch (err) {
+      setLoginError(err.response?.data?.message || 'Usuario o contraseña incorrectos.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">

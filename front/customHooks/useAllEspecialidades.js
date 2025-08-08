@@ -7,13 +7,12 @@ const useAllEspecialidades = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const serverLocal = 'http://localhost:3006';
-    const serverExterno = 'https://turnogol.site';
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         const obtenerEspecialidades = async () => {
             try {
-                const res = await axios.get(`${serverLocal}/api/especialidades`);
+                const res = await axios.get(`${API_URL}/api/especialidades`);
                 setEspecialidades(res.data);
             } catch (err) {
                 console.error("Error al obtener especialidades", err);

@@ -8,13 +8,12 @@ const useAllCoberturas = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const serverLocal = 'http://localhost:3006';
-    const serverExterno = 'https://turnogol.site';
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         const obtenerCoberturas = async () => {
             try {
-                const res = await axios.get(`${serverLocal}/api/coberturas`);
+                const res = await axios.get(`${API_URL}/api/coberturas`);
                 setCoberturas(res.data);
             } catch (err) {
                 console.error("Error al obtener coberturas", err);

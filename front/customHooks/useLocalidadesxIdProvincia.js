@@ -7,14 +7,7 @@ const useLocalidadesxIdProvincia = (provinciaId) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Define las URLs de los servidores
-    const serverLocal = 'http://localhost:3006';
-    const serverExterno = 'https://turnogol.site';
-
-    // Determina la URL base según el entorno
-    // Para simplificar, si estamos en localhost, usamos serverLocal; de lo contrario, serverExterno.
-    // Una solución más robusta usaría process.env.NODE_ENV para diferenciar.
-    const baseUrl = window.location.hostname === 'localhost' ? serverLocal : serverExterno;
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         // Si no hay un professionalId válido (es null, undefined o 0),
@@ -33,7 +26,7 @@ const useLocalidadesxIdProvincia = (provinciaId) => {
             try {
                 // Realizamos la petición GET usando Axios
                 // Axios devuelve la respuesta en un objeto con una propiedad 'data'
-                const response = await axios.get(`${baseUrl}/api/localidades/${provinciaId}`);
+                const response = await axios.get(`${API_URL}/api/localidades/${provinciaId}`);
 
                 // Los datos de la respuesta ya están disponibles y parseados en `response.data`
                 setLocalidades(response.data);

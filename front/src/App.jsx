@@ -118,14 +118,14 @@ const App = () => {
 
               <Route
                 path="/micuenta"
-                element={password ? <UserDashboard password={password} /> : <Navigate to="/" />}
+                element={<UserDashboard  />}
               />
 
               <Route path="/crearconsultorio" element={<CrearConsultorio />} />
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
 
-              <Route path="*" element={<Navigate to="/" />} />
+ 
             </Routes>
           </main>
 

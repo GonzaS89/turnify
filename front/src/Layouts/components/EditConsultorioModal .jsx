@@ -2,10 +2,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const serverLocal = 'http://localhost:3006';
-const serverExterno = 'https://api.tu-dominio.com';
-const API_BASE_URL = window.location.hostname === 'localhost' ? serverLocal : serverExterno;
-
 const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess }) => {
   const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
 
@@ -17,6 +13,8 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
 
   const [loading, setLoading] = useState(false);
   const [errorSubmit, setErrorSubmit] = useState(null);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (consultorio) {
@@ -62,7 +60,7 @@ const EditConsultorioModal = ({ isOpen, onClose, consultorio, onUpdateSuccess })
     console.log(dataToSend)
 
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/modificardatosconsultorio/${consultorio.id}`,{
+      const response = await axios.put(`${API_URL}/api/modificardatosconsultorio/${consultorio.id}`,{
 
         ...dataToSend,
       });

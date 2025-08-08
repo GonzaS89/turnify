@@ -7,14 +7,7 @@ const useProfesionalxId = (profesionalId) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Define las URLs de los servidores
-    const serverLocal = 'http://localhost:3006';
-    const serverExterno = 'https://turnogol.site';
-
-    // Determina la URL base según el entorno
-    // Para simplificar, si estamos en localhost, usamos serverLocal; de lo contrario, serverExterno.
-    // Una solución más robusta usaría process.env.NODE_ENV para diferenciar.
-    const baseUrl = window.location.hostname === 'localhost' ? serverLocal : serverExterno;
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         // Si no hay un professionalId válido (es null, undefined o 0),
@@ -32,7 +25,7 @@ const useProfesionalxId = (profesionalId) => {
 
             try {
            
-                const response = await axios.get(`${baseUrl}/api/profesional/${profesionalId}`);
+                const response = await axios.get(`${API_URL}/api/profesional/${profesionalId}`);
                 setProfesional(response.data);
 
             } catch (err) {
@@ -54,7 +47,7 @@ const useProfesionalxId = (profesionalId) => {
 
         // Llama a la función de fetching cuando el componente se monta o professionalId cambia
         fetchProfesional();
-    }, [profesionalId, baseUrl]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
+    }, [profesionalId]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
 
     // El hook devuelve los datos, el estado de carga y el error
     return { profesional, isLoading, error };

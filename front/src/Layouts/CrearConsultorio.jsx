@@ -32,6 +32,8 @@ const CrearConsultorio = () => {
 
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // Desactivar seña si es centro médico
   useEffect(() => {
     if (tipo === 'centro médico') {
@@ -84,7 +86,7 @@ const CrearConsultorio = () => {
     codigo
   };
 
-  const response = await axios.put(`http://localhost:3006/api/crearconsultorio/${codigo}`, nuevoConsultorio);
+  const response = await axios.put(`${API_URL}/api/crearconsultorio/${codigo}`, nuevoConsultorio);
 
 
 

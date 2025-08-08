@@ -34,7 +34,7 @@ const Main = ({ openLogin }) => {
     setSelectedTurno(turno); // Actualiza el turno seleccionado
     setOrdenTurno(orden); // Actualiza el índice del turno seleccionado
     setShowUserFormModal(true); // Abre el modal de formulario de usuario
-    console.log("Turno recibido:", turno, "Orden:", orden);
+
   };
 
   const [openModalProf, setOpenModalProf] = useState(false); // Estado para controlar la apertura del modal de turnos
@@ -55,6 +55,10 @@ const Main = ({ openLogin }) => {
     setIdProfesional(idProfesional); // Actualiza el ID del profesional
     setConsultorio(consultorio);
   };
+
+  const actualizarTurnos = () => {
+    console.log("Turno reservado")
+  }
 
 
   // CARGA DE CUSTOM HOOKS
@@ -147,6 +151,7 @@ const Main = ({ openLogin }) => {
           coberturasOptions={coberturas} // Pasamos las opciones de cobertura para mostrar el nombre completo
           selectedTurno={selectedTurno} // Pasamos el turno para mostrarlo en la confirmación
           ordenTurno={ordenTurno} // Pasamos el índice del turno seleccionado para mostrarlo en la confirmación
+          actualizarTurnos={actualizarTurnos}
         />
       )}
 

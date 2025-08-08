@@ -16,6 +16,8 @@ const EditCredentialsModal = ({ isOpen, onClose, currentUsername, onSave, consul
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // Sincroniza el nombre de usuario actual cuando la prop cambia
   useEffect(() => {
     setNewUsername(currentUsername || '');

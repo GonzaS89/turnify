@@ -15,6 +15,8 @@ const CrearProfesionalModal = ( { onClose, onCreate}) => {
   // Usamos SOLO el loading y error del custom hook
   const { especialidades, isLoading: loading, error: hookError } = useAllEspecialidades();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensajeError(null);
@@ -35,7 +37,7 @@ const CrearProfesionalModal = ( { onClose, onCreate}) => {
         matricula: matricula.trim(),
       };
   
-      const response = await axios.post('http://localhost:3006/api/crearprofesional', nuevoProfesional);
+      const response = await axios.post(`${API_URL}/api/crearprofesional`, nuevoProfesional);
       const data = response.data;
   
       setMensaje(`✅ ${data.nombre || 'El profesional'} fue creado con éxito.`);

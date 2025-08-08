@@ -8,6 +8,8 @@ const useProfessionalConsultorioTurnos = (profesionalId, consultorioId, refreshT
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const API_URL = import.meta.env.VITE_API_URL;
+
     useEffect(() => {
         const fetchTurnos = async () => {
             // Solo intentamos cargar si ambos IDs son válidos (números y no nulos/indefinidos)
@@ -23,7 +25,7 @@ const useProfessionalConsultorioTurnos = (profesionalId, consultorioId, refreshT
 
             try {
                 // Construye la URL de la API con los IDs proporcionados
-                const response = await axios.get(`http://localhost:3006/api/turnos-profesional/${profesionalId}/${consultorioId}`);
+                const response = await axios.get(`${API_URL}/api/turnos-profesional/${profesionalId}/${consultorioId}`);
                 
                 // Axios automáticamente parsea el JSON y maneja los errores HTTP en el catch
                 setTurnos(response.data); // Los datos están en response.data con Axios

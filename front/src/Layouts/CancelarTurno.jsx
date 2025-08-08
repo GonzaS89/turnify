@@ -44,7 +44,10 @@ export default function CancelarTurno() {
     return horasRestantes > 24;
   };
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const cancelacionPermitida = puedeCancelar();
+
 
   const handleCancelar = async () => {
     if (!turnoId || loading || loadingTurno || !cancelacionPermitida) return;
@@ -52,7 +55,7 @@ export default function CancelarTurno() {
     setLoading(true);
     try {
       // Solo ejecutamos el PUT, axios lanza error si falla
-      await axios.put(`http://localhost:3006/api/cancelarturno/${idParseada}`);
+      await axios.put(`${API_URL}/api/cancelarturno/${idParseada}`);
   
       // Si llega aquí, fue exitoso
       toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {

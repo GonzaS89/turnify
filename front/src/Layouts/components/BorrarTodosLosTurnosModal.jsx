@@ -6,6 +6,8 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
 
   const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     showModalConfirmacion && setTimeout(() => {
       setShowModalConfirmacion(false);
@@ -16,7 +18,7 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
 
   async function borrarTodosLosTurnos() {
     try {
-      const response = await axios.delete('http://localhost:3006/api/borrarTodosLosTurnos', {
+      const response = await axios.delete(`${API_URL}/api/borrarTodosLosTurnos`, {
         data: {
           IdConsultorio: idConsultorio,
           idProfesional,

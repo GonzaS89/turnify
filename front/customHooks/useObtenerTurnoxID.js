@@ -6,12 +6,14 @@ const useObtenerTurnoxID = (id) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+
+    const API_URL = import.meta.env.VITE_API_URL;
   
     useEffect(() => {
         const fetchTurno = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3006/api/todoslosturnos/${id}`);
+                const response = await axios.get(`${API_URL}/api/todoslosturnos/${id}`);
                 setTurno(response.data);
                 setMensaje({ tipo: 'exito', texto: 'Turno obtenido correctamente.' });
             } catch (err) {

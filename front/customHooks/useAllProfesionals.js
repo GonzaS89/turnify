@@ -7,15 +7,17 @@ const useAllProfesionals = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Función para recargar los profesionales
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const actualizarProfesionales = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:3006/api/profesionales');
+      const response = await axios.get(`${API_URL}/api/profesionales`);
       setProfesionales(response.data);
     } catch (err) {
       setError('No se pudieron cargar los profesionales');
+      console.error('Error al cargar profesionales:', err);
     } finally {
       setIsLoading(false);
     }
@@ -30,7 +32,7 @@ const useAllProfesionals = () => {
     profesionales,
     isLoading,
     error,
-    actualizarProfesionales, // ← Exponemos esta función
+    actualizarProfesionales, // para recargar cuando sea necesario (ej: después de crear o eliminar)
   };
 };
 
