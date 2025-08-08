@@ -455,7 +455,7 @@ Gracias por confiar en nosotros. ¡Te esperamos! 🙌
         await client.messages.create({
           body: mensaje,
           from: twilioWhatsApp, // whatsapp:+14155238886
-          to: `whatsapp:+543814482619`, // Tu número de WhatsApp
+          to: `whatsapp:+543815588504`, // Tu número de WhatsApp
         });
         console.log("✅ Notificación enviada por WhatsApp al administrador");
       } catch (error) {
