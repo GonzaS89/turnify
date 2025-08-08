@@ -10,33 +10,6 @@ import CrearConsultorio from "./Layouts/CrearConsultorio";
 import CrearProfesional from "./Layouts/CrearProfesionalModal";
 import CancelarTurno from "./Layouts/CancelarTurno";
 
-// Estilos globales en línea (para entornos sin CSS modules)
-const floatingAnimation = `
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(1deg); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-float {
-  animation: float 25s ease-in-out infinite;
-}
-.animate-float-delayed {
-  animation: float 30s ease-in-out infinite 5s;
-}
-.animate-in {
-  animation: fadeIn 0.4s ease-out;
-}
-.slide-in-from-bottom-8 {
-  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-`;
 
 const App = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
@@ -50,7 +23,7 @@ const App = () => {
     <BrowserRouter>
       <>
         {/* Inyectamos estilos globales */}
-        <style>{floatingAnimation}</style>
+      
 
         <div className="min-h-screen flex flex-col font-sans text-gray-800 relative overflow-hidden">
           {/* ===== FONDO PROFESIONAL EN AZUL CLARO ===== */}
