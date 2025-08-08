@@ -21,42 +21,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <>
-
-      
-
-      
-     
-
-       
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"></div>
-
-    
-          {/* Capa de profundidad: degradado vertical para mejorar texto */}
-          <div className="fixed inset-0 -z-20 pointer-events-none">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white/60"></div>
-          </div>
-
-          {/* Formas flotantes difuminadas (blobs azules) */}
-          <div
-            className="fixed w-96 h-96 bg-sky-200 rounded-full blur-3xl opacity-60 -z-10 animate-float"
-            style={{ left: "10%", top: "15%" }}
-          ></div>
-
-          <div
-            className="fixed w-80 h-80 bg-cyan-100 rounded-full blur-2xl opacity-70 -z-10 animate-float-delayed"
-            style={{ right: "5%", top: "60%" }}
-          ></div>
-
-          <div
-            className="fixed w-72 h-72 bg-blue-100 rounded-full blur-xl opacity-50 -z-10"
-            style={{ right: "15%", bottom: "10%" }}
-          ></div>
-
-          {/* Overlay final para contraste */}
-          <div className="fixed inset-0 -z-10 bg-white/10 backdrop-blur-[1px] pointer-events-none"></div>
-
-          {/* ======================== FIN DEL FONDO ======================== */}
+      <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-50 to-purple-50">
 
           {/* Modal de Login con glassmorphism */}
           {openLoginModal && (
@@ -91,7 +56,7 @@ const App = () => {
 
           <Footer />
   
-      </>
+      </div>
     </BrowserRouter>
   );
 };
