@@ -70,7 +70,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
                                     key={index}
                                     src={src}
                                     alt={`Profesional médico ${index + 1}`}
-                                    className={`absolute inset-0 w-full h-full object-contain rounded-3xl transition-all duration-1000 ease-in-out ${
+                                    className={`absolute inset-0 w-full h-full object-contain rounded-3xl drop-shadow-2xl transition-all duration-1000 ease-in-out ${
                                         index === currentIndex
                                             ? "opacity-100 scale-100 z-10"
                                             : "opacity-0 scale-95 z-0"

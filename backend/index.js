@@ -271,6 +271,7 @@ c.hora_cierre AS cierre,
 c.usuario,
 c.contrasena,
 c.sena AS seña,
+c.telefono,
 c.importe_sena AS importeSeña
 FROM consultorios AS c
 JOIN
@@ -864,115 +865,10 @@ app.put("/api/modificarestadoturno/:turnoId", async (req, res) => {
   }
 });
 
-app.put("/api/cambiarcredenciales", async (req, res) => {
-  // Aquí asumimos que el ID del consultorio a actualizar se envía en el cuerpo.
-  // En un sistema real, el ID vendría del token de autenticación del usuario logueado.
-  const { id, currentUsuario, newUsuario, currentContrasena, newContrasena } =
-    req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      message: "ID del consultorio es requerido para la actualización.",
-    });
-  }
-
-  try {
-    // 1. Buscar el consultorio por su ID y usuario actual
-    // Necesitamos el usuario actual para la verificación de contraseña
-    const [rows] = await pool.execute(
-      "SELECT id, usuario, contrasena FROM consultorios WHERE id = ? AND usuario = ?",
-      [id, currentUsuario]
-    );
-
-    if (rows.length === 0) {
-      return res.status(401).json({
-        message: "Credenciales inválidas o consultorio no encontrado.",
-      });
-    }
-
-    const consultorio = rows[0];
-
-    // 2. Verificar la contraseña actual
-    const isPasswordValid = await bcrypt.compare(
-      currentContrasena,
-      consultorio.contrasena
-    );
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Contraseña actual incorrecta." });
-    }
-
-    let updateFields = [];
-    let updateValues = [];
-
-    // 3. Preparar la actualización del usuario (nombre de usuario) si ha cambiado
-    if (
-      newUsuario &&
-      newUsuario.trim() !== "" &&
-      newUsuario !== consultorio.usuario
-    ) {
-      // Verificar si el nuevo usuario ya está en uso por otro consultorio
-      const [usuarioExistsRows] = await pool.execute(
-        "SELECT id FROM consultorios WHERE usuario = ? AND id != ?",
-        [newUsuario, consultorio.id]
-      );
-      if (usuarioExistsRows.length > 0) {
-        return res.status(409).json({
-          message: "El nuevo usuario ya está en uso por otro consultorio.",
-        });
-      }
-      updateFields.push("usuario = ?");
-      updateValues.push(newUsuario);
-      console.log(
-        `Consultorio (ID: ${consultorio.id}) cambió su usuario a: ${newUsuario}`
-      );
-    }
-
-    // 4. Preparar la actualización de la contraseña si se proporcionó una nueva
-    if (newContrasena && newContrasena.trim() !== "") {
-      if (newContrasena.length < 6) {
-        return res.status(400).json({
-          message: "La nueva contraseña debe tener al menos 6 caracteres.",
-        });
-      }
-      const newPasswordHash = await bcrypt.hash(newContrasena, 10);
-      updateFields.push("contrasena = ?");
-      updateValues.push(newPasswordHash);
-      console.log(`Consultorio (ID: ${consultorio.id}) cambió su contraseña.`);
-    }
-
-    // Si no se cambió ni el usuario ni la contraseña
-    if (updateFields.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "No se proporcionaron cambios para actualizar." });
-    }
-
-    // 5. Ejecutar el UPDATE en la base de datos
-    // Agregamos la actualización del timestamp updatedAt
-    updateFields.push("updatedAt = NOW()");
-    // El ID del consultorio va al final para la cláusula WHERE
-    updateValues.push(consultorio.id);
-
-    const updateQuery = `UPDATE consultorios SET ${updateFields.join(
-      ", "
-    )} WHERE id = ?`;
-    await pool.execute(updateQuery, updateValues);
-
-    res.status(200).json({ message: "Credenciales actualizadas con éxito." });
-  } catch (error) {
-    console.error("Error al actualizar credenciales:", error);
-    if (error.code === "ER_DUP_ENTRY") {
-      return res
-        .status(409)
-        .json({ message: "El nuevo usuario ya está en uso." });
-    }
-    res.status(500).json({ message: "Error interno del servidor." });
-  }
-});
-
 // CREAR CONSULTORIO //
 
-app.post("/api/crearconsultorio", async (req, res) => {
+app.put("/api/crearconsultorio/:codigo", async (req, res) => {
+  const { codigo } = req.params; // ✅ Extrae el código correctamente
   const {
     tipo,
     direccion,
@@ -990,34 +886,61 @@ app.post("/api/crearconsultorio", async (req, res) => {
     titular,
   } = req.body;
 
-  console.log("Datos recibidos para crear consultorio:", req.body);
+  console.log("Código recibido:", codigo);
+  console.log("Datos recibidos:", req.body);
 
-  // Normalizar valores: si son undefined o inválidos, convertir a null
-  const safeImporte = seña && importeSeña ? (parseFloat(importeSeña) || null) : null;
-  const safeBanco = seña && banco ? banco : null;
-  const safeCbu = seña && cbu ? cbu : null;
-  const safeAlias = seña && alias ? alias : null;
-  const safeTitular = seña && titular ? titular : null;
-
-  // Asegúrate de que otros campos no sean undefined
+  // Validar campos obligatorios
   if (!direccion || !localidad || !provincia || !usuario || !contraseña) {
-    return res.status(400).json({ message: "Faltan campos obligatorios" });
+    return res.status(400).json({ message: "Faltan campos obligatorios." });
   }
+
   try {
-    // Validar que el usuario no exista ya
+    // ✅ Verificar si el usuario ya existe (en cualquier consultorio)
     const [existingUsers] = await pool.execute(
       "SELECT id FROM consultorios WHERE usuario = ?",
       [usuario]
     );
     if (existingUsers.length > 0) {
-      return res
-        .status(409)
-        .json({ message: "El usuario ya está en uso. Por favor, elige otro." });
+      return res.status(409).json({ message: "El usuario ya está en uso." });
     }
-    // Hashear la contraseña antes de guardarla
+
+    // ✅ Verificar que el código de activación exista y esté pendiente
+    const [consultorios] = await pool.execute(
+      "SELECT id FROM consultorios WHERE codigo_activacion = ?",
+      [codigo]
+    );
+    if (consultorios.length === 0) {
+      return res.status(404).json({ message: "Código de activación inválido." });
+    }
+
+    // Hashear contraseña
     const hashedPassword = await bcrypt.hash(contraseña, 10);
+
+    // Normalizar valores de seña
+    const safeImporte = seña && importeSeña ? (parseFloat(importeSeña) || null) : null;
+    const safeBanco = seña && banco ? banco : null;
+    const safeCbu = seña && cbu ? cbu : null;
+    const safeAlias = seña && alias ? alias : null;
+    const safeTitular = seña && titular ? titular : null;
+
+    // Actualizar el consultorio
     const [resultado] = await pool.execute(
-      "INSERT INTO consultorios (tipo, direccion, nombre, provincia, localidad, usuario, contrasena, telefono, sena, importe_sena, banco, cbu, alias, cuenta_nombre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      `UPDATE consultorios SET
+        tipo = ?,
+        direccion = ?,
+        nombre = ?,
+        provincia = ?,
+        localidad = ?,
+        usuario = ?,
+        contrasena = ?,
+        telefono = ?,
+        sena = ?,
+        importe_sena = ?,
+        banco = ?,
+        cbu = ?,
+        alias = ?,
+        cuenta_nombre = ?
+      WHERE codigo_activacion = ?`,
       [
         tipo,
         direccion,
@@ -1033,18 +956,26 @@ app.post("/api/crearconsultorio", async (req, res) => {
         safeCbu,
         safeAlias,
         safeTitular,
+        codigo
       ]
     );
-    res.status(201).json({
+
+    // ✅ Verificar si se afectó alguna fila
+    if (resultado.affectedRows === 0) {
+      return res.status(500).json({ message: "No se pudo actualizar el consultorio (ninguna fila afectada)." });
+    }
+
+    res.status(200).json({
       message: "Consultorio creado con éxito.",
-      insertId: resultado.insertId,
+      affectedRows: resultado.affectedRows,
       nombre: nombre,
     });
+
   } catch (error) {
     console.error("Error al crear consultorio:", error);
-    res
-      .status(500)
-      .json({ message: "Error interno del servidor al crear el consultorio." });
+    res.status(500).json({
+      message: "Error interno del servidor al crear el consultorio."
+    });
   }
 });
 

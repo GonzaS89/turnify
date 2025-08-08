@@ -1,8 +1,6 @@
 // src/components/modals/EditConsultorioModal.jsx
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import useAllProvincias from '../../../customHooks/useAllProvincias';
-import useLocalidadesxIdProvincia from '../../../customHooks/useLocalidadesxIdProvincia';
 
 const serverLocal = 'http://localhost:3006';
 const serverExterno = 'https://api.tu-dominio.com';

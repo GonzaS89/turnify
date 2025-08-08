@@ -3,7 +3,7 @@ import Hero from "./Hero";
 import Steps from "./Steps";
 import Benefits from "./Benefits";
 import FAQS from "./FAQS";
-import Testimonials from "./Testimonials";
+// import Testimonials from "./Testimonials";
 import { Header } from "../Header";
 import UserFormModal from "./components/UserFormModal";
 import ConfirmationModal from "./components/ConfirmationModal";
@@ -109,8 +109,8 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-200 border-t-2" />
       <Benefits />
       <hr className="my-16 border-gray-200 border-t-2" />
-      <Testimonials />
-      <hr className="my-16 border-gray-200 border-t-2" />
+      {/* <Testimonials />
+      <hr className="my-16 border-gray-200 border-t-2" /> */}
       <FAQS />
       <hr className="my-16 border-gray-200 border-t-2" />
     

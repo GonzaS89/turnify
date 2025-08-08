@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IoIosClose } from "react-icons/io";
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios'; // Importa Axios

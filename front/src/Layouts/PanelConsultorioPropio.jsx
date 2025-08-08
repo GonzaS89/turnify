@@ -10,7 +10,7 @@ import GestionCoberturas from './components/GestionCoberturas';
 import CrearProfesional from './cards/CrearProfesional';
 import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
+const PanelConsultorioPropio = ({ consultorioData: consultorio, password }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);
@@ -19,7 +19,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
 
   const consultorioID = consultorio?.id;
   const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
-
 
   const medico = profesional ? profesional[0] : null;
   const medicoID = medico?.id;
@@ -237,6 +236,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           onClose={() => setShowSettingsModal(false)}
           consultorio={consultorio}
           onConsultorioUpdated={handleConsultorioUpdatedFromSettings}
+          password={password}
         />
 
         <GestionCoberturas

@@ -21,7 +21,7 @@ export const Header = ( { openLogin }) => {
         <div className="container mx-auto px-4 flex justify-evenly items-center relative z-10 xl:max-w-7xl">
           {/* Logo Centrado en Mobile */}
           <a href="#inicio" className="flex-grow flex justify-center md:justify-start" onClick={closeMobileMenu}>
-            <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-24'/>
+            <img src={logo} alt="Vamos al Doc Logo" className='w-24 h-auto md:w-20 lg:w-24 scale-125'/>
           </a>
 
           {/* Desktop Navigation */}

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import useAllProvincias from '../../customHooks/useAllProvincias';
 import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
-import bcrypt from 'bcryptjs';
+import { useNavigate } from 'react-router-dom';
+
 import axios from 'axios'
 
 const CrearConsultorio = () => {
@@ -9,7 +10,7 @@ const CrearConsultorio = () => {
   const [localidad, setLocalidad] = useState('');
   const [telefono, setTelefono] = useState('');
   const [nombre, setNombre] = useState('');
-  const [tipo, setTipo] = useState('particular');
+  const [tipo, setTipo] = useState('');
   const [banco, setBanco] = useState('');
   const [cbu, setCbu] = useState('');
   const [alias, setAlias] = useState('');
@@ -18,6 +19,7 @@ const CrearConsultorio = () => {
   const [importe, setImporte] = useState('');
   const [usuario, setUsuario] = useState('');
   const [contraseña, setContraseña] = useState('');
+  const [codigo, setCodigo] = useState('');
   const [repetirContraseña, setRepetirContraseña] = useState('');
   const [mostrarContraseña, setMostrarContraseña] = useState(false);
   const [mostrarRepetir, setMostrarRepetir] = useState(false);
@@ -27,6 +29,8 @@ const CrearConsultorio = () => {
 
   const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
   const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
+
+  const navigate = useNavigate();
 
   // Desactivar seña si es centro médico
   useEffect(() => {
@@ -77,19 +81,26 @@ const CrearConsultorio = () => {
     cbu: seña ? cbu : null,
     alias: seña ? alias : null,
     titular: seña ? titular : null,
+    codigo
   };
 
-  const response = await axios.post('http://localhost:3006/api/crearconsultorio', nuevoConsultorio);
+  const response = await axios.put(`http://localhost:3006/api/crearconsultorio/${codigo}`, nuevoConsultorio);
+
+
 
   // Si llega aquí, es porque el status es 2xx
   const data = response.data;
   setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
   
+  setTimeout(() => {
+    navigate('/')
+  }, 1000);
+  
   // Resetear formulario
   setDireccion('');
   setLocalidad('');
   setTelefono('');
-  setTipo('propio');
+  setTipo('');
   setUsuario('');
   setContraseña('');
   setRepetirContraseña('');
@@ -101,7 +112,8 @@ const CrearConsultorio = () => {
   setCbu('');
   setAlias('');
   setTitular('');
-  setNombre('')
+  setNombre('');
+  setCodigo('')
 
 } catch (err) {
   // Aquí manejas tanto errores de red como respuestas 4xx/5xx
@@ -185,7 +197,8 @@ const CrearConsultorio = () => {
             onChange={(e) => setTipo(e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="propio">Consultorio Particular</option>
+            <option value="" disabled>Seleccioná un tipo</option>
+            <option value="particular">Consultorio Particular</option>
             <option value="centro médico">Centro Médico</option>
           </select>
         </div>
@@ -210,7 +223,7 @@ const CrearConsultorio = () => {
             onChange={(e) => setIdProvinciaSelected(e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Seleccionar provincia</option>
+            <option value="" disabled>Seleccionar provincia</option>
             {loadingProvincias && <option disabled>Cargando provincias...</option>}
             {errorProvincias && <option disabled>Error al cargar provincias</option>}
             {!loadingProvincias && !errorProvincias && provincias.map((provincia) => (
@@ -242,13 +255,25 @@ const CrearConsultorio = () => {
 
         {/* Teléfono */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Teléfono (opcional)</label>
+          <label className="block text-sm font-medium text-gray-700">Teléfono</label>
           <input
             type="tel"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="11-1234-5678"
+            placeholder="Teléfono de contacto"
+          />
+        </div>
+        {/* Codigo de activacion */}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Código de activación de cuenta</label>
+          <input
+            type="text"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Código de activación brindado el administrador"
           />
         </div>
 

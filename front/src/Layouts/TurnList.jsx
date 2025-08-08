@@ -592,6 +592,7 @@ const TurnList = ({
           coberturasOptions={coberturasConsultorio} // Pasamos las coberturas del consultorio
           profesional={profesional[0]} // Pasamos el profesional para mostrar su nombre
           consultorio={consultorio[0]} // Pasamos el ID del consultorio
+          actualizarTurnos={handleActualizarTurnos}
         />
       )}
       

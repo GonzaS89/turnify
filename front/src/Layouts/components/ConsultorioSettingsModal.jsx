@@ -1,24 +1,13 @@
-import React, { useState } from 'react';
-import { FaBuilding, FaUserShield, FaEdit, FaKey, FaTimes } from 'react-icons/fa';
-import EditConsultorioModal from '../components/EditConsultorioModal ';
+import { useState } from 'react';
+import { FaBuilding, FaUserShield, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
 import EditCredentialsModal from '../components/EditCredentialsModal';
 
-const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
-  const [isEditConsultorioModalOpen, setIsEditConsultorioModalOpen] = useState(false);
+const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) => {
   const [isEditCredentialsModalOpen, setIsEditCredentialsModalOpen] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   if (!isOpen) return null;
 
-  console.log(consultorio)
-
-  const handleOpenEditConsultorioModal = () => setIsEditConsultorioModalOpen(true);
-  const handleCloseEditConsultorioModal = () => setIsEditConsultorioModalOpen(false);
-  const handleSaveEditedConsultorio = (updatedData) => {
-    console.log('Datos del consultorio actualizados:', updatedData);
-    setIsEditConsultorioModalOpen(false);
-  };
-
-  const handleOpenEditCredentialsModal = () => setIsEditCredentialsModalOpen(true);
   const handleCloseEditCredentialsModal = () => setIsEditCredentialsModalOpen(false);
   const handleSaveEditedCredentials = (updatedCredentials) => {
     console.log('Credenciales actualizadas:', updatedCredentials);
@@ -63,7 +52,10 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
                     Información del Consultorio
                   </h3>
                   <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
-                    <DetailItem label="Nombre" value={consultorio.nombre || 'No especificado'} />
+                    {consultorio?.nombre && (
+                       <DetailItem label="Nombre" value={consultorio.nombre}/>
+                    )}
+                   
                     <DetailItem 
                       label="Tipo" 
                       value={
@@ -75,37 +67,53 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
                     <DetailItem label="Dirección" value={consultorio.direccion || 'No especificado'} />
                     <DetailItem label="Localidad" value={consultorio.localidad || 'No especificado'} />
                     <DetailItem label="Provincia" value={consultorio.provincia || 'No especificado'} />
+                    <DetailItem label="Teléfono" value={consultorio.telefono || 'No especificado'} />
                    
                   </div>
                   <div className="mt-4 flex justify-center">
-                    <button
+                    {/* <button
                       onClick={handleOpenEditConsultorioModal}
                       className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <FaEdit /> Editar Datos
-                    </button>
+                    </button> */}
                   </div>
                 </section>
 
                 {/* --- Sección: Cuenta de Usuario --- */}
-                <section>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <FaUserShield className="text-purple-500 mr-2 w-5 h-5" />
-                    Credenciales de Acceso
-                  </h3>
-                  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
-                    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
-                    <DetailItem label="Contraseña" value="••••••••" hint="Oculta por seguridad" />
-                  </div>
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      onClick={handleOpenEditCredentialsModal}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <FaKey /> Cambiar Credenciales
-                    </button>
-                  </div>
-                </section>
+                {/* --- Sección: Cuenta de Usuario --- */}
+<section>
+  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+    <FaUserShield className="text-purple-500 mr-2 w-5 h-5" />
+    Credenciales de Acceso
+  </h3>
+  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
+    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
+    
+    {/* Contraseña con toggle de visibilidad */}
+    <div>
+      <p className="text-sm font-semibold text-gray-700 mb-1">Contraseña</p>
+      <div className="flex items-center gap-2">
+        <p className="text-base font-medium text-gray-900">
+          {isPasswordVisible ? password: '••••••••'}
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsPasswordVisible(prev => !prev)}
+          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+          aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+        >
+          {isPasswordVisible ? (
+            <FaEyeSlash className="w-5 h-5" />
+          ) : (
+            <FaEye className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+      <p className="text-xs text-gray-500 italic mt-1">Oculta por seguridad</p>
+    </div>
+  </div>
+</section>
 
               </div>
             ) : (
@@ -132,12 +140,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio }) => {
       </div>
 
       {/* Modales secundarios */}
-      <EditConsultorioModal
-        isOpen={isEditConsultorioModalOpen}
-        onClose={handleCloseEditConsultorioModal}
-        consultorio={consultorio}
-        onSave={handleSaveEditedConsultorio}
-      />
+      
 
       <EditCredentialsModal
         consultorioId={consultorio?.id}

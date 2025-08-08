@@ -4,7 +4,7 @@ import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 import useAllCoberturas from '../../../customHooks/useAllCoberturas'; // Asegúrate de que esta ruta sea correcta
 
 
-const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno }) => {
+const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno, actualizarTurnos }) => {
     // Estados internos para la lógica de la API y la UI
     const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
     const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
@@ -65,6 +65,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
                 onCloseAndReset(); // Llama a la función de cierre y reseteo
                 // Llama a la prop onClose del padre
                 onClose(); 
+                actualizarTurnos(); // Llama a la función para actualizar los turnos en el componente padre
                
                 // Recarga la página para reflejar los cambios
                 window.scrollTo(0, 0); // Vuelve al inicio de la página

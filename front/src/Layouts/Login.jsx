@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useAllConsultorios from "../../customHooks/useAllConsultorios";
 import axios from 'axios'
 
-const Login = ({ closeLogin }) => {
+const Login = ({ closeLogin, enviarPassword }) => {
   const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -27,6 +27,8 @@ const Login = ({ closeLogin }) => {
     });
 
     const { consultorio, token } = response.data;
+
+    enviarPassword(password);
 
     // Guardar token (en localStorage o context)
     localStorage.setItem('authToken', token);
