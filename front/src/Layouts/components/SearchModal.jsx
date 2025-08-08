@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaUserDoctor } from "react-icons/fa6";
 import { BiFilterAlt, BiSearch } from "react-icons/bi";
 import BotonesConsultorios from "./BotonesConsultorios";
+import useAllProfesionals from "../../../customHooks/useAllProfesionals";
 
 const SearchModal = ({
-  showModal,
-  onClose,
-  profesionales,
-  isLoading,
-  error,
   enviarIds,
 }) => {
   const [specialty, setSpecialty] = useState("");
@@ -16,6 +12,8 @@ const SearchModal = ({
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const firstDoctorRef = useRef(null);
+
+  const { profesionales, isLoading, error } = useAllProfesionals();
 
   const normalizeString = (str) => {
     return (
@@ -27,7 +25,7 @@ const SearchModal = ({
   };
 
   useEffect(() => {
-    if (!showModal) return;
+   
 
     const hasFilters = specialty || searchQuery;
     setHasSearched(hasFilters);
@@ -62,9 +60,8 @@ const SearchModal = ({
         });
       }, 100);
     }
-  }, [showModal, specialty, searchQuery, profesionales]);
+  }, [specialty, searchQuery, profesionales]);
 
-  if (!showModal) return null;
 
   const cerrarModal = () => {
     setSpecialty("");
@@ -75,7 +72,7 @@ const SearchModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center xl:p-4 z-50 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center xl:p-4 z-50 backdrop-blur-xl">
       {/* Modal con fondo translúcido y bordes suaves */}
       <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 backdrop-blur-xl shadow-2xl border border-white/40 xl:rounded-3xl w-full xl:max-w-7xl h-screen xl:h-[90vh] flex flex-col relative overflow-hidden">
         
@@ -240,7 +237,7 @@ const SearchModal = ({
                             </div>
                           </div>
                           <div className="p-5 bg-white/60 rounded-b-3xl border-t border-white/50 mt-auto">
-                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} />
+                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds}/>
                           </div>
                         </div>
                       </div>

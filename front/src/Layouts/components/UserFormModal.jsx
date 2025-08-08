@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
+import { useNavigate } from 'react-router';
 
-const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
+const UserFormModal = ({ onClose, onSubmit, consultorioId }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -9,12 +11,16 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
         selectedOption: '', // Para la cobertura médica
     });
 
+    const navigate = useNavigate();
+
+     const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
+
     const [options, setOptions] = useState([]);
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);
     const [errorOptions, setErrorOptions] = useState(null);
 
     useEffect(() => {
-        if (isOpen) {
+       
             if (coberturas) {
                 if (Array.isArray(coberturas)) {
                     setOptions(coberturas);
@@ -40,8 +46,8 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
                 telefono: '',
                 selectedOption: '',
             });
-        }
-    }, [isOpen, coberturas]);
+        
+    }, [coberturas]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -92,14 +98,13 @@ const UserFormModal = ({ isOpen, onClose, onSubmit, coberturas }) => {
         }
 
         onSubmit(formData);
+        navigate()
     };
-
-    if (!isOpen) return null;
 
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] backdrop-blur-sm p-4 sm:p-6 animate-fade-in">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] backdrop-blur-sm p-4 sm:p-6">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh]">
                 {/* Botón de cerrar */}
                 <button
                     onClick={onClose}

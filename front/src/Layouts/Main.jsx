@@ -13,7 +13,6 @@ import TurnSelectModal from "./components/TurnSelectModal";
 
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 
-import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 
 const Main = ({ openLogin }) => {
   const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
@@ -100,7 +99,7 @@ const Main = ({ openLogin }) => {
     setShowUserFormModal(true); // Reabre el formulario de usuario para editar
   };
 
-  const { coberturas } = useCoberturaxIdConsultorio(consultorio?.id);
+ 
 
 
 
@@ -118,15 +117,6 @@ const Main = ({ openLogin }) => {
       <FAQS />
       <hr className="my-16 border-gray-200 border-t-2" />
     
-
-      {showModalTurnos &&  (
-        <TurnSelectModal
-          consultorio={consultorio} // Pasamos el consultorio para mostrar su información
-          idProfesional={idProfesional} // Pasamos el ID del profesional
-          enviarTurnoYOrden={recibirTurnoYOrden} // Pasamos la función para recibir el turno y orden
-          cerrarModalTurnos={cerrarModalTurnos} // Pasamos la función para cerrar el modal
-        />
-      )}
 
       {/* Modal de Formulario de Usuario */}
       {showUserFormModal && (
