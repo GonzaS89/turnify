@@ -264,8 +264,8 @@ const TurnList = ({
   const turnosDeLaFecha = turnosAgrupados[fechaSeleccionada] || [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[150] xl:p-4 animate-fade-in">
-      <div className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-6xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[150] 2xl:p-4 animate-fade-in">
+      <div className="bg-white 2xl:rounded-2xl shadow-2xl w-screen 2xl:max-w-6xl h-screen 2xl:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Encabezado */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 flex justify-between items-center">
           <h2 className="text-xl font-bold flex items-center gap-2">
@@ -387,11 +387,14 @@ const TurnList = ({
                   })()
                   : 'Seleccioná una fecha en el panel izquierdo'}
               </h4>
-              <button
-                className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
-                onClick={() => handleBorrarTodosLosTurnos()}
-              >{isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
-              </button>
+              {fechaSeleccionada && (
+                   <button
+                   className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
+                   onClick={() => handleBorrarTodosLosTurnos()}
+                 >{isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
+                 </button>
+              )}
+             
             </div>
 
 

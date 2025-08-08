@@ -93,7 +93,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, password }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-6 px-4 sm:px-6">
+    <div className="min-h-screen py-6 px- sm:px-6">
       <div className="max-w-7xl mx-auto">
         {/* ===== ENCABEZADO PERSONALIZADO ===== */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-l-4 border-gradient-to-r from-blue-500 to-indigo-600">

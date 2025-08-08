@@ -180,7 +180,7 @@ const Login = ({ closeLogin, enviarPassword }) => {
             mb-2
           "
           >
-            Bienvenido a <span className="text-indigo-600">TurniFy</span>
+            Bienvenido a <span className="text-indigo-600">Ya tenes turnos</span>
           </h2>
           <p
             className="
