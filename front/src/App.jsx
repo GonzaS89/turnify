@@ -22,29 +22,16 @@ const App = () => {
   return (
     <BrowserRouter>
       <>
-        {/* Inyectamos estilos globales */}
+
       
 
-        <div className="min-h-screen flex flex-col font-sans text-gray-800 relative overflow-hidden">
-          {/* ===== FONDO PROFESIONAL EN AZUL CLARO ===== */}
-          
-          {/* Fondo base: gradiente suave azul cielo */}
-          <div className="fixed inset-0 -z-30">
+      
+     
+
+       
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50"></div>
 
-            {/* Textura de grid sutil en azul */}
-            <div
-              className="absolute inset-0 opacity-5"
-              style={{
-                backgroundImage: `
-                  linear-gradient(rgba(100, 160, 220, 0.1) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(100, 160, 220, 0.1) 1px, transparent 1px)
-                `,
-                backgroundSize: "40px 40px",
-              }}
-            ></div>
-          </div>
-
+    
           {/* Capa de profundidad: degradado vertical para mejorar texto */}
           <div className="fixed inset-0 -z-20 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white/60"></div>
@@ -103,7 +90,7 @@ const App = () => {
           </main>
 
           <Footer />
-        </div>
+  
       </>
     </BrowserRouter>
   );
