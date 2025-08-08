@@ -15,12 +15,12 @@ const Hero = ({ enviarIds, openModalProf }) => {
 
     const images = [img, img2, img3, img4];
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % images.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [images.length]);
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         setCurrentIndex((prev) => (prev + 1) % images.length);
+    //     }, 5000);
+    //     return () => clearInterval(interval);
+    // }, [images.length]);
 
     return (
         <section id="hero-section" className="relative pt-24 pb-20 overflow-hidden mt-24">
