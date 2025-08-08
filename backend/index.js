@@ -411,7 +411,7 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
         [cobertura]
       );
 
-      const linkCancelar = `http://localhost:5173/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
+      const linkCancelar = `https://turnify1.netlify.app/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
 
       const mensaje = `
 🔔 *¡Nuevo Turno Reservado!* 🔔
