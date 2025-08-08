@@ -27,8 +27,6 @@ const TurnList = ({
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
   const { consultorio, isLoading: isLoadingConsultorio, error: errorConsultorio } = useConsultorioxId(consultorioId);
 
-
-
   const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
 
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
@@ -54,16 +52,9 @@ const TurnList = ({
     setOrdenTurno(idx + 1);
     setShowUserFormModal(true);
     setSelectedTurno(turno);
-  }
+  };
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
-
-  // Seleccionar la primera fecha por defecto
-  // useEffect(() => {
-  //   if (fechasOrdenadas.length > 0 && !fechaSeleccionada) {
-  //     setFechaSeleccionada(fechasOrdenadas[0]);
-  //   }
-  // }, [fechasOrdenadas, fechaSeleccionada]);
 
   // Scroll automático al centro en mobile
   useEffect(() => {
@@ -114,7 +105,7 @@ const TurnList = ({
   const handleBorrarTodosLosTurnos = () => {
     setShowModalBorrarTodosLosTurnos(true);
     console.log('clickeado borrar todos los turnos', consultorioId, profesionalId, fechaSeleccionada);
-  }
+  };
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
@@ -122,12 +113,10 @@ const TurnList = ({
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const handleUserFormSubmit = (formData) => {
-    // Aquí no se envía aún, solo se guardan los datos y se abre el modal de confirmación
-    setUserFormData(formData); // Guarda los datos del formulario
-    setShowUserFormModal(false); // Cierra el formulario de usuario
-    setShowConfirmationModal(true); // Abre el modal de confirmación
+    setUserFormData(formData);
+    setShowUserFormModal(false);
+    setShowConfirmationModal(true);
   };
-
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -136,17 +125,12 @@ const TurnList = ({
       setIsSmallScreen(window.innerWidth < 768);
     };
 
-    // Ejecutar al montar
     handleResize();
-
-    // Escuchar cambios en el tamaño
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleModificarEstadoTurno = async (idTurno) => {
-
-
     try {
       const response = await axios.put(`${API_URL}/api/modificarestadoturno/${idTurno}`);
       if (response.status === 200) {
@@ -388,15 +372,14 @@ const TurnList = ({
                   : 'Seleccioná una fecha en el panel izquierdo'}
               </h4>
               {fechaSeleccionada && (
-                   <button
-                   className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
-                   onClick={() => handleBorrarTodosLosTurnos()}
-                 >{isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
-                 </button>
+                <button
+                  className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
+                  onClick={() => handleBorrarTodosLosTurnos()}
+                >
+                  {isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
+                </button>
               )}
-             
             </div>
-
 
             {!fechaSeleccionada ? (
               <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
@@ -414,134 +397,127 @@ const TurnList = ({
                   <FaPlus /> Agregar Turnos
                 </button>
               </div>
-            ) :
-              // Renderizar turnos...
-
-              (
-                <div className="space-y-4">
-                  {turnosDeLaFecha
-                    .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
-                    .map((turno, idx) => (
-                      <div
-                        key={turno.id}
-                        className={`p-5 rounded-xl border-l-4 transition-all ${turno.estado === 'reservado'
-                            ? 'bg-red-50 border-red-500' :
-                            turno.estado === 'disponible' ? 'bg-green-50 border-green-500'
-                              : 'bg-blue-100 border-blue-500'
-                          }`}
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`font-bold text-lg ${turno.estado === 'reservado' ? 'text-red-600' :
-                                  turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
-                                }`}
-                            >
-                              #{idx + 1}
-                            </span>
-                            {turno.hora && (
-                              <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${turno.estado === 'reservado'
-                                  ? 'bg-red-100 text-red-800' :
-                                  turno.estado === 'disponible'
-                                    ? 'bg-green-100 text-green-800' :
-                                    'bg-white text-blue-800'
-                                }`}
-                            >
-                              {turno.estado === 'reservado' ? 'Ocupado' :
-                                turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
-                            </span>
-                            {turno.estado === 'disponible' && (
-                              <button
-                                onClick={() => handleBorrarTurno(turno.id)}
-                                className="text-red-500 hover:text-red-700 transition-colors"
-                                aria-label="Eliminar turno"
-                              >
-                                <FaTrashAlt className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                          {turno.estado === 'reservado' ? (
-                            <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
-                              {/* Botón: Marcar como finalizado */}
-                              <button
-                                onClick={() => handleModificarEstadoTurno(turno.id)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
-                                title="Marcar como finalizado"
-                              >
-                                <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span className="hidden sm:inline">Marcar como finalizado</span>
-                                <span className="inline sm:hidden">Fin</span>
-                              </button>
-
-                              {/* Botón: Liberar turno */}
-                              <button
-                                onClick={() => handleLiberarTurno(turno.id)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial"
-                                title="Liberar turno"
-                              >
-                                <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span className="hidden sm:inline">Liberar</span>
-                                <span className="inline sm:hidden">Lib</span>
-                              </button>
-                            </div>
-                          ) : turno.estado === 'disponible' && (
+            ) : (
+              <div className="space-y-4">
+                {turnosDeLaFecha
+                  .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
+                  .map((turno, idx) => (
+                    <div
+                      key={turno.id}
+                      className={`p-5 rounded-xl border-l-4 transition-all ${turno.estado === 'reservado'
+                          ? 'bg-red-50 border-red-500' :
+                          turno.estado === 'disponible' ? 'bg-green-50 border-green-500'
+                            : 'bg-blue-100 border-blue-500'
+                        }`}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-bold text-lg ${turno.estado === 'reservado' ? 'text-red-600' :
+                                turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
+                              }`}
+                          >
+                            #{idx + 1}
+                          </span>
+                          {turno.hora && (
+                            <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${turno.estado === 'reservado'
+                                ? 'bg-red-100 text-red-800' :
+                                turno.estado === 'disponible'
+                                  ? 'bg-green-100 text-green-800' :
+                                  'bg-white text-blue-800'
+                              }`}
+                          >
+                            {turno.estado === 'reservado' ? 'Ocupado' :
+                              turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
+                          </span>
+                          {turno.estado === 'disponible' && (
                             <button
-                              onClick={() => tapButtonAsignar(turno, idx)}
-                              className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-8"
+                              onClick={() => handleBorrarTurno(turno.id)}
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                              aria-label="Eliminar turno"
                             >
-                              <FaPlus className="w-3.5 h-3.5" />
-                              <span>Asignar turno</span>
+                              <FaTrashAlt className="w-4 h-4" />
                             </button>
                           )}
                         </div>
-
-                        {turno.DNI ? (
-                          <div className="space-y-2 text-sm text-gray-700">
-                            <div className="flex items-center gap-3">
-                              <FaUser className="text-blue-500 w-4 h-4" />
-                              <span className="font-medium">
-                                {turno.apellido_paciente}, {turno.nombre_paciente}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <FaIdCard className="text-gray-600 w-4 h-4" />
-                              <span className='font-medium'>{turno.DNI}</span>
-                            </div>
-                            {turno.cobertura && (
-                              <div className="flex items-center gap-3">
-                                <FaShieldAlt className="text-purple-500 w-4 h-4" />
-                                <span>
-                                  <span className='font-medium'>{coberturaElegida(turno.cobertura)}</span>
-                                </span>
-                              </div>
-                            )}
-                            {turno.telefono && (
-                              <div className="flex items-center gap-3">
-                                <FaPhone className="text-orange-500 w-4 h-4" />
-                                <span className='font-medium'>{turno.telefono}</span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-yellow-600">
-                            <FaInfoCircle className="w-4 h-4" />
-                            <span className="text-sm">Este turno está disponible para agendar.</span>
-                          </div>
-                        )}
                       </div>
-                    ))}
-                </div>
-              )}
+
+                      {/* Botones de acción (mejorados para mobile) */}
+                      {turno.estado === 'reservado' ? (
+  <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
+    {/* Botón: Marcar como finalizado */}
+    <button
+      onClick={() => handleModificarEstadoTurno(turno.id)}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
+      title="Marcar como finalizado"
+    >
+      <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+      <span className="hidden sm:inline">Marcar como finalizado</span>
+      <span className="inline sm:hidden">Fin</span>
+    </button>
+
+    {/* Botón: Liberar turno */}
+    <button
+      onClick={() => handleLiberarTurno(turno.id)}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
+      title="Liberar turno"
+    >
+      <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
+      <span className="hidden sm:inline">Liberar</span>
+      <span className="inline sm:hidden">Lib</span>
+    </button>
+  </div>
+) : turno.estado === 'disponible' && (
+  <button
+    onClick={() => tapButtonAsignar(turno, idx)}
+    className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-10"
+  >
+    <FaPlus className="w-3.5 h-3.5" />
+    <span>Asignar turno</span>
+  </button>
+)}
+
+                      {/* Datos del paciente o mensaje */}
+                      {turno.DNI && (
+                        <div className="space-y-2 text-sm text-gray-700 mt-4 pt-4 border-t border-gray-200">
+                          <div className="flex items-center gap-3">
+                            <FaUser className="text-blue-500 w-4 h-4" />
+                            <span className="font-medium">
+                              {turno.apellido_paciente}, {turno.nombre_paciente}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <FaIdCard className="text-gray-600 w-4 h-4" />
+                            <span className="font-medium">{turno.DNI}</span>
+                          </div>
+                          {turno.cobertura && (
+                            <div className="flex items-center gap-3">
+                              <FaShieldAlt className="text-purple-500 w-4 h-4" />
+                              <span className="font-medium">{coberturaElegida(turno.cobertura)}</span>
+                            </div>
+                          )}
+                          {turno.telefono && (
+                            <div className="flex items-center gap-3">
+                              <FaPhone className="text-orange-500 w-4 h-4" />
+                              <span className="font-medium">{turno.telefono}</span>
+                            </div>
+                          )}
+                        </div>
+                      ) }
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Modal de confirmación para borrar turno */}
+      {/* Modales */}
       {showModalBorrarTurno && (
         <BorrarTurno
           idTurno={IdTurnoSeleccionado}
@@ -550,7 +526,6 @@ const TurnList = ({
         />
       )}
 
-      {/* Modal para borrar todos los turnos */}
       {showModalBorrarTodosLosTurnos && (
         <BorrarTodosLosTurnosModal
           idConsultorio={consultorioId}
@@ -558,7 +533,6 @@ const TurnList = ({
           fecha={fechaSeleccionada}
           onClose={() => setShowModalBorrarTodosLosTurnos(false)}
           actualizarTurnos={handleActualizarTurnos}
-
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
@@ -570,32 +544,30 @@ const TurnList = ({
           consultorioId={consultorioId}
           fechaSeleccionada={fechaSeleccionada}
           onClose={() => setShowUserFormModal(false)}
-
           isOpen={showUserFormModal}
-          coberturas={coberturasConsultorio} // Asegúrate de pasar las coberturas del consultorio
+          coberturas={coberturasConsultorio}
         />
       )}
+
       {showConfirmationModal && (
         <ConfirmationModal
           isOpen={showConfirmationModal}
-          cerrarModalTurnos={() => onClose()} // Cierra todos los modales si se cancela desde aquí
-          // Pasamos la función para actualizar los turnos
+          cerrarModalTurnos={onClose}
           onClose={() => setShowConfirmationModal(false)}
           onConfirm={handleUserFormSubmit}
-          selectedTurno={selectedTurno} // Pasamos el turno seleccionado para mostrarlo en la confirmación
+          selectedTurno={selectedTurno}
           ordenTurno={ordenTurno}
           onEdit={() => {
-            setShowConfirmationModal(false); // Cierra el modal de confirmación
-            setShowUserFormModal(true); // Reabre el formulario de usuario para editar
+            setShowConfirmationModal(false);
+            setShowUserFormModal(true);
           }}
-          formData={userFormData} // Pasamos los datos del formulario de usuario
-          coberturasOptions={coberturasConsultorio} // Pasamos las coberturas del consultorio
-          profesional={profesional[0]} // Pasamos el profesional para mostrar su nombre
-          consultorio={consultorio[0]} // Pasamos el ID del consultorio
+          formData={userFormData}
+          coberturasOptions={coberturasConsultorio}
+          profesional={profesional[0]}
+          consultorio={consultorio[0]}
           actualizarTurnos={handleActualizarTurnos}
         />
       )}
-
     </div>
   );
 };
