@@ -425,13 +425,12 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
 👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${
         datosProfesional[0].apellido
       }
-🏥 *Consultorio:* ${datosConsultorio[0].nombre}
 📍 *Dirección:* ${datosConsultorio[0].direccion}, ${
         datosConsultorio[0].localidad
       }
 
 ${
-  datosConsultorio[0].seña &&
+  datosConsultorio[0].seña === 1 &&
   `
 💰 *Importe de la seña:* $${datosConsultorio[0].importe}
 🏦 *Banco:* ${datosConsultorio[0].banco}
