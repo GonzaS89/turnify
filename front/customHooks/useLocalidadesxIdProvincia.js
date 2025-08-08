@@ -52,7 +52,7 @@ const useLocalidadesxIdProvincia = (provinciaId) => {
 
         // Llama a la función de fetching cuando el componente se monta o professionalId cambia
         obtenerLocalidades();
-    }, [provinciaId, baseUrl]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
+    }, [provinciaId]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
 
     // El hook devuelve los datos, el estado de carga y el error
     return { localidades, isLoading, error };
