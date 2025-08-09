@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import useProfesionalxId from "../customHooks/useProfesionalxId";
 
 // Componentes
 import UserDashboard from "./Layouts/UserDashboard";
@@ -19,6 +20,11 @@ const App = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
   const [consultorio, setConsultorio] = useState(null); // Estado para almacenar el consultorio seleccionado
+  const [dataFormulario, setDataFormulario] = useState(null);
+  const [turnoSeleccionado, setTurnoSeleccionado] = useState(null);
+  const [ordenTurno, setOrdenTurno] = useState(null);
+
+  const { profesional, isLoading, error } = useProfesionalxId(idProfesional);
 
 
   const closeLogin = () => setOpenLoginModal(false);
@@ -31,9 +37,13 @@ const App = () => {
   };
 
   const recibirTurnoYOrden = (turno, orden) => {
-    setSelectedTurno(turno); // Actualiza el turno seleccionado
+    setTurnoSeleccionado(turno); // Actualiza el turno seleccionado
     setOrdenTurno(orden); // Actualiza el índice del turno seleccionado
   };
+
+  const recibirDataFormulario = data => {
+    setDataFormulario(data)
+  }
 
   return (
     <BrowserRouter>
@@ -67,8 +77,8 @@ const App = () => {
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
               <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>
               <Route path="/seleccionfecha" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/formulario-usuario" element={<UserFormModal consultorioId={consultorio?.id}/>}/>
-              <Route path="/confirmacionturno" element={<ConfirmationModal />}/>
+              <Route path="/formulario-usuario" element={<UserFormModal consultorioId={consultorio?.id} onSubmit={recibirDataFormulario}/>}/>
+              <Route path="/confirmacionturno" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
  
             </Routes>
           </main>

@@ -1,10 +1,8 @@
-import { useState } from "react";
-// IMPORTACION DE CUSTOM HOOKS //
+import { useState, useMemo } from "react";
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
-import Turno from "./Turno"; // Importación del componente Turno
+import Turno from "./Turno";
 import { useNavigate } from "react-router-dom";
-// IMPORTACION DE ICONOS //
 
 const TurnSelectModal = ({
   consultorio,
@@ -13,45 +11,86 @@ const TurnSelectModal = ({
   cerrarModalTurnos,
   onClose
 }) => {
-
   const navigate = useNavigate();
+
   // CARGA DE CUSTOM HOOKS
   const {
     turnos,
     isLoading: isLoadingTurnos,
     error: errorTurnos,
   } = useProfessionalConsultorioTurnos(idProfesional, consultorio?.id);
+
   const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(idProfesional);
-  // Asegurarse de que `profesional` es un array y tiene al menos un elemento
-  const medico = profesional && profesional.length > 0 ? profesional[0] : null;
-  // DECLARACION DE ESTADOS
+
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
-  // DECLARACION DE FUNCIONES
-  const getTodayDate = () => {
+
+  // --- OPTIMIZACIONES CON useMemo ---
+
+  // Evita recalcular en cada render
+  const medico = useMemo(() => {
+    return profesional && profesional.length > 0 ? profesional[0] : null;
+  }, [profesional]);
+
+  // Memo: Fecha actual formateada
+  const todayDate = useMemo(() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  };
+  }, []);
 
-  const turnosFiltrados = fechaSeleccionada
-    ? turnos.filter((turno) => turno.fecha === fechaSeleccionada)
-    : [];
+  // Memo: Fechas únicas disponibles (solo 'disponible' y futuras)
+  const fechasUnicas = useMemo(() => {
+    if (!turnos || turnos.length === 0) return [];
+
+    return [...new Set(
+      turnos
+        .filter((turno) => turno.estado === 'disponible')
+        .map((turno) => turno.fecha)
+    )]
+      .filter((fecha) => fecha >= todayDate)
+      .sort();
+  }, [turnos, todayDate]);
+
+  // Memo: Turnos filtrados por fecha
+  const turnosFiltrados = useMemo(() => {
+    return fechaSeleccionada
+      ? turnos?.filter((turno) => turno.fecha === fechaSeleccionada) || []
+      : [];
+  }, [turnos, fechaSeleccionada]);
+
+  // Memo: Título del médico
+  const titulo = useMemo(() => {
+    let titulo = "";
+    switch (medico?.titulo) {
+      case "doctor":
+        titulo = "Dr.";
+        break;
+      case "doctora":
+        titulo = "Dra.";
+        break;
+      case "licenciado":
+        titulo = "Lic.";
+        break;
+      case "licenciada":
+        titulo = "Lcda.";
+        break;
+      default:
+        titulo = "";
+        break;
+    }
+    return titulo;
+  }, [medico?.titulo]);
+
+  // --- ESTADOS ---
+
+
+  // --- FUNCIONES (sin cambios, solo referencias estables) ---
 
   const handleFechaChange = (event) => {
     setFechaSeleccionada(event.target.value);
   };
-
-  const fechasUnicas = [
-    ...new Set(
-      turnos
-        ?.filter((turno) => turno.estado === 'disponible') // Solo si está disponible
-        .map((turno) => turno.fecha)
-    )
-  ]
-    .filter((fecha) => fecha >= getTodayDate())
-    .sort();
 
   const formatearFechaSQL = (fecha) => {
     const date = new Date(fecha);
@@ -80,32 +119,13 @@ const TurnSelectModal = ({
   const handleSelectTurno = (turno, index) => {
     navigate('/formulario-usuario');
     enviarTurnoYOrden(turno, index + 1);
-    onClose;
-    
+    onClose?.(); // Ejecuta onClose si fue pasada
   };
 
-  let titulo = "";
-
-switch (medico?.titulo) {
-  case "doctor":
-    titulo = "Dr.";
-    break;
-  case "doctora":
-    titulo = "Dra.";
-    break;
-  case "licenciado":
-    titulo = "Lic.";
-    break;
-  case "licenciada":
-    titulo = "Lcda.";
-    break;
-  default:
-    titulo = "";
-    break;
-}
+  // --- RENDER ---
 
   return (
-    <div className="fixed inset-0 bg-opacity-75 bg-black flex items-center justify-center p-4 z-50 backdrop-blur-md">
+    <div className="fixed inset-0 bg-opacity-75 bg-black flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md sm:max-w-lg md:max-w-xl flex flex-col max-h-[95vh] overflow-hidden border border-gray-200">
         
         {/* Header */}
@@ -122,19 +142,21 @@ switch (medico?.titulo) {
                     <p className="m-0">{titulo} {medico?.nombre || "N/A"} {medico?.apellido || "N/A"}</p>
                     <p className="text-xs text-gray-600">{medico?.especialidad}</p>
                   </span>
-                 
                 )}
               </h1>
               {consultorio && (
                 <div className="mt-1 text-xs sm:text-sm text-gray-600">
-                  <p className="font-medium">{consultorio.tipo === "particular" ? "Consultorio Particular" : `Centro Médico ${consultorio.nombre}`}</p>
+                  <p className="font-medium">
+                    {consultorio.tipo === "particular" 
+                      ? "Consultorio Particular" 
+                      : `Centro Médico ${consultorio.nombre}`}
+                  </p>
                   <p>{consultorio.direccion}, {consultorio.localidad}</p>
-                  {/* <p className="mt-1">Horario: <span className="font-semibold">{consultorio.inicio} a {consultorio.cierre} Hs</span></p> */}
                 </div>
               )}
             </div>
             <button 
-              onClick={cerrarModalTurnos}
+              onClick={() => navigate('/buscarprofesionales')}
               className="text-gray-400 hover:text-gray-700 transition-colors p-1 rounded-full hover:bg-gray-200 self-start"
               aria-label="Cerrar"
             >
@@ -146,7 +168,7 @@ switch (medico?.titulo) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-grow overflow-y-auto p-4 sm:p-5 custom-scrollbar">
+        <div className="flex-grow overflow-y-auto p-4 sm:p-5">
           
           {/* Selector de Fecha */}
           <div className="mb-6">
@@ -158,7 +180,7 @@ switch (medico?.titulo) {
                 id="fecha-selector"
                 value={fechaSeleccionada}
                 onChange={handleFechaChange}
-                className="w-full p-3 pr-10 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+                className="w-full p-3 pr-10 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
                 disabled={isLoadingTurnos || errorTurnos || fechasUnicas.length === 0}
               >
                 <option value="">-- Elegir Fecha --</option>

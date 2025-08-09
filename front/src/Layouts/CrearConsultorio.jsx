@@ -200,8 +200,8 @@ const CrearConsultorio = () => {
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="" disabled>Seleccioná un tipo</option>
-            <option value="particular">Consultorio Particular</option>
-            <option value="centro médico">Centro Médico</option>
+            <option value="Particular">Consultorio Particular</option>
+            <option value="Centro Médico">Centro Médico</option>
           </select>
         </div>
 

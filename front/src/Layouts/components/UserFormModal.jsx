@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import { useNavigate } from 'react-router';
 
-const UserFormModal = ({ onClose, onSubmit, consultorioId }) => {
+const UserFormModal = ({ onSubmit, consultorioId }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -98,7 +98,7 @@ const UserFormModal = ({ onClose, onSubmit, consultorioId }) => {
         }
 
         onSubmit(formData);
-        navigate()
+        navigate('/confirmacionturno')
     };
 
 
@@ -107,7 +107,7 @@ const UserFormModal = ({ onClose, onSubmit, consultorioId }) => {
             <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh]">
                 {/* Botón de cerrar */}
                 <button
-                    onClick={onClose}
+                    onClick={() => navigate('/seleccionfecha')}
                     className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
                     aria-label="Cerrar modal"
                 >
@@ -246,7 +246,7 @@ const UserFormModal = ({ onClose, onSubmit, consultorioId }) => {
                 <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-gray-200">
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={()=> navigate('/seleccionfecha')}
                         className="py-3 px-6 bg-gray-200 text-gray-800 font-semibold rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
                     >
                         Cancelar

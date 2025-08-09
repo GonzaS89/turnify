@@ -2,9 +2,10 @@ import { useState } from 'react';
 import axios from 'axios';
 import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
 import useAllCoberturas from '../../../customHooks/useAllCoberturas'; // Asegúrate de que esta ruta sea correcta
+import { useNavigate } from 'react-router';
 
 
-const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno, actualizarTurnos }) => {
+const ConfirmationModal = ({ onClose, onEdit, formData, selectedTurno, profesional, consultorio, ordenTurno, actualizarTurnos }) => {
     // Estados internos para la lógica de la API y la UI
     const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
     const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
@@ -15,8 +16,10 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
 
     const coberturaElegida = coberturas?.find(cobertura => cobertura.id == formData?.selectedOption); // Asegúrate de que selectedOption sea un ID válido
 
+
     // Si el modal no está abierto, no renderiza nada
-    if (!isOpen) return null;
+
+    const navigate = useNavigate();
 
     const API_URL = import.meta.env.VITE_API_URL;
 
@@ -93,7 +96,7 @@ const ConfirmationModal = ({ isOpen, onClose, onEdit, formData, selectedTurno, p
     
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center z-[200] backdrop-blur-md p-4 animate-fade-in"> {/* Ajuste de padding */}
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center p-4"> {/* Ajuste de padding */}
             <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col gap-5 border border-blue-100 transform scale-95 animate-scale-in max-h-[90vh] overflow-y-auto"> {/* Ajuste de padding y gap */}
                 {isSuccess ? (
                     // Contenido para el estado de éxito
