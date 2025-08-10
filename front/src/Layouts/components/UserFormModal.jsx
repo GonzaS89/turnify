@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
-import { useNavigate } from 'react-router';
+import { useParams ,useNavigate } from 'react-router';
 
-const UserFormModal = ({ onSubmit, consultorioId }) => {
+const UserFormModal = ({ onSubmit }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -12,8 +12,11 @@ const UserFormModal = ({ onSubmit, consultorioId }) => {
     });
 
     const navigate = useNavigate();
+    const { consultorioId } = useParams();
 
      const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
+
+     console.log(consultorioId)
 
     const [options, setOptions] = useState([]);
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);

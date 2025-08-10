@@ -121,7 +121,7 @@ export const Header = ( { openLogin }) => {
             to='hero-section'
             smooth={true}
             duration={500}
-            offset={-150}
+            offset={-200}
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200" // Added horizontal padding and rounded hover background
             onClick={closeMobileMenu}
           >
@@ -133,7 +133,7 @@ export const Header = ( { openLogin }) => {
           to='info'
             smooth={true}
             duration={500}
-            offset={-150}
+            offset={-60}
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}
           >
@@ -145,7 +145,7 @@ export const Header = ( { openLogin }) => {
             to='beneficios'
             smooth={true}
             duration={500}
-            offset={-150}
+            offset={-60}
             href="#beneficios"
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}
@@ -158,7 +158,7 @@ export const Header = ( { openLogin }) => {
             to='preguntas-frecuentes'
             smooth={true}
             duration={500}
-            offset={-150}
+            offset={-60}
             href="#preguntas-frecuentes"
             className="block text-gray-700 hover:text-blue-600 font-medium text-lg py-3 px-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
             onClick={closeMobileMenu}

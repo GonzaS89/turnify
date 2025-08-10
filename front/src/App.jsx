@@ -76,8 +76,8 @@ const App = () => {
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
               <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>
-              <Route path="/seleccionfecha" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/formulario-usuario" element={<UserFormModal consultorioId={consultorio?.id} onSubmit={recibirDataFormulario}/>}/>
+              <Route path="/seleccionfecha/:consultorio/:profesionalId" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
+              <Route path="/formulario-usuario/:consultorioId" element={<UserFormModal onSubmit={recibirDataFormulario}/>}/>
               <Route path="/confirmacionturno" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
  
             </Routes>

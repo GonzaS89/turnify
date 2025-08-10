@@ -2,14 +2,15 @@ import useProfessionalConsultorios from '../../../customHooks/useProfessionalCon
 import Turnosdisponibles from './Turnosdisponibles';
 import { useNavigate } from 'react-router';
 
-const BotonesConsultorios = ({ idProfesional, enviarIds, onClose}) => {
-  const { consultorios, isLoading, error } = useProfessionalConsultorios(idProfesional);
+const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
+  const { consultorios, isLoading, error } = useProfessionalConsultorios(profesionalId);
 
   const navigate = useNavigate();
 
-  const tapButtonConsultorio = (consultorio) => {
-    enviarIds(idProfesional, consultorio);
-    navigate('/seleccionfecha');
+
+
+  const tapButtonConsultorio = ( consultorio ) => {
+    navigate(`/seleccionfecha/${consultorio}/${profesionalId}`);
   }
 
   if (isLoading)
@@ -73,7 +74,7 @@ const BotonesConsultorios = ({ idProfesional, enviarIds, onClose}) => {
 
           {/* Badge de disponibilidad */}
           <div className="w-full mt-2">
-            <Turnosdisponibles idProfesional={idProfesional} idConsultorio={consultorio.id} />
+            <Turnosdisponibles idProfesional={profesionalId} idConsultorio={consultorio.id} />
           </div>
 
           {/* Flecha de acción */}
