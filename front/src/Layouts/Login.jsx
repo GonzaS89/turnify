@@ -29,6 +29,8 @@ const Login = ({ closeLogin }) => {
       });
   
       const { consultorio, token } = response.data;
+
+      console.log(username,password)
   
       
   

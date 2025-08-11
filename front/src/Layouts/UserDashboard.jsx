@@ -125,7 +125,7 @@ const UserDashboard = ({ onLogout }) => {
           </button>
         </header>
 
-        {consultorioToUse?.tipo === 'particular' ? (
+        {consultorioToUse?.tipo === 'Particular' ? (
           <PanelConsultorioPropio consultorioData={consultorioToUse} onLogout={handleLogout} password={password}/>
         ) : (
           <PanelCentroMedico consultorioData={consultorioToUse} password={password}/>
