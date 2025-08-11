@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAllConsultorios from "../../customHooks/useAllConsultorios";
-import axios from 'axios'
+import axios from 'axios';
+import { FaUser, FaLock } from 'react-icons/fa';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 
 const Login = ({ closeLogin }) => {
   const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
@@ -10,6 +12,7 @@ const Login = ({ closeLogin }) => {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -197,160 +200,162 @@ const Login = ({ closeLogin }) => {
         {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Campo de usuario */}
-          <div>
-            <label
-              htmlFor="username"
-              className="
-              block
-              text-sm
-              font-medium
-              text-gray-700
-              mb-2
-            "
-            >
-              Usuario
-            </label>
-            <div
-              className="
-              relative
-              rounded-lg
-              shadow-sm
-            "
-            >
-              <div
-                className="
-                absolute
-                inset-y-0
-                left-0
-                pl-3
-                flex
-                items-center
-                pointer-events-none
-                text-gray-400
-              "
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="
-                  block
-                  w-full
-                  pl-10
-                  pr-3
-                  py-3
-                  border
-                  border-gray-200
-                  rounded-lg
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-indigo-500
-                  focus:border-indigo-500
-                  placeholder-gray-400
-                  text-gray-800
-                  transition-all
-                  duration-200
-                "
-                placeholder="Ingresa tu usuario"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
+          {/* Campo de usuario */}
+<div>
+  <label
+    htmlFor="username"
+    className="
+      block
+      text-sm
+      font-medium
+      text-gray-700
+      mb-2
+    "
+  >
+    Usuario
+  </label>
+  <div
+    className="
+      relative
+      rounded-lg
+      shadow-sm
+    "
+  >
+    <div
+      className="
+        absolute
+        inset-y-0
+        left-0
+        pl-3
+        flex
+        items-center
+        pointer-events-none
+        text-gray-400
+      "
+    >
+      <FaUser className="h-5 w-5" />
+    </div>
+    <input
+      id="username"
+      type="text"
+      value={username}
+      onChange={(e) => setUsername(e.target.value)}
+      className="
+        block
+        w-full
+        pl-10
+        pr-3
+        py-3
+        border
+        border-gray-200
+        rounded-lg
+        focus:outline-none
+        focus:ring-2
+        focus:ring-indigo-500
+        focus:border-indigo-500
+        placeholder-gray-400
+        text-gray-800
+        transition-all
+        duration-200
+      "
+      placeholder="Ingresa tu usuario"
+      required
+      disabled={isSubmitting}
+    />
+  </div>
+</div>
 
-          {/* Campo de contraseña */}
-          <div>
-            <label
-              htmlFor="password"
-              className="
-              block
-              text-sm
-              font-medium
-              text-gray-700
-              mb-2
-            "
-            >
-              Contraseña
-            </label>
-            <div
-              className="
-              relative
-              rounded-lg
-              shadow-sm
-            "
-            >
-              <div
-                className="
-                absolute
-                inset-y-0
-                left-0
-                pl-3
-                flex
-                items-center
-                pointer-events-none
-                text-gray-400
-              "
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="
-                  block
-                  w-full
-                  pl-10
-                  pr-3
-                  py-3
-                  border
-                  border-gray-200
-                  rounded-lg
-                  focus:outline-none
-                  focus:ring-2
-                  focus:ring-indigo-500
-                  focus:border-indigo-500
-                  placeholder-gray-400
-                  text-gray-800
-                  transition-all
-                  duration-200
-                "
-                placeholder="Ingresa tu contraseña"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-          </div>
+{/* Campo de contraseña */}
+<div>
+  <label
+    htmlFor="password"
+    className="
+      block
+      text-sm
+      font-medium
+      text-gray-700
+      mb-2
+    "
+  >
+    Contraseña
+  </label>
+  <div
+    className="
+      relative
+      rounded-lg
+      shadow-sm
+    "
+  >
+    <div
+      className="
+        absolute
+        inset-y-0
+        left-0
+        pl-3
+        flex
+        items-center
+        pointer-events-none
+        text-gray-400
+      "
+    >
+      <FaLock className="h-5 w-5" />
+    </div>
+
+    <input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="
+        block
+        w-full
+        pl-10
+        pr-10
+        py-3
+        border
+        border-gray-200
+        rounded-lg
+        focus:outline-none
+        focus:ring-2
+        focus:ring-indigo-500
+        focus:border-indigo-500
+        placeholder-gray-400
+        text-gray-800
+        transition-all
+        duration-200
+      "
+      placeholder="Ingresa tu contraseña"
+      required
+      disabled={isSubmitting}
+    />
+
+    {/* Botón para mostrar/ocultar contraseña */}
+    <button
+      type="button"
+      onClick={() => setShowPassword(prev => !prev)}
+      className="
+        absolute
+        inset-y-0
+        right-0
+        pr-3
+        flex
+        items-center
+        text-gray-400
+        hover:text-gray-600
+        focus:outline-none
+        transition-colors
+        duration-200
+      "
+      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+    >
+      {showPassword ? (
+        <HiEye className="h-5 w-5" />
+      ) : (
+        <HiEyeOff className="h-5 w-5" />
+      )}
+    </button>
+  </div>
+</div>
 
           {/* Mensajes de estado */}
           {(isLoading || fetchError || loginError) && (

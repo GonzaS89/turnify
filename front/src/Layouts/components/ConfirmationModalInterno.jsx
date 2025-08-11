@@ -6,12 +6,11 @@ import { useParams ,useNavigate } from "react-router";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
 import useConsultorioxId from "../../../customHooks/useConsultorioxId";
 
-const ConfirmationModal = ({
-
+const ConfirmationModalInterno = ({
   formData,
   selectedTurno,
   ordenTurno,
-  actualizarTurnos,
+  actualizarTurnos
 }) => {
 
  const {consultorioId} = useParams();
@@ -29,7 +28,9 @@ const ConfirmationModal = ({
   const { consultorio:consul, isLoading: loadingConsultorio, error: errorConsultorio } = useConsultorioxId(consultorioId);
  
   const profesional = prof[0];
-  const consultorio = consul[0]
+  const consultorio = consul[0];
+
+  console.log(profesional, consultorio)
 
   const coberturaElegida = coberturas?.find(
     (cobertura) => cobertura.id == formData?.selectedOption
@@ -97,8 +98,8 @@ const ConfirmationModal = ({
        // Llama a la función de cierre y reseteo
         // Llama a la prop onClose del padre
      
-        navigate("/")
-        actualizarTurnos(); // Llama a la función para actualizar los turnos en el componente padre
+        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`)
+  
 
         // Recarga la página para reflejar los cambios
         window.scrollTo(0, 0); // Vuelve al inicio de la página
@@ -280,4 +281,4 @@ const ConfirmationModal = ({
   );
 };
 
-export default ConfirmationModal;
+export default ConfirmationModalInterno;

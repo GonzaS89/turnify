@@ -14,6 +14,10 @@ import SearchModal from "./Layouts/components/SearchModal";
 import TurnSelectModal from "./Layouts/components/TurnSelectModal";
 import UserFormModal from "./Layouts/components/UserFormModal";
 import ConfirmationModal from "./Layouts/components/ConfirmationModal";
+import ConfirmationModalInterno from "./Layouts/components/ConfirmationModalInterno";
+import UserFormModalInterno from "./Layouts/components/UserFormModalInterno";
+import TurnList from "./Layouts/TurnList";
+import GenerarTurnosModal from "./Layouts/components/GenerarTurnosModal";
 
 
 const App = () => {
@@ -37,6 +41,7 @@ const App = () => {
   };
 
   const recibirTurnoYOrden = (turno, orden) => {
+    console.log(turnoSeleccionado)
     setTurnoSeleccionado(turno); // Actualiza el turno seleccionado
     setOrdenTurno(orden); // Actualiza el índice del turno seleccionado
   };
@@ -69,7 +74,7 @@ const App = () => {
 
               <Route
                 path="/micuenta"
-                element={<UserDashboard  />}
+                element={<UserDashboard />}
               />
 
               <Route path="/crearconsultorio" element={<CrearConsultorio />} />
@@ -79,6 +84,10 @@ const App = () => {
               <Route path="/seleccionfecha/:consultorioId/:profesionalId" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
               <Route path="/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModal onSubmit={recibirDataFormulario}/>}/>
               <Route path="/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
+              <Route path="/micuenta/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModalInterno onSubmit={recibirDataFormulario}/>}/>
+              <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
+              <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
+              <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />}/>
  
             </Routes>
           </main>

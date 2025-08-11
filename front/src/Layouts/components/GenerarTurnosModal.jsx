@@ -1,42 +1,63 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router";
 
-const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, actualizarTurnos }) => {
+const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
-  const [numberOfTurns, setNumberOfTurns] = useState('');
   const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [duracionTurno, setDuracionTurno] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Previene el scroll del fondo
-  // Nota: Para producción, considera usar un hook o efecto para manejar esto
-  document.body.style.overflow = 'hidden'; // Bloquea scroll del body
-  // Si esto causa problemas, puedes manejarlo en el padre o con un effect
+  document.body.style.overflow = 'hidden';
+
+  const navigate = useNavigate();
+
+  const {consultorioId} = useParams();
+  const {profesionalId} = useParams();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Calcular cantidad de turnos basados en rango horario
+  const calculatedTurns = useMemo(() => {
+    if (!selectedDate || !startTime || !endTime || duracionTurno <= 0) {
+      return 0;
+    }
+
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+
+    if (end <= start) {
+      return 0; // Hora final inválida
+    }
+
+    const diffMs = end - start;
+    const diffMins = diffMs / (1000 * 60);
+    return Math.floor(diffMins / duracionTurno);
+  }, [selectedDate, startTime, endTime, duracionTurno]);
+
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
-    setNumberOfTurns('');
     setStartTime('');
-  };
-
-  const handleNumberOfTurnsChange = (e) => {
-    const value = Math.max(0, parseInt(e.target.value) || 0);
-    setNumberOfTurns(value.toString());
+    setEndTime('');
   };
 
   const handleStartTimeChange = (e) => {
     setStartTime(e.target.value);
+    // Opcional: limpiar endTime si startTime cambia
+    if (endTime && new Date(`2000-01-01T${e.target.value}`) >= new Date(`2000-01-01T${endTime}`)) {
+      setEndTime('');
+    }
+  };
+
+  const handleEndTimeChange = (e) => {
+    setEndTime(e.target.value);
   };
 
   const handleDuracionChange = (e) => {
     const value = parseInt(e.target.value) || 30;
-    if (value < 5) {
-      setDuracionTurno(5);
-    } else {
-      setDuracionTurno(value);
-    }
+    setDuracionTurno(value < 5 ? 5 : value);
   };
 
   const handleEnableTurns = async () => {
@@ -44,16 +65,24 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
       alert("Por favor, selecciona una fecha.");
       return;
     }
-    if (!numberOfTurns || parseInt(numberOfTurns) <= 0) {
-      alert("Por favor, ingresa un número válido de turnos.");
-      return;
-    }
     if (!startTime) {
       alert("Por favor, selecciona una hora de inicio.");
       return;
     }
+    if (!endTime) {
+      alert("Por favor, selecciona una hora de finalización.");
+      return;
+    }
+    if (new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`)) {
+      alert("La hora de finalización debe ser posterior a la hora de inicio.");
+      return;
+    }
     if (duracionTurno < 5) {
       alert("La duración mínima del turno es 5 minutos.");
+      return;
+    }
+    if (calculatedTurns <= 0) {
+      alert(`No se pueden generar turnos con una duración de ${duracionTurno} min en este rango horario.`);
       return;
     }
 
@@ -66,13 +95,15 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          consultorioId: consultorio,
-          profesionalId: medico,
+          consultorioId,
+          profesionalId,
           fecha: selectedDate,
-          cantidadTurnos: parseInt(numberOfTurns),
+          cantidadTurnos: calculatedTurns,
           horaInicio: startTime,
-          duracionTurno: duracionTurno,
+          duracion: duracionTurno
         }),
+
+       
       });
 
       if (!response.ok) {
@@ -80,16 +111,14 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
         throw new Error(errorData.message || 'Error al habilitar turnos');
       }
 
+      navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
+
       const result = await response.json();
 
       setShowSuccessToast(true);
 
       setTimeout(() => {
-        closeModalHabilitarTurnos();
-        actualizarTurnos();
-        setSelectedDate('');
-        setNumberOfTurns('');
-        setStartTime('');
+        
         setDuracionTurno(30);
         setShowSuccessToast(false);
       }, 2000);
@@ -102,37 +131,30 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
 
   const formattedDate = selectedDate
     ? (() => {
-        const [year, month, day] = selectedDate.split('-');
-        const date = new Date(+year, +month - 1, +day);
-        return isNaN(date.getTime())
-          ? 'fecha inválida'
-          : date.toLocaleDateString('es-AR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            });
-      })()
+      const [year, month, day] = selectedDate.split('-');
+      const date = new Date(+year, +month - 1, +day);
+      return isNaN(date.getTime())
+        ? 'fecha inválida'
+        : date.toLocaleDateString('es-AR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+    })()
     : '';
 
   return (
     <>
       {/* Overlay del modal */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        {/* Contenedor del modal */}
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
-          {/* Header del modal */}
+          {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-2xl font-bold text-gray-800">Habilitar Turnos</h3>
               <button
-                onClick={() => {
-                  closeModalHabilitarTurnos();
-                  setSelectedDate('');
-                  setNumberOfTurns('');
-                  setStartTime('');
-                  setDuracionTurno(30);
-                }}
+                  onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +162,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
                 </svg>
               </button>
             </div>
-            <p className="text-gray-600 mt-2">Selecciona la fecha, hora de inicio, duración y cantidad de turnos.</p>
+            <p className="text-gray-600 mt-2">Define el rango horario y duración. Los turnos se generarán automáticamente.</p>
           </div>
 
           {/* Cuerpo scrollable */}
@@ -162,12 +184,12 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
             {selectedDate && (
               <>
                 <div className="mb-6">
-                  <label htmlFor="turn-time" className="block text-gray-700 font-semibold mb-2">
+                  <label htmlFor="turn-start-time" className="block text-gray-700 font-semibold mb-2">
                     Hora de inicio:
                   </label>
                   <input
                     type="time"
-                    id="turn-time"
+                    id="turn-start-time"
                     value={startTime}
                     onChange={handleStartTimeChange}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -175,50 +197,87 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="duracion-turno" className="block text-gray-700 font-semibold mb-2">
-                    Duración del turno (minutos):
+                  <label htmlFor="turn-end-time" className="block text-gray-700 font-semibold mb-2">
+                    Hora de finalización:
                   </label>
                   <input
-                    type="number"
-                    id="duracion-turno"
-                    value={duracionTurno}
-                    onChange={handleDuracionChange}
-                    min="5"
-                    step="5"
-                    placeholder="Ej: 30"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="time"
+                    id="turn-end-time"
+                    value={endTime}
+                    onChange={handleEndTimeChange}
+                    min={startTime || undefined}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
-                  <p className="text-gray-500 text-sm mt-1">Recomendado: 15, 30, 45 o 60 minutos</p>
+                  {endTime && new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`) && (
+                    <p className="text-red-500 text-sm mt-1">Debe ser posterior a la hora de inicio.</p>
+                  )}
                 </div>
 
                 <div className="mb-6">
-                  <label htmlFor="num-turns" className="block text-gray-700 font-semibold mb-2">
-                    Cantidad de turnos:
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Duración del turno (minutos):
                   </label>
-                  <input
-                    type="number"
-                    id="num-turns"
-                    value={numberOfTurns}
-                    onChange={handleNumberOfTurnsChange}
-                    min="1"
-                    placeholder="Ej: 10"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDuracionTurno(prev => (prev < 10 ? 5 : prev - 5))}
+                      className="px-3 py-1 bg-gray-300 text-gray-800 rounded-lg font-bold hover:bg-gray-400 transition"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      value={duracionTurno}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (!isNaN(value) && value >= 5) {
+                          setDuracionTurno(value);
+                        } else if (e.target.value === '') {
+                          setDuracionTurno(30); // valor temporal si borra
+                        }
+                      }}
+                      min="5"
+                      className="flex-1 p-3 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setDuracionTurno(prev => prev + 5)}
+                      className="px-3 py-1 bg-gray-300 text-gray-800 rounded-lg font-bold hover:bg-gray-400 transition"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p className="text-gray-500 text-sm mt-1">Recomendado: 15, 30, 45 o 60 minutos</p>
                 </div>
+
+                {/* Mostrar cantidad calculada de turnos */}
+                {calculatedTurns > 0 && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-800 font-semibold">
+                      Se generarán <strong>{calculatedTurns}</strong> turnos.
+                    </p>
+                    <p className="text-green-700 text-sm">
+                      Desde <strong>{startTime}</strong> hasta <strong>{endTime}</strong>, cada {duracionTurno} min.
+                    </p>
+                  </div>
+                )}
+
+                {calculatedTurns === 0 && startTime && endTime && (
+                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-800 text-sm">
+                      No se pueden generar turnos completos en este rango horario con duración de {duracionTurno} min.
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </div>
 
-          {/* Footer con botones */}
+          {/* Footer */}
           <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
             <button
-              onClick={() => {
-                closeModalHabilitarTurnos();
-                setSelectedDate('');
-                setNumberOfTurns('');
-                setStartTime('');
-                setDuracionTurno(30);
-              }}
+              onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
               className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
               disabled={isSubmitting}
             >
@@ -226,10 +285,11 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
             </button>
             <button
               onClick={handleEnableTurns}
-              disabled={isSubmitting}
-              className={`px-5 py-2 rounded-lg font-semibold text-white transition-colors duration-200 ${
-                isSubmitting ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-              }`}
+              disabled={isSubmitting || calculatedTurns <= 0}
+              className={`px-5 py-2 rounded-lg font-semibold text-white transition-colors duration-200 ${isSubmitting || calculatedTurns <= 0
+                  ? 'bg-green-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700'
+                }`}
             >
               {isSubmitting ? (
                 <div className="flex items-center">
@@ -240,7 +300,7 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
                   Habilitando...
                 </div>
               ) : (
-                'Habilitar'
+                `Habilitar ${calculatedTurns > 0 ? calculatedTurns : ''} turno${calculatedTurns !== 1 ? 's' : ''}`
               )}
             </button>
           </div>
@@ -250,9 +310,9 @@ const GenerarTurnosModal = ({ closeModalHabilitarTurnos, medico, consultorio, ac
       {/* Toast de éxito */}
       {showSuccessToast && (
         <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[201]">
-          Se agregaron {numberOfTurns} turnos para el{' '}
-          <strong>{formattedDate}</strong> a partir de las <strong>{startTime}</strong>
-          , cada uno de <strong>{duracionTurno} min</strong>.
+          Se agregaron <strong>{calculatedTurns}</strong> turnos para el{' '}
+          <strong>{formattedDate}</strong> de <strong>{startTime}</strong> a <strong>{endTime}</strong>,
+          cada uno de <strong>{duracionTurno} min</strong>.
         </div>
       )}
     </>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { FaTimesCircle, FaCheckCircle, FaUser, FaInfoCircle, FaCalendarAlt, FaIdCard, FaShieldAlt, FaPhone, FaTimes, FaPlus, FaTrashAlt } from 'react-icons/fa';
 import { TbRefresh } from "react-icons/tb";
+import { useParams, useNavigate } from 'react-router';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
 import useAllCoberturas from '../../customHooks/useAllCoberturas';
 import useProfesionalxId from '../../customHooks/useProfesionalxId';
@@ -14,15 +15,34 @@ import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsult
 import useConsultorioxId from '../../customHooks/useConsultorioxId';
 
 const TurnList = ({
-  profesionalId,
-  consultorioId,
   onClose,
-  openModalHabilitarTurnos,
-  refreshTrigger,
   tipoConsultorio,
-  handleActualizarTurnos
+  enviarTurnoYOrden
 }) => {
-  const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
+  const navigate = useNavigate();
+  const { consultorioId } = useParams();
+  const { profesionalId } = useParams();
+
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleActualizarTurnos = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  // Refresco automático cada 5 minutos (300000 ms)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleActualizarTurnos();
+    }, 300000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(
+    profesionalId,
+    consultorioId,
+    refreshTrigger
+  );
   const { coberturas, isLoading: isLoadingCoberturas, error: errorCoberturas } = useAllCoberturas();
   const { profesional, isLoading: isLoadingProfesionales, error: errorProfesionales } = useProfesionalxId(profesionalId);
   const { consultorio, isLoading: isLoadingConsultorio, error: errorConsultorio } = useConsultorioxId(consultorioId);
@@ -35,6 +55,8 @@ const TurnList = ({
   const [showUserFormModal, setShowUserFormModal] = useState(false);
 
   const datesListRef = useRef(null);
+
+  console.log(turnos)
 
   // Agrupar turnos por fecha
   const turnosAgrupados = turnos.reduce((acc, turno) => {
@@ -50,8 +72,9 @@ const TurnList = ({
 
   const tapButtonAsignar = (turno, idx) => {
     setOrdenTurno(idx + 1);
-    setShowUserFormModal(true);
+    navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     setSelectedTurno(turno);
+    enviarTurnoYOrden(turno, idx + 1);
   };
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
@@ -93,8 +116,18 @@ const TurnList = ({
     return `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
   };
 
+  // ✅ Nueva función: calcular hora de finalización
+  const calcularHoraFin = (horaInicio, duracionMinutos) => {
+    if (!horaInicio || !duracionMinutos) return '';
+    const [horas, minutos] = horaInicio.split(':').map(Number);
+    const fechaInicio = new Date();
+    fechaInicio.setHours(horas, minutos, 0, 0);
+    const fechaFin = new Date(fechaInicio.getTime() + duracionMinutos * 60000);
+    return fechaFin.toTimeString().slice(0, 5); // Formato HH:mm
+  };
+
   const handleAgregarTurnoClick = () => {
-    openModalHabilitarTurnos();
+    navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
   };
 
   const overallLoading = isLoading || isLoadingCoberturas;
@@ -104,7 +137,6 @@ const TurnList = ({
 
   const handleBorrarTodosLosTurnos = () => {
     setShowModalBorrarTodosLosTurnos(true);
-    console.log('clickeado borrar todos los turnos', consultorioId, profesionalId, fechaSeleccionada);
   };
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -170,7 +202,7 @@ const TurnList = ({
               <FaCalendarAlt className="w-5 h-5 text-blue-500" />
               Tu Agenda
             </h2>
-            <button onClick={onClose} className="text-white hover:text-gray-200">
+            <button onClick={() => navigate('/micuenta')} className="text-white hover:text-gray-200">
               <FaTimes className="w-5 h-5" />
             </button>
           </div>
@@ -233,7 +265,7 @@ const TurnList = ({
                 <FaPlus /> Habilitar Turnos
               </button>
               <button
-                onClick={onClose}
+                onClick={() => navigate('/micuenta')}
                 className="w-full px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
               >
                 Volver
@@ -274,7 +306,7 @@ const TurnList = ({
               <span className="hidden sm:inline">Agregar</span>
             </button>
             <button
-              onClick={onClose}
+              onClick={() => navigate('/micuenta')}
               className="text-gray-600 hover:text-gray-200 p-1.5 rounded-full hover:bg-white hover:bg-opacity-20 transition"
               aria-label="Cerrar"
             >
@@ -306,10 +338,11 @@ const TurnList = ({
                     key={fecha}
                     data-date={fecha}
                     onClick={() => setFechaSeleccionada(fecha)}
-                    className={`min-w-36 lg:min-w-0 p-4 rounded-xl text-left transition-all duration-200 text-sm ${isSelected
+                    className={`min-w-36 lg:min-w-0 p-4 rounded-xl text-left transition-all duration-200 text-sm ${
+                      isSelected
                         ? 'bg-blue-500 text-white shadow-md'
                         : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200'
-                      }`}
+                    }`}
                   >
                     <div className="font-semibold">
                       {(() => {
@@ -318,19 +351,20 @@ const TurnList = ({
                         return isNaN(date.getTime())
                           ? 'Fecha inválida'
                           : date.toLocaleDateString('es-AR', {
-                            weekday: 'short',
-                            day: '2-digit',
-                            month: 'short',
-                          });
+                              weekday: 'short',
+                              day: '2-digit',
+                              month: 'short',
+                            });
                       })()}
                     </div>
                     <div
-                      className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${isSelected
+                      className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
+                        isSelected
                           ? 'bg-white text-blue-600'
                           : disponibles > 0
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
                     >
                       {disponibles} disp.
                     </div>
@@ -339,8 +373,9 @@ const TurnList = ({
                         {turnos.map((t) => (
                           <div
                             key={t.id}
-                            className={`w-3 h-3 rounded-full ${t.estado === 'reservado' ? 'bg-red-400' :
-                                t.estado === 'disponible' ? 'bg-green-400' : 'bg-blue-400'}
+                            className={`w-3 h-3 rounded-full ${
+                              t.estado === 'reservado' ? 'bg-red-400' :
+                              t.estado === 'disponible' ? 'bg-green-400' : 'bg-blue-400'
                             }`}
                           />
                         ))}
@@ -354,29 +389,29 @@ const TurnList = ({
 
           {/* Detalles de turnos */}
           <div className="w-full lg:w-2/3 overflow-y-auto p-6 relative">
-            <div className='flex items-center justify-between mb-4'>
+            <div className="flex items-center justify-between mb-4">
               <h4 className="text-xl font-semibold text-gray-800">
                 {fechaSeleccionada
                   ? (() => {
-                    const [year, month, day] = fechaSeleccionada.split('-');
-                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                    return isNaN(date.getTime())
-                      ? 'Fecha inválida'
-                      : date.toLocaleDateString('es-AR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      });
-                  })()
+                      const [year, month, day] = fechaSeleccionada.split('-');
+                      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                      return isNaN(date.getTime())
+                        ? 'Fecha inválida'
+                        : date.toLocaleDateString('es-AR', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          });
+                    })()
                   : 'Seleccioná una fecha en el panel izquierdo'}
               </h4>
               {fechaSeleccionada && (
                 <button
-                  className='bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm'
-                  onClick={() => handleBorrarTodosLosTurnos()}
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm"
+                  onClick={handleBorrarTodosLosTurnos}
                 >
-                  {isSmallScreen ? <FaTrashAlt className='w-4 h-4' /> : 'Borrar Todos los Turnos'}
+                  {isSmallScreen ? <FaTrashAlt className="w-4 h-4" /> : 'Borrar Todos los Turnos'}
                 </button>
               )}
             </div>
@@ -404,36 +439,58 @@ const TurnList = ({
                   .map((turno, idx) => (
                     <div
                       key={turno.id}
-                      className={`p-5 rounded-xl border-l-4 transition-all ${turno.estado === 'reservado'
-                          ? 'bg-red-50 border-red-500' :
-                          turno.estado === 'disponible' ? 'bg-green-50 border-green-500'
-                            : 'bg-blue-100 border-blue-500'
-                        }`}
+                      className={`p-5 rounded-xl border-l-4 transition-all ${
+                        turno.estado === 'reservado'
+                          ? 'bg-red-50 border-red-500'
+                          : turno.estado === 'disponible'
+                          ? 'bg-green-50 border-green-500'
+                          : 'bg-blue-100 border-blue-500'
+                      }`}
                     >
                       <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-bold text-lg ${turno.estado === 'reservado' ? 'text-red-600' :
-                                turno.estado === 'disponible' ? 'text-green-600' : 'text-blue-600'
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`font-bold text-lg ${
+                                turno.estado === 'reservado'
+                                  ? 'text-red-600'
+                                  : turno.estado === 'disponible'
+                                  ? 'text-green-600'
+                                  : 'text-blue-600'
                               }`}
-                          >
-                            #{idx + 1}
-                          </span>
-                          {turno.hora && (
-                            <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
+                            >
+                              #{idx + 1}
+                            </span>
+                            {turno.hora && turno.duracion ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-700 font-medium">
+                                  {formatearHora(turno.hora)} - {calcularHoraFin(turno.hora, turno.duracion)}
+                                </span>
+                                <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                                  {turno.duracion}'
+                                </span>
+                              </div>
+                            ) : turno.hora ? (
+                              <span className="text-gray-700 font-medium">{formatearHora(turno.hora)}</span>
+                            ) : null}
+                          </div>
+                          {/* Mostrar advertencia si no tiene duración (temporal) */}
+                          {turno.hora && !turno.duracion && (
+                            <span className="text-xs text-yellow-600 mt-1">Duración no definida</span>
                           )}
                         </div>
                         <div className="flex items-center gap-3">
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${turno.estado === 'reservado'
-                                ? 'bg-red-100 text-red-800' :
-                                turno.estado === 'disponible'
-                                  ? 'bg-green-100 text-green-800' :
-                                  'bg-white text-blue-800'
-                              }`}
+                            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
+                              turno.estado === 'reservado'
+                                ? 'bg-red-100 text-red-800'
+                                : turno.estado === 'disponible'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-white text-blue-800'
+                            }`}
                           >
                             {turno.estado === 'reservado' ? 'Ocupado' :
-                              turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
+                             turno.estado === 'disponible' ? 'Disponible' : 'Finalizado'}
                           </span>
                           {turno.estado === 'disponible' && (
                             <button
@@ -447,42 +504,39 @@ const TurnList = ({
                         </div>
                       </div>
 
-                      {/* Botones de acción (mejorados para mobile) */}
+                      {/* Botones de acción */}
                       {turno.estado === 'reservado' ? (
-  <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
-    {/* Botón: Marcar como finalizado */}
-    <button
-      onClick={() => handleModificarEstadoTurno(turno.id)}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
-      title="Marcar como finalizado"
-    >
-      <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-      <span className="hidden sm:inline">Marcar como finalizado</span>
-      <span className="inline sm:hidden">Fin</span>
-    </button>
+                        <div className="flex flex-wrap gap-2 sm:gap-3 mt-2 sm:mt-0">
+                          <button
+                            onClick={() => handleModificarEstadoTurno(turno.id)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white text-xs font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
+                            title="Marcar como finalizado"
+                          >
+                            <FaCheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="hidden sm:inline">Marcar como finalizado</span>
+                            <span className="inline sm:hidden">Fin</span>
+                          </button>
+                          <button
+                            onClick={() => handleLiberarTurno(turno.id)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
+                            title="Liberar turno"
+                          >
+                            <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="hidden sm:inline">Liberar</span>
+                            <span className="inline sm:hidden">Lib</span>
+                          </button>
+                        </div>
+                      ) : turno.estado === 'disponible' && (
+                        <button
+                          onClick={() => tapButtonAsignar(turno, idx)}
+                          className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-10"
+                        >
+                          <FaPlus className="w-3.5 h-3.5" />
+                          <span>Asignar turno</span>
+                        </button>
+                      )}
 
-    {/* Botón: Liberar turno */}
-    <button
-      onClick={() => handleLiberarTurno(turno.id)}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-600 transition-all duration-200 min-w-0 flex-1 sm:flex-initial min-h-10"
-      title="Liberar turno"
-    >
-      <FaTimesCircle className="w-3.5 h-3.5 flex-shrink-0" />
-      <span className="hidden sm:inline">Liberar</span>
-      <span className="inline sm:hidden">Lib</span>
-    </button>
-  </div>
-) : turno.estado === 'disponible' && (
-  <button
-    onClick={() => tapButtonAsignar(turno, idx)}
-    className="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors duration-200 min-h-10"
-  >
-    <FaPlus className="w-3.5 h-3.5" />
-    <span>Asignar turno</span>
-  </button>
-)}
-
-                      {/* Datos del paciente o mensaje */}
+                      {/* Datos del paciente */}
                       {turno.DNI && (
                         <div className="space-y-2 text-sm text-gray-700 mt-4 pt-4 border-t border-gray-200">
                           <div className="flex items-center gap-3">
@@ -508,7 +562,7 @@ const TurnList = ({
                             </div>
                           )}
                         </div>
-                      ) }
+                      )}
                     </div>
                   ))}
               </div>
@@ -537,37 +591,6 @@ const TurnList = ({
         />
       )}
 
-      {showUserFormModal && (
-        <UserFormModal
-          profesionalId={profesionalId}
-          onSubmit={handleUserFormSubmit}
-          consultorioId={consultorioId}
-          fechaSeleccionada={fechaSeleccionada}
-          onClose={() => setShowUserFormModal(false)}
-          isOpen={showUserFormModal}
-          coberturas={coberturasConsultorio}
-        />
-      )}
-
-      {showConfirmationModal && (
-        <ConfirmationModal
-          isOpen={showConfirmationModal}
-          cerrarModalTurnos={onClose}
-          onClose={() => setShowConfirmationModal(false)}
-          onConfirm={handleUserFormSubmit}
-          selectedTurno={selectedTurno}
-          ordenTurno={ordenTurno}
-          onEdit={() => {
-            setShowConfirmationModal(false);
-            setShowUserFormModal(true);
-          }}
-          formData={userFormData}
-          coberturasOptions={coberturasConsultorio}
-          profesional={profesional[0]}
-          consultorio={consultorio[0]}
-          actualizarTurnos={handleActualizarTurnos}
-        />
-      )}
     </div>
   );
 };

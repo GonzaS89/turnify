@@ -280,7 +280,7 @@ const CrearConsultorio = () => {
         </div>
 
         {/* Seña */}
-        {tipo === 'particular' && (
+        {tipo === 'Particular' && (
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -295,7 +295,7 @@ const CrearConsultorio = () => {
           </div>
         )}
 
-        {tipo === 'particular' && seña && (
+        {tipo === 'Particular' && seña && (
           <div className="bg-gray-50 p-4 rounded-md space-y-4 border border-gray-200">
             <h3 className="font-medium text-gray-800">Datos para Seña</h3>
             <div>

@@ -84,6 +84,20 @@ app.get("/api/especialidades", async (req, res) => {
   }
 })
 
+// OBTENER CODIGOS DISPONIBLES //
+
+app.get("/api/codigosdisponibles", async(req,res) => {
+  const query = 'SELECT codigo_activacion AS codigos FROM consultorios WHERE usuario is NULL';
+
+  try{
+    const [resultado] = await pool.execute(query);
+    res.json(resultado);
+  }catch{
+    console.error("Error al obtener codigos");
+    res.status(500).send("Error al obtener codigos")
+  }
+})
+
 //OBTENER LOCALIDADES SEGUN ID PROVINCIA //
 
 app.get("/api/provincias", async (req, res) => {
@@ -125,7 +139,8 @@ app.get(
           t.DNI,
           t.cobertura,
           t.telefono,
-            t.hora
+          t.hora,
+          t.duracion
 
       FROM
           turnos AS t
@@ -510,8 +525,10 @@ app.post("/api/habilitarturnos", async (req, res) => {
     fecha,
     cantidadTurnos,
     horaInicio,
-    duracionTurno = 30,
+    duracion
   } = req.body;
+
+  
 
   // Validación básica
   if (
@@ -539,8 +556,8 @@ app.post("/api/habilitarturnos", async (req, res) => {
     await connection.beginTransaction();
 
     const insertQuery = `
-        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora, duracion)
+        VALUES (?, ?, ?, ?, ?)
       `;
 
     let currentHour = horaInicio; // "08:30"
@@ -552,13 +569,14 @@ app.post("/api/habilitarturnos", async (req, res) => {
         profesionalId,
         fecha,
         currentHour,
+        duracion
       ]);
 
       // Calcular próxima hora
       const [hours, minutes] = currentHour.split(":").map(Number);
       const date = new Date();
       date.setHours(hours, minutes, 0, 0);
-      date.setMinutes(date.getMinutes() + duracionTurno);
+      date.setMinutes(date.getMinutes() + duracion);
 
       // Formatear como "HH:MM"
       const nextHours = String(date.getHours()).padStart(2, "0");

@@ -1,5 +1,6 @@
 // src/components/PanelConsultorioPropio.jsx
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router';
 import { FaCalendarAlt, FaCog, FaShieldAlt, FaStethoscope, FaIdCard } from 'react-icons/fa';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
@@ -10,7 +11,10 @@ import GestionCoberturas from './components/GestionCoberturas';
 import CrearProfesional from './cards/CrearProfesional';
 import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio, password }) => {
+const PanelConsultorioPropio = ({ consultorioData: consultorio, password, enviarTurnoYOrden }) => {
+
+  const navigate = useNavigate()
+
   const [showModal, setShowModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCoberturasModal, setShowCoberturasModal] = useState(false);
@@ -144,7 +148,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, password }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Mi Agenda */}
           <div
-            onClick={() => setShowTurnosList(true)}
+            onClick={() => navigate(`/micuenta/panelturnos/${consultorioID}/${medicoID}`)}
             className="group bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
           >
             <div className="flex items-center justify-between mb-4">
@@ -216,6 +220,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, password }) => {
               openModalHabilitarTurnos={() => setShowModal(true)}
               refreshTrigger={refreshTrigger}
               handleActualizarTurnos={actualizarTurnos}
+              enviarTurnoYOrden={enviarTurnoYOrden}
              
             />
           </div>

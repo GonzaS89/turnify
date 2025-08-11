@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import { useParams ,useNavigate } from 'react-router';
 
-const UserFormModal = ({ onSubmit }) => {
+const UserFormModalInterno = ({ onSubmit }) => {
     const [formData, setFormData] = useState({
         nombre: '',
         apellido: '',
@@ -100,7 +100,7 @@ const UserFormModal = ({ onSubmit }) => {
         }
 
         onSubmit(formData);
-        navigate(`/confirmacionturno/${consultorioId}/${profesionalId}`)
+        navigate(`/micuenta/confirmacionturno/${consultorioId}/${profesionalId}`)
     };
 
 
@@ -266,4 +266,4 @@ const UserFormModal = ({ onSubmit }) => {
     );
 };
 
-export default UserFormModal;
+export default UserFormModalInterno;

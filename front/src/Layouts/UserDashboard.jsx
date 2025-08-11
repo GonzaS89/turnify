@@ -7,7 +7,7 @@ import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
 import { RingLoader } from 'react-spinners';
 
-const UserDashboard = ({ onLogout }) => {
+const UserDashboard = ({ onLogout, enviarTurnoYOrden }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -126,7 +126,7 @@ const UserDashboard = ({ onLogout }) => {
         </header>
 
         {consultorioToUse?.tipo === 'Particular' ? (
-          <PanelConsultorioPropio consultorioData={consultorioToUse} onLogout={handleLogout} password={password}/>
+          <PanelConsultorioPropio consultorioData={consultorioToUse} onLogout={handleLogout} password={password} enviarTurnoYOrden={enviarTurnoYOrden}/>
         ) : (
           <PanelCentroMedico consultorioData={consultorioToUse} password={password}/>
         )}
