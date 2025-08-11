@@ -77,7 +77,7 @@ const App = () => {
                 element={<UserDashboard />}
               />
 
-              <Route path="/crearconsultorio" element={<CrearConsultorio />} />
+              <Route path="/crearconsultorio/:codigoValidacion" element={<CrearConsultorio />} />
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
               <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>

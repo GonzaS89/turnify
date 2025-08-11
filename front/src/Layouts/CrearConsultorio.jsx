@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import useAllProvincias from '../../customHooks/useAllProvincias';
 import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
-import { useNavigate } from 'react-router-dom';
+import { useParams ,useNavigate } from 'react-router-dom';
 
 import axios from 'axios'
 
 const CrearConsultorio = () => {
+
+  const codigoActivacion = useParams();
+
   const [direccion, setDireccion] = useState('');
   const [localidad, setLocalidad] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -19,7 +22,6 @@ const CrearConsultorio = () => {
   const [importe, setImporte] = useState('');
   const [usuario, setUsuario] = useState('');
   const [contraseña, setContraseña] = useState('');
-  const [codigo, setCodigo] = useState('');
   const [repetirContraseña, setRepetirContraseña] = useState('');
   const [mostrarContraseña, setMostrarContraseña] = useState(false);
   const [mostrarRepetir, setMostrarRepetir] = useState(false);
@@ -115,7 +117,6 @@ const CrearConsultorio = () => {
   setAlias('');
   setTitular('');
   setNombre('');
-  setCodigo('')
 
 } catch (err) {
   // Aquí manejas tanto errores de red como respuestas 4xx/5xx
@@ -273,7 +274,8 @@ const CrearConsultorio = () => {
           <input
             type="text"
             value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
+            aria-label={codigo}
+            disabled
             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             placeholder="Código de activación brindado el administrador"
           />
