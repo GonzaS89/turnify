@@ -1,28 +1,34 @@
 import { useState, useMemo } from "react";
 import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
+import useConsultorioxId from "../../../customHooks/useConsultorioxId";
 import Turno from "./Turno";
 import { useParams ,useNavigate } from "react-router-dom";
 
 const TurnSelectModal = ({
   enviarTurnoYOrden,
-  cerrarModalTurnos,
   onClose
 }) => {
 
   const navigate = useNavigate();
-  const consultorio   = useParams();
+  const { consultorioId }   = useParams();
   const { profesionalId } = useParams();
 
-
+  
   // CARGA DE CUSTOM HOOKS
-  const {
+ 
+
+  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(profesionalId);
+
+  const { consultorio: consultorios , isLoading: isLoadingConsultorios, error: errorConsultorios } = useConsultorioxId(consultorioId);
+
+  const consultorio = consultorios[0];
+
+   const {
     turnos,
     isLoading: isLoadingTurnos,
     error: errorTurnos,
   } = useProfessionalConsultorioTurnos(profesionalId, consultorio?.id);
-
-  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(profesionalId);
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
 
@@ -119,7 +125,7 @@ const TurnSelectModal = ({
   };
 
   const handleSelectTurno = (turno, index) => {
-    navigate(`/formulario-usuario/${consultorio?.id}`);
+    navigate(`/formulario-usuario/${consultorio?.id}/${profesionalId}`);
     enviarTurnoYOrden(turno, index + 1);
     onClose?.(); // Ejecuta onClose si fue pasada
   };

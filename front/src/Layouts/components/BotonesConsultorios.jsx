@@ -10,7 +10,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
 
 
   const tapButtonConsultorio = ( consultorio ) => {
-    navigate(`/seleccionfecha/${consultorio}/${profesionalId}`);
+    navigate(`/seleccionfecha/${consultorio?.id}/${profesionalId}`);
   }
 
   if (isLoading)

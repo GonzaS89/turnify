@@ -13,10 +13,9 @@ const UserFormModal = ({ onSubmit }) => {
 
     const navigate = useNavigate();
     const { consultorioId } = useParams();
+    const { profesionalId } = useParams();
 
-     const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
-
-     console.log(consultorioId)
+    const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
 
     const [options, setOptions] = useState([]);
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);
@@ -101,7 +100,7 @@ const UserFormModal = ({ onSubmit }) => {
         }
 
         onSubmit(formData);
-        navigate('/confirmacionturno')
+        navigate(`/confirmacionturno/${consultorioId}/${profesionalId}`)
     };
 
 
