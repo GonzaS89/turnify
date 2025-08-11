@@ -12,6 +12,13 @@ const GestionCoberturas = ({ isOpen, onClose, consultorioId }) => {
     const { coberturas: activeCoberturas, isLoading, error, refetch} = useCoberturaxIdConsultorio(consultorioId);
     const { coberturas: allCoberturas, isLoading: isLoadingAllCoberturas, error: errorAllCoberturas } = useAllCoberturas();
 
+    const mostrarCoberturas = () => {
+      allCoberturas.map((cobertura) => {
+        console.log(cobertura.nombre)
+      })
+    }
+
+    mostrarCoberturas()
     const coberturaIncluded = id => activeCoberturas?.some(cobertura => cobertura.id === id);
 
     // Filtrar las coberturas activas y las disponibles para añadir según el término de búsqueda
