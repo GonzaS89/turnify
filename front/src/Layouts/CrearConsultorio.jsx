@@ -291,8 +291,8 @@ const CrearConsultorio = () => {
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
-                      value="particular"
-                      checked={tipo === 'particular'}
+                      value="Particular"
+                      checked={tipo === 'Particular'}
                       onChange={(e) => setTipo(e.target.value)}
                       className="sr-only"
                     />
