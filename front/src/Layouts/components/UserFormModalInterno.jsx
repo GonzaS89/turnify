@@ -248,7 +248,7 @@ const UserFormModalInterno = ({ onSubmit }) => {
                     required
                   >
                     <option value="" disabled>Seleccionar cobertura</option>
-                    <option value="particular">Particular</option>
+                    <option value="Particular">Particular</option>
                     {options.map((opt) => (
                       <option key={opt.id} value={opt.id}>
                         {opt.siglas} - {opt.nombre}
