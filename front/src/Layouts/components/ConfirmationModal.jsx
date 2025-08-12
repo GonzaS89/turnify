@@ -13,8 +13,7 @@ import useConsultorioxId from "../../../customHooks/useConsultorioxId";
 const ConfirmationModal = ({
   formData,
   selectedTurno,
-  ordenTurno,
-  actualizarTurnos,
+  ordenTurno
 }) => {
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
@@ -83,7 +82,7 @@ const ConfirmationModal = ({
       setIsSuccess(true);
 
       setTimeout(() => {
-        navigate(`/confirmacionturno/${consultorio?.id}/${profesional?.id}`);
+        navigate('/');
       }, 2000);
     } catch (error) {
       const errorMessage =
@@ -105,7 +104,7 @@ const ConfirmationModal = ({
         onClick={() => !isSubmitting && navigate(-1)}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-md transform transition-all hover:scale-[1.01] h-screen lg:max-h-[90vh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-md transform transition-all hover:scale-[1.01] h-[100dvh] lg:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -224,7 +223,7 @@ const ConfirmationModal = ({
 
           {/* Footer */}
           <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            {!isSuccess ? (
+            {!isSuccess && (
               <>
                 <button
                   type="button"
@@ -254,16 +253,16 @@ const ConfirmationModal = ({
                   )}
                 </button>
               </>
-            ) : (
-              <button
-                type="button"
-                onClick={() =>
-                  navigate('/')
-                }
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
-              >
-                Volver al Panel
-              </button>
+            // ) : (
+            //   <button
+            //     type="button"
+            //     onClick={() =>
+            //       navigate('/')
+            //     }
+            //     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
+            //   >
+            //     Volver al Panel
+            //   </button>
             )}
           </div>
         </div>

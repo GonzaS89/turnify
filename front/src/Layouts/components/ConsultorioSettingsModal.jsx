@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaBuilding, FaUserShield, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router';
 import useConsultorioxId from '../../../customHooks/useConsultorioxId';
@@ -7,8 +7,16 @@ const ConsultorioSettingsModal = ({ password }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
 
-  // Previene scroll del fondo
-  document.body.style.overflow = 'hidden';
+  useEffect(() => {
+    // Bloquea el scroll al montar
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Restaura el scroll al desmontar
+    return () => {
+      document.body.style.overflow = prevOverflow || 'auto';
+    };
+  }, []);
 
   const { consultorioId } = useParams();
 

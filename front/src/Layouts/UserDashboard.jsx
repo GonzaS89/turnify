@@ -122,7 +122,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
           </h1>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 rounded-xl text-white font-semibold transition backdrop-blur-sm border border-white/30"
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-700/90 hover:bg-red-700/50 rounded-xl text-white font-semibold transition backdrop-blur-sm border border-white/30"
             aria-label="Cerrar sesión"
           >
             <FaSignOutAlt /> Cerrar Sesión
