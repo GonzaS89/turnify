@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import useAllCoberturas from '../../../customHooks/useAllCoberturas';
 import { FaSearch, FaPlusCircle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
@@ -23,8 +23,16 @@ const GestionCoberturas = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Previene scroll del fondo
-  document.body.style.overflow = 'hidden';
+  useEffect(() => {
+    // Bloquea el scroll al montar
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Restaura el scroll al desmontar
+    return () => {
+      document.body.style.overflow = prevOverflow || 'auto';
+    };
+  }, []);
 
   const activeCoverageIds = new Set(activeCoberturas?.map(c => c.id) || []);
   const filteredAllCoberturas = allCoberturas?.filter(cobertura =>

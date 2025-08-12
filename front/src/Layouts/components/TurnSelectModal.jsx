@@ -162,7 +162,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
                 <FaHospital className="text-sm" />
               )}
               <span>
-                {consultorio.tipo === "particular"
+                {consultorio.tipo === "Particular"
                   ? "Consultorio Particular"
                   : `Centro Médico ${consultorio.nombre}`}
               </span>

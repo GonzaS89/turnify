@@ -126,15 +126,15 @@ const GenerarTurnosModal = () => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
         onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen max-w-md h-screen lg:h-auto transform transition-all hover:scale-[1.01]"
+          className="bg-white rounded-2xl shadow-2xl w-screen max-w-md h-auto transform transition-all hover:scale-[1.01]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FaCalendarAlt className="text-2xl" />

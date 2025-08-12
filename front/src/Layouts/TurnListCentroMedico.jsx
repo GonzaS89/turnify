@@ -200,7 +200,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         >
           {/* Encabezado */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
+            <h2 className="text-xl lg:text-2xl font-bold flex items-center gap-3">
               <FaCalendarAlt /> {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${nombreMedico}`}
             </h2>
             <div className="flex items-center gap-2">

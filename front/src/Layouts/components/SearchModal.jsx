@@ -81,7 +81,7 @@ const SearchModal = ({ enviarIds }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center xl:p-4 z-50">
-      <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 shadow-2xl border border-white/40 xl:rounded-3xl w-full xl:max-w-7xl h-screen xl:h-[90vh] flex flex-col relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 shadow-2xl border border-white/40 xl:rounded-3xl w-full xl:max-w-7xl h-[100dvh] xl:h-[90vh] flex flex-col relative overflow-hidden">
         
         {/* Overlay de grid sutil */}
         <div
