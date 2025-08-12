@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const useProfesionalxIdConsultorio = (consultorioId) => {
+const useProfesionalxIdConsultorio = (consultorioId, refreshProfesionales = null ) => {
     const [profesional, setProfesional] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -46,7 +46,7 @@ const useProfesionalxIdConsultorio = (consultorioId) => {
 
         // Llama a la función de fetching cuando el componente se monta o professionalId cambia
         fetchProfesional();
-    }, [consultorioId]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
+    }, [consultorioId, refreshProfesionales]); // Dependencias del efecto: re-ejecutar si professionalId o baseUrl cambian
 
     // El hook devuelve los datos, el estado de carga y el error
     return { profesional, isLoading, error };

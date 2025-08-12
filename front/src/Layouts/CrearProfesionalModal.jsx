@@ -1,21 +1,35 @@
-import { useState } from 'react';
-import axios from 'axios';
-import useAllEspecialidades from '../../customHooks/useAllEspecialidades';
-import { FaTimes, FaUserMd, FaStethoscope, FaIdCard, FaGraduationCap, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState } from "react";
+import axios from "axios";
+import useAllEspecialidades from "../../customHooks/useAllEspecialidades";
+import {
+  FaTimes,
+  FaUserMd,
+  FaStethoscope,
+  FaIdCard,
+  FaGraduationCap,
+  FaPhone,
+  FaExclamationCircle,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CrearProfesionalModal = ({ onClose, onCreate }) => {
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [especialidad, setEspecialidad] = useState('');
-  const [matricula, setMatricula] = useState('');
-  const [titulo, setTitulo] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [especialidad, setEspecialidad] = useState("");
+  const [matricula, setMatricula] = useState("");
+  const [titulo, setTitulo] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
-  const { especialidades, isLoading: loading, error: hookError } = useAllEspecialidades();
+  const {
+    especialidades,
+    isLoading: loading,
+    error: hookError,
+  } = useAllEspecialidades();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -24,44 +38,63 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
     setMensajeError(null);
     setMensaje(null);
 
-    if (!nombre.trim()) return setMensajeError('El nombre es obligatorio.');
-    if (!apellido.trim()) return setMensajeError('El apellido es obligatorio.');
-    if (!especialidad) return setMensajeError('Debe seleccionar una especialidad.');
-    if (!matricula.trim()) return setMensajeError('La matrícula es obligatoria.');
-    if (matricula.trim().length < 3) return setMensajeError('La matrícula debe tener al menos 3 caracteres.');
+    // Validaciones
+    if (!nombre.trim()) return setMensajeError("El nombre es obligatorio.");
+    if (!apellido.trim()) return setMensajeError("El apellido es obligatorio.");
+    if (!especialidad)
+      return setMensajeError("Debe seleccionar una especialidad.");
+    if (!matricula.trim())
+      return setMensajeError("La matrícula es obligatoria.");
+    if (matricula.trim().length < 3)
+      return setMensajeError("La matrícula debe tener al menos 3 caracteres.");
+
+    // Validación de teléfono: exactamente 10 dígitos
+    const telefonoLimpio = telefono.replace(/\D/g, ""); // Solo números
+    if (telefonoLimpio.length !== 10) {
+      return setMensajeError("El teléfono debe tener exactamente 10 dígitos.");
+    }
 
     try {
       const nuevoProfesional = {
         nombre: nombre.trim(),
         apellido: apellido.trim(),
-        especialidad,
-        titulo,
+        especialidad: especialidad || "",
+        titulo: titulo || "",
         matricula: matricula.trim(),
+        telefono: telefonoLimpio,
       };
 
-      const response = await axios.post(`${API_URL}/api/crearprofesional`, nuevoProfesional);
+      console.log(nuevoProfesional);
+
+      const response = await axios.post(
+        `${API_URL}/api/crearprofesional`,
+        nuevoProfesional
+      );
       const data = response.data;
 
-      setMensaje(`✅ ${data.nombre || 'El profesional'} fue creado con éxito.`);
-      toast.success('Profesional creado correctamente');
+      setMensaje(`✅ ${data.nombre || "El profesional"} fue creado con éxito.`);
+      toast.success("Profesional creado correctamente");
 
       // Limpiar formulario
-      setNombre('');
-      setApellido('');
-      setMatricula('');
-      setEspecialidad('');
-      setTitulo('');
+      setNombre("");
+      setApellido("");
+      setMatricula("");
+      setEspecialidad("");
+      setTitulo("");
+      setTelefono("");
 
       // Notificar al padre y cerrar
       setTimeout(() => {
         onClose();
         onCreate?.();
       }, 1500);
-
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.statusText || 'Error desconocido';
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Error desconocido";
       setMensajeError(`❌ ${errorMsg}`);
-      toast.error('Error al crear el profesional');
+      toast.error("Error al crear el profesional");
     }
   };
 
@@ -71,7 +104,7 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100 hover:scale-[1.01]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header con gradiente y ícono */}
+        {/* Header con gradiente */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FaUserMd className="text-2xl" />
@@ -93,12 +126,13 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
               <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
               <span className="text-sm">
-                No se pudieron cargar las especialidades. Por favor, intenta más tarde.
+                No se pudieron cargar las especialidades. Por favor, intenta más
+                tarde.
               </span>
             </div>
           )}
 
-          {/* Mensajes */}
+          {/* Mensajes de error o éxito */}
           {mensajeError && (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
               <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
@@ -113,11 +147,13 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
             </div>
           )}
 
-          {/* Cargando */}
+          {/* Cargando especialidades */}
           {loading ? (
             <div className="py-10 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
-              <p className="text-gray-500 text-sm">Cargando especialidades...</p>
+              <p className="text-gray-500 text-sm">
+                Cargando especialidades...
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -172,7 +208,8 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
               {/* Especialidad */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <FaStethoscope className="text-purple-500" /> Especialidad Médica *
+                  <FaStethoscope className="text-purple-500" /> Especialidad
+                  Médica *
                 </label>
                 <select
                   value={especialidad}
@@ -203,6 +240,35 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
                 />
               </div>
 
+              {/* Teléfono */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaPhone className="text-green-500" /> Teléfono (10 dígitos) *
+                </label>
+                <input
+                  type="tel"
+                  value={telefono}
+                  onChange={(e) => {
+                    // Solo permite números
+                    const value = e.target.value.replace(/\D/g, "");
+                    setTelefono(value);
+                  }}
+                  placeholder="1123456789"
+                  maxLength="10"
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
+                    ${
+                      telefono && telefono.replace(/\D/g, "").length !== 10
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
+                    }`}
+                />
+                {telefono && telefono.replace(/\D/g, "").length !== 10 && (
+                  <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <FaExclamationCircle /> Debe tener exactamente 10 dígitos
+                  </p>
+                )}
+              </div>
+
               {/* Botones */}
               <div className="flex gap-3 pt-4">
                 <button
@@ -215,6 +281,7 @@ const CrearProfesionalModal = ({ onClose, onCreate }) => {
                 <button
                   type="submit"
                   className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                  disabled={telefono.replace(/\D/g, "").length !== 10}
                 >
                   Crear Profesional
                 </button>

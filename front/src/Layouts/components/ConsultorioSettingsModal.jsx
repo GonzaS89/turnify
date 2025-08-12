@@ -1,35 +1,37 @@
 import { useState } from 'react';
 import { FaBuilding, FaUserShield, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
-import EditCredentialsModal from '../components/EditCredentialsModal';
+import { useParams, useNavigate } from 'react-router';
+import useConsultorioxId from '../../../customHooks/useConsultorioxId';
 
-const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) => {
-  const [isEditCredentialsModalOpen, setIsEditCredentialsModalOpen] = useState(false);
+const ConsultorioSettingsModal = ({ password }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  if (!isOpen) return null;
 
   // Previene scroll del fondo
   document.body.style.overflow = 'hidden';
 
-  const handleCloseEditCredentialsModal = () => setIsEditCredentialsModalOpen(false);
-  const handleSaveEditedCredentials = (updatedCredentials) => {
-    console.log('Credenciales actualizadas:', updatedCredentials);
-    setIsEditCredentialsModalOpen(false);
-  };
+  const { consultorioId } = useParams();
+
+  const navigate = useNavigate();
+
+  const {consultorio: consul ,isLoading, error} = useConsultorioxId(consultorioId)
+
+  const consultorio = consul[0];
+
 
   return (
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
-        onClick={onClose}
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        onClick={()=> navigate('/micuenta')}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-4xl  h-screen xl:h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-full">
@@ -43,7 +45,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
                 </div>
               </div>
               <button
-                onClick={onClose}
+                onClick={()=> navigate('/micuenta')}
                 className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
               >
@@ -66,7 +68,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
                     <DetailItem
                       label="Tipo"
                       value={
-                        consultorio.tipo === 'particular'
+                        consultorio.tipo === 'Particular'
                           ? 'Consultorio Particular'
                           : `Centro Médico: ${consultorio.nombre}`
                       }
@@ -104,16 +106,6 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
                     </div>
                   </div>
 
-                  {/* Botón para abrir modal de edición */}
-                  {/* <div className="mt-5 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditCredentialsModalOpen(true)}
-                      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm px-5 py-2.5 rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-md hover:shadow-lg transform hover:scale-105 font-medium"
-                    >
-                      Cambiar Contraseña
-                    </button>
-                  </div> */}
                 </section>
               </div>
             ) : (
@@ -129,7 +121,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
           {/* Footer */}
           <div className="flex justify-end gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
             <button
-              onClick={onClose}
+              onClick={()=> navigate('/micuenta')}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
             >
               Cerrar
@@ -137,15 +129,6 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
           </div>
         </div>
       </div>
-
-      {/* Modal secundario */}
-      <EditCredentialsModal
-        consultorioId={consultorio?.id}
-        isOpen={isEditCredentialsModalOpen}
-        onClose={handleCloseEditCredentialsModal}
-        currentUsername={consultorio?.usuario}
-        onSave={handleSaveEditedCredentials}
-      />
     </>
   );
 };

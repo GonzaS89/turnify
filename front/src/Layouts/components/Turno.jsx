@@ -1,4 +1,5 @@
-import { PiCalendarCheckFill, PiCalendarXFill } from "react-icons/pi";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { PiClock } from "react-icons/pi";
 
 const formatearHora = (hora) => {
   if (!hora) return "";
@@ -16,11 +17,15 @@ const Turno = ({ turno, index, enviarTurno }) => {
       <button
         onClick={() => isAvailable && enviarTurno(turno, index)}
         disabled={!isAvailable}
+        aria-label={
+          isAvailable
+            ? `Seleccionar turno a las ${horaFormateada}`
+            : `Turno a las ${horaFormateada} no disponible`
+        }
         className={`
-          relative w-full max-w-[108px] aspect-square flex flex-col items-center justify-between
-          p-3 rounded-2xl transition-all duration-300 transform
-          bg-white border-2
-          shadow-sm hover:shadow-2xl hover:scale-105 active:scale-100
+          relative w-full max-w-[112px] aspect-square flex flex-col items-center justify-between
+          p-4 rounded-2xl transition-all duration-300 transform
+          bg-white border-2 shadow-sm hover:shadow-2xl hover:scale-105 active:scale-100
           focus:outline-none focus:ring-4 focus:ring-offset-2 focus:z-10
           ${isAvailable
             ? `
@@ -35,44 +40,52 @@ const Turno = ({ turno, index, enviarTurno }) => {
               `
           }
         `}
-        aria-label={isAvailable
-          ? `Seleccionar turno a las ${horaFormateada}`
-          : `Turno a las ${horaFormateada} no disponible`
-        }
       >
-        {/* Icono con fondo suave */}
-        <div className={`
-          w-10 h-10 flex items-center justify-center rounded-full text-4xl
-          transition-all duration-300
-          ${isAvailable
-            ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'
-            : 'bg-gray-100 text-gray-300'}
-        `}>
+        {/* Icono central con fondo suave */}
+        <div
+          className={`
+            w-10 h-10 flex items-center justify-center rounded-full text-lg
+            transition-all duration-300
+            ${isAvailable 
+              ? 'bg-blue-50 text-blue-600' 
+              : 'bg-gray-100 text-gray-300'}
+          `}
+        >
           {isAvailable ? (
-            <PiCalendarCheckFill />
+            <FaCheckCircle className="text-xl" />
           ) : (
-            <PiCalendarXFill />
+            <FaTimesCircle className="text-xl" />
           )}
         </div>
 
-        {/* Hora grande y clara */}
-        <span className={`
-          text-xl font-bold transition-colors duration-300
-          ${isAvailable ? 'text-gray-800' : 'text-gray-400'}
-        `}>
+        {/* Hora destacada */}
+        <span
+          className={`
+            text-xl font-bold transition-colors duration-300
+            ${isAvailable ? 'text-gray-800' : 'text-gray-400'}
+          `}
+        >
           {horaFormateada}
         </span>
 
-        
+        {/* Icono de reloj decorativo en esquina */}
+        <PiClock className="absolute bottom-2 right-2 text-xs text-gray-300" />
 
-        {/* Overlay sutil al pasar el mouse (solo disponible) */}
+        {/* Overlay al hacer hover (solo si está disponible) */}
         {isAvailable && (
-          <div className="absolute inset-0 rounded-2xl bg-blue-50 opacity-0 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none"></div>
+          <div
+            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-50 to-transparent 
+                       opacity-0 hover:opacity-60 transition-opacity duration-300 pointer-events-none"
+          />
         )}
 
-        {/* Bordes animados tipo "glow" (solo disponible) */}
+        {/* Efecto de pulso suave en bordes (solo disponible) */}
         {isAvailable && (
-          <div className="absolute inset-0 rounded-2xl border-2 border-blue-200 opacity-0 group-hover:opacity-40 animate-pulse group-hover:animate-none transition-all duration-500 pointer-events-none"></div>
+          <div
+            className="absolute inset-0 rounded-2xl border-2 border-blue-200 opacity-0 
+                       hover:opacity-50 animate-pulse hover:animate-none transition-all duration-500 
+                       pointer-events-none"
+          />
         )}
       </button>
     </div>

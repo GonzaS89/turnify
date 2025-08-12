@@ -1,109 +1,129 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import { IoCheckmarkCircle } from 'react-icons/io5';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { FaTrashAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+
 const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClose, actualizarTurnos, resetearFecha }) => {
-
-
-  const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    showModalConfirmacion && setTimeout(() => {
-      setShowModalConfirmacion(false);
-      onClose(); // Cierra el modal
-    }
-      , 2000);
-  }, [showModalConfirmacion])
+  // Previene scroll del fondo
+  document.body.style.overflow = 'hidden';
 
-  async function borrarTodosLosTurnos() {
+  const handleBorrarTodos = async () => {
+    if (!idConsultorio || !idProfesional || !fecha) {
+      toast.error('❌ Datos incompletos para eliminar turnos');
+      return;
+    }
+
+    setIsDeleting(true);
+
     try {
       const response = await axios.delete(`${API_URL}/api/borrarTodosLosTurnos`, {
-        data: {
-          IdConsultorio: idConsultorio,
-          idProfesional,
-          fecha
-        }
+        data: { IdConsultorio: idConsultorio, idProfesional, fecha },
       });
 
-      console.log("Éxito:", response.data.message);
+      // Éxito
+      toast.success(
+        <div className="flex items-center gap-2 text-sm">
+          <FaCheckCircle /> Todos los turnos eliminados
+        </div>,
+        { autoClose: 1500 }
+      );
 
-      setShowModalConfirmacion(true)
-
+      // Actualizar estados tras éxito
       setTimeout(() => {
-        setShowModalConfirmacion(false)
-      }, 2000);
+        actualizarTurnos();
+        resetearFecha();
+        onClose();
+      }, 600);
 
-      setTimeout(() => {
-        actualizarTurnos()
-        resetearFecha()
-      }, 2000); // Espera 1 segundo antes de actualizar los turnos
-
-      // Actualiza el estado, refresca turnos, etc.
     } catch (error) {
-      if (error.response) {
-        // El servidor respondió con un estado de error (4xx, 5xx)
-        console.error('Error del servidor:', error.response.data);
-      } else if (error.request) {
-        // La petición fue hecha pero no hubo respuesta
-        console.error('No hubo respuesta del servidor:', error.request);
-      } else {
-        // Otro error (ej: configuración)
-        console.error('Error:', error.message);
-      }
+      console.error('Error al borrar todos los turnos:', error);
+      toast.error(
+        `❌ ${error.response?.data?.message || 'No se pudieron eliminar los turnos'}`
+      );
+    } finally {
+      setIsDeleting(false);
     }
-  }
-
-
-
+  };
 
   return (
-    <section className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[300]">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-        <h2 className="text-xl font-semibold mb-4">Borrar Todos los Turnos</h2>
-        <p className="mb-4">¿Estás seguro de que deseas borrar todos los turnos?</p>
-        <div className="flex justify-end space-x-2">
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            onClick={() =>
-              borrarTodosLosTurnos()
+    <>
+      {/* Overlay oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={onClose}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Encabezado con gradiente rojo */}
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-full">
+                <FaTrashAlt size={20} />
+              </div>
+              <h3 className="text-2xl font-bold">Eliminar Todos los Turnos</h3>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
+              aria-label="Cerrar"
+            >
+              <FaTimesCircle size={20} />
+            </button>
+          </div>
 
-            }
-          >
-            Borrar Todos
-          </button>
-          <button
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-            onClick={() => onClose()}
-          >
-            Cancelar
-          </button>
+          {/* Cuerpo */}
+          <div className="p-6 space-y-6">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              ¿Estás seguro de que deseas eliminar <strong>todos los turnos</strong> de esta fecha? Esta acción no se puede deshacer.
+            </p>
+
+            {/* Advertencia visual */}
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+              <FaTimesCircle className="text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-red-700 text-sm">
+                Se eliminarán todos los turnos programados para el <strong>{new Date(fecha).toLocaleDateString('es-AR')}</strong>.
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isDeleting}
+              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleBorrarTodos}
+              disabled={isDeleting}
+              className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <FaTrashAlt /> Borrar Todos
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
-      {showModalConfirmacion && (
-        <section className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[400]'>
-          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-6 max-w-md w-full mx-auto transform transition-all hover:shadow-xl duration-300">
-            <div className="flex items-center mb-4">
-              {/* Ícono de verificación con react-icons */}
-              <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <IoCheckmarkCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <h2 className="ml-3 text-2xl font-bold text-gray-800">Turnos Borrados</h2>
-            </div>
-            <p className="text-gray-600 text-base leading-relaxed">
-              Todos los turnos han sido eliminados exitosamente.
-            </p>
-          </div>
-        </section>
+    </>
+  );
+};
 
-
-      )}
-
-    </section>
-
-  )
-
-
-}
-
-export default BorrarTodosLosTurnosModal
+export default BorrarTodosLosTurnosModal;

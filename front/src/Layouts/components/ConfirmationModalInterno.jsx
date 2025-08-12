@@ -28,7 +28,7 @@ const ConfirmationModalInterno = ({
   const consultorio = consul?.[0];
 
   const coberturaElegida = coberturas?.find(
-    (cobertura) => cobertura.id === formData?.selectedOption
+    (cobertura) => cobertura.id == formData?.selectedOption
   );
 
   const API_URL = import.meta.env.VITE_API_URL;

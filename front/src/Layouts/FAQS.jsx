@@ -18,10 +18,6 @@ const FAQS = () => {
             a: 'Puedes cancelar tu turno a través del enlace que recibiste en el correo de confirmación. Te pedimos que canceles con al menos 24 horas de anticipación para que otro paciente pueda usar ese horario.'
         },
         {
-            q: '¿Qué métodos de pago se aceptan?',
-            a: 'Actualmente, el pago se realiza directamente en la consulta. Estamos trabajando para integrar opciones de pago en línea para ofrecerte más flexibilidad en el futuro.'
-        },
-        {
             q: '¿Cómo puedo afiliarme como médico o centro médico?',
             a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón de contacto para hablar con nuestro equipo. Te guiaremos en la creación de tu perfil para que empieces a recibir reservas de inmediato.'
         },

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import useProfesionalxId from "../customHooks/useProfesionalxId";
 import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 // Componentes
 import UserDashboard from "./Layouts/UserDashboard";
-import { Footer } from "./Footer";
 import Login from "./Layouts/Login";
 import Main from "./Layouts/Main";
 import CrearConsultorio from "./Layouts/CrearConsultorio";
@@ -20,6 +20,10 @@ import UserFormModalInterno from "./Layouts/components/UserFormModalInterno";
 import TurnList from "./Layouts/TurnList";
 import GenerarTurnosModal from "./Layouts/components/GenerarTurnosModal";
 import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
+import ConsultorioSettingsModal from "./Layouts/components/ConsultorioSettingsModal";
+import GestionCoberturas from "./Layouts/components/GestionCoberturas";
+import GestionProfesionales from "./Layouts/components/GestionProfesionales";
+import TurnListCentroMedico from "./Layouts/TurnListCentroMedico";
 
 
 const App = () => {
@@ -29,13 +33,13 @@ const App = () => {
   const [dataFormulario, setDataFormulario] = useState(null);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null);
   const [ordenTurno, setOrdenTurno] = useState(null);
+  const [pass, setPass] = useState(null)
 
   const { profesional, isLoading, error } = useProfesionalxId(idProfesional);
 
 
   const closeLogin = () => setOpenLoginModal(false);
   const openLogin = (value = true) => setOpenLoginModal(value);
-  const recibirPass = (pass) => setPassword(pass);
 
   const recibirIds = (idProfesional, consultorio) => {
     setIdProfesional(idProfesional); // Actualiza el ID del profesional
@@ -52,6 +56,10 @@ const App = () => {
     setDataFormulario(data)
   }
 
+  const recibirPass = data => {
+    setPass(data);
+  }
+
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-50 to-purple-50">
@@ -64,7 +72,7 @@ const App = () => {
                 onClick={closeLogin}
               ></div>
               
-                <Login closeLogin={closeLogin} enviarPassword={recibirPass} />
+                <Login closeLogin={closeLogin} />
           
             </div>
           )}
@@ -78,7 +86,7 @@ const App = () => {
 
               <Route
                 path="/micuenta"
-                element={<UserDashboard />}
+                element={<UserDashboard enviarPass = {recibirPass}/>}
               />
 
               <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio />} />
@@ -91,8 +99,12 @@ const App = () => {
               <Route path="/micuenta/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModalInterno onSubmit={recibirDataFormulario}/>}/>
               <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
               <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
+              <Route path="/micuenta/panelturnos-centromedico/:consultorioId/:profesionalId" element={<TurnListCentroMedico enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
               <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />}/>
               <Route path="/codigosdisponibles" element={<PlantillaCodigosActivacion />}/>
+              <Route path="/micuenta/datosconsultorio/:consultorioId" element={<ConsultorioSettingsModal password={pass}/>}/>
+              <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />}/>
+              <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />}/>
  
             </Routes>
           </main>

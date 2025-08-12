@@ -1,81 +1,128 @@
-
 import { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FaTrashAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-const BorrarTurno = ( { idTurno, onClose, actualizarTurnos }) => {
+const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
 
-    const [showModalConfirmacion, setShowModalConfirmacion] = useState(false);
+  // Previene scroll del fondo
+  document.body.style.overflow = 'hidden';
 
-    const API_URL = import.meta.env.VITE_API_URL;
-
-    async function handleBorrarTurnos ()  {
-
-        if(!idTurno) {
-            console.error('ID de turno no proporcionado');
-            return;
-        }
-
-      try {
-        const response = await axios.delete(`${API_URL}/api/borrarTurno/${idTurno}`);
-        if (response.status === 200) {
-            setTimeout(() => {
-                actualizarTurnos()
-                onClose();
-                setShowModalConfirmacion(true)
-            }, 1000);
-         
-          // Aquí podrías actualizar el estado o hacer algo más después de borrar el turno
-        } else {
-          alert('Error al borrar el turno');
-        }
-      } catch (error) {
-        console.error('Error al borrar el turno:', error);
-        alert('Ocurrió un error al intentar borrar el turno');
-      }
-
-
+  const handleBorrarTurno = async () => {
+    if (!idTurno) {
+      toast.error('❌ ID de turno no válido');
+      return;
     }
 
+    setIsDeleting(true);
+
+    try {
+      const response = await axios.delete(`${API_URL}/api/borrarTurno/${idTurno}`);
+
+      if (response.status === 200) {
+        toast.success(
+          <div className="flex items-center gap-2 text-sm">
+            <FaCheckCircle /> Turno eliminado correctamente
+          </div>,
+          { autoClose: 1500 }
+        );
+
+        // Actualizar lista y cerrar
+        setTimeout(() => {
+          actualizarTurnos();
+          onClose();
+        }, 600);
+      } else {
+        toast.error('❌ Error al eliminar el turno');
+      }
+    } catch (error) {
+      console.error('Error al borrar turno:', error);
+      toast.error(
+        `❌ ${error.response?.data?.message || 'Error al eliminar el turno'}`
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        
+    <>
+      {/* Overlay oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={onClose}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Encabezado con icono */}
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-full">
+                <FaTrashAlt size={20} />
+              </div>
+              <h3 className="text-2xl font-bold">Eliminar Turno</h3>
+            </div>
+            <button
+              onClick={onClose}
+              disabled={isDeleting}
+              className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
+              aria-label="Cerrar"
+            >
+              <FaTimesCircle size={20} />
+            </button>
+          </div>
 
-        {showModalConfirmacion ? (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[201]">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-                <h2 className="text-xl font-semibold mb-4">Turno Borrado</h2>
-                <p className="mb-4">El turno ha sido borrado exitosamente.</p>
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    onClick={() => setShowModalConfirmacion(false)}
-                >
-                    Aceptar
-                </button>
-                </div>
+          {/* Cuerpo */}
+          <div className="p-6 space-y-6">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              ¿Estás seguro de que deseas eliminar este turno? Esta acción no se puede deshacer.
+            </p>
+
+            {/* Advertencia visual */}
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+              <FaTimesCircle className="text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-red-700 text-sm">
+                El turno será eliminado permanentemente.
+              </p>
             </div>
-            ):
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Borrar Turno</h2>
-            <p className="mb-4">¿Estás seguro de que deseas borrar este turno?</p>
-            <div className="flex justify-end space-x-2">
+          </div>
+
+          {/* Footer */}
+          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
             <button
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                onClick={handleBorrarTurnos}
+              type="button"
+              onClick={onClose}
+              disabled={isDeleting}
+              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
             >
-                Borrar
+              Cancelar
             </button>
             <button
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={onClose}
+              type="button"
+              onClick={handleBorrarTurno}
+              disabled={isDeleting}
+              className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
-                Cancelar
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <FaTrashAlt /> Eliminar
+                </>
+              )}
             </button>
-            </div>
+          </div>
         </div>
-            }
-      
-    </div>
-  )
-}
+      </div>
+    </>
+  );
+};
 
-export default BorrarTurno
+export default BorrarTurno;

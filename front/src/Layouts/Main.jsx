@@ -6,6 +6,7 @@ import FAQS from "./FAQS";
 // import Testimonials from "./Testimonials";
 import { Header } from "../Header";
 import UserFormModal from "./components/UserFormModal";
+import {Footer} from '../Footer'
 import ConfirmationModal from "./components/ConfirmationModal";
 
 import TurnSelectModal from "./components/TurnSelectModal";
@@ -104,7 +105,7 @@ const Main = ({ openLogin }) => {
 
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <main className="container mx-auto sm:px-6 lg:px-8 relative">
       <Header openLogin={openLogin} openModalProf={openModalProf}/>
       <Hero enviarIds={recibirIds} />
 
@@ -116,6 +117,7 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-200 border-t-2" /> */}
       <FAQS />
       <hr className="my-16 border-gray-200 border-t-2" />
+      <Footer />
     
 
       {/* Modal de Formulario de Usuario */}

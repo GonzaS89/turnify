@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import { useParams, useNavigate } from 'react-router';
-import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimesCircle } from 'react-icons/fa';
+import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,7 +24,7 @@ const UserFormModal = ({ onSubmit }) => {
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [errorOptions, setErrorOptions] = useState(null);
 
-  // Resetear y cargar opciones
+  // Cargar coberturas y resetear formulario
   useEffect(() => {
     setIsLoadingOptions(true);
     setErrorOptions(null);
@@ -34,7 +34,7 @@ const UserFormModal = ({ onSubmit }) => {
         setOptions(coberturas);
       } else {
         console.error("Coberturas no es un array:", coberturas);
-        setErrorOptions("Error al cargar las coberturas.");
+        setErrorOptions("Formato de coberturas incorrecto.");
       }
     } else {
       setErrorOptions("No se encontraron coberturas disponibles.");
@@ -77,13 +77,23 @@ const UserFormModal = ({ onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (formData.nombre.trim().length < 2) {
+      toast.error('El nombre es demasiado corto.');
+      return;
+    }
+
+    if (formData.apellido.trim().length < 2) {
+      toast.error('El apellido es demasiado corto.');
+      return;
+    }
+
     if (formData.dni.length < 7 || formData.dni.length > 8) {
       toast.error('El DNI debe tener entre 7 y 8 dígitos.');
       return;
     }
 
     if (formData.telefono.length !== 10) {
-      toast.error('El teléfono debe tener exactamente 10 dígitos.');
+      toast.error('El teléfono debe tener 10 dígitos.');
       return;
     }
 
@@ -103,7 +113,7 @@ const UserFormModal = ({ onSubmit }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all hover:scale-[1.01]">
         
-        {/* Encabezado con ícono */}
+        {/* Encabezado con gradiente */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -131,15 +141,18 @@ const UserFormModal = ({ onSubmit }) => {
               <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaUser className="text-blue-500" /> Nombre *
               </label>
-              <input
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition"
-                placeholder="Juan"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Juan"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition"
+                  required
+                />
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
             </div>
 
             {/* Apellido */}
@@ -147,15 +160,18 @@ const UserFormModal = ({ onSubmit }) => {
               <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaUser className="text-blue-500" /> Apellido *
               </label>
-              <input
-                type="text"
-                name="apellido"
-                value={formData.apellido}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition"
-                placeholder="Pérez"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  placeholder="Ej: Pérez"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition"
+                  required
+                />
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
             </div>
 
             {/* DNI */}
@@ -163,19 +179,22 @@ const UserFormModal = ({ onSubmit }) => {
               <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaIdCard className="text-green-500" /> DNI (7-8 dígitos) *
               </label>
-              <input
-                type="text"
-                name="dni"
-                value={formData.dni}
-                onChange={handleChange}
-                inputMode="numeric"
-                maxLength="8"
-                pattern="[0-9]{7,8}"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition"
-                placeholder="12345678"
-                required
-              />
-              <p className="text-gray-500 text-xs mt-1">Solo números. Ej: 34567890</p>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="dni"
+                  value={formData.dni}
+                  onChange={handleChange}
+                  inputMode="numeric"
+                  maxLength="8"
+                  pattern="[0-9]{7,8}"
+                  placeholder="Ej: 34567890"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition"
+                  required
+                />
+                <FaIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+              <p className="text-gray-500 text-xs mt-1">Solo números. No incluyas puntos.</p>
             </div>
 
             {/* Teléfono */}
@@ -183,19 +202,22 @@ const UserFormModal = ({ onSubmit }) => {
               <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                 <FaPhone className="text-orange-500" /> Teléfono (10 dígitos) *
               </label>
-              <input
-                type="tel"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                inputMode="numeric"
-                maxLength="10"
-                pattern="[0-9]{10}"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white transition"
-                placeholder="1112345678"
-                required
-              />
-              <p className="text-gray-500 text-xs mt-1">Ej: 1112345678 (sin 0 ni 15)</p>
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  inputMode="numeric"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                  placeholder="Ej: 1112345678"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white transition"
+                  required
+                />
+                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+              <p className="text-gray-500 text-xs mt-1">Sin 0, sin 15. Ej: 1112345678</p>
             </div>
 
             {/* Cobertura Médica */}
@@ -205,14 +227,17 @@ const UserFormModal = ({ onSubmit }) => {
               </label>
 
               {isLoadingOptions ? (
-                <div className="py-4 text-center">
+                <div className="py-4 text-center bg-blue-50 rounded-xl border border-blue-200">
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600 mb-2"></div>
-                  <p className="text-gray-500 text-sm">Cargando coberturas...</p>
+                  <p className="text-blue-700 text-sm">Cargando coberturas...</p>
                 </div>
               ) : errorOptions ? (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                  <p className="font-medium">Error al cargar coberturas</p>
-                  <p className="mt-1">{errorOptions}</p>
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+                  <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Error al cargar coberturas</p>
+                    <p className="mt-1">{errorOptions}</p>
+                  </div>
                 </div>
               ) : (
                 <div className="relative">
@@ -220,7 +245,7 @@ const UserFormModal = ({ onSubmit }) => {
                     name="selectedOption"
                     value={formData.selectedOption}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none pr-10 transition"
+                    className="w-full px-4 py-3 pl-10 pr-10 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none transition"
                     required
                   >
                     <option value="" disabled>Seleccionar cobertura</option>
@@ -231,8 +256,9 @@ const UserFormModal = ({ onSubmit }) => {
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <FaShieldAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -256,13 +282,10 @@ const UserFormModal = ({ onSubmit }) => {
             form="user-form"
             className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Confirmar datos
+            <FaCheck className="inline mr-2" /> Confirmar datos
           </button>
         </div>
       </div>
-
-      {/* Toastify (asegúrate de tenerlo en App.jsx) */}
-      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
     </div>
   );
 };

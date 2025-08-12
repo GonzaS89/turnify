@@ -18,7 +18,7 @@ import TurnoInterno from "./components/TurnoInterno";
 import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
-const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
+const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
@@ -80,10 +80,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
   };
-
-  
-
- 
 
   const handleAgregarTurnoClick = () => {
     navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
@@ -152,7 +148,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <FaCalendarAlt /> Tu Agenda
             </h2>
             <button
-              onClick={() => navigate("/micuenta")}
+              onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
               aria-label="Cerrar"
             >
@@ -177,7 +173,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                 <FaPlus /> Habilitar Turnos
               </button>
               <button
-                onClick={() => navigate("/micuenta")}
+                   onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
                 className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition"
               >
                 Volver a Mi Cuenta
@@ -196,7 +192,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       {/* Overlay oscuro con blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
-        onClick={() => navigate("/micuenta")}
+         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
       >
         <div
           className="bg-white xl:rounded-2xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:h-[90vh] flex flex-col"
@@ -227,7 +223,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   </button>
 
   <button
-    onClick={() => navigate("/micuenta")}
+         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
     className="text-white hover:bg-white/20 rounded-full p-1 transition"
     aria-label="Cerrar"
   >
@@ -380,4 +376,4 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   );
 };
 
-export default TurnList;
+export default TurnListCentroMedico;

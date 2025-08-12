@@ -60,7 +60,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
           <div className="flex items-center gap-3 w-full mb-2">
             
             <h4 className="font-semibold text-gray-800 truncate flex-1 text-sm capitalize">
-              {consultorio.tipo === 'particular'
+              {consultorio.tipo === 'Particular'
                 ? 'Consultorio Particular'
                 : `${consultorio.tipo} ${consultorio.nombre}`
               }

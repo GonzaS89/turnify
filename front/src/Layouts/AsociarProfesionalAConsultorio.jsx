@@ -1,19 +1,37 @@
-import { useEffect, useState } from 'react';
-import CrearProfesionalModal from './CrearProfesionalModal';
-import useAllProfesionals from '../../customHooks/useAllProfesionals';
-import axios from 'axios';
-import { FaUserMd, FaLink, FaPlusCircle, FaCheckCircle, FaExclamationCircle, FaTimes } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState } from "react";
+import CrearProfesionalModal from "./CrearProfesionalModal";
+import useAllProfesionals from "../../customHooks/useAllProfesionals";
+import axios from "axios";
+import {
+  FaUserMd,
+  FaLink,
+  FaPlusCircle,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaTimes,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
-  const { profesionales, isLoading, error: hookError, actualizarProfesionales } = useAllProfesionals();
+const AsociarProfesionalAConsultorio = ({
+  onClose,
+  consultorioID,
+  idsProfesionalesVinculados,
+}) => {
+  const {
+    profesionales,
+    isLoading,
+    error: hookError,
+    actualizarProfesionales,
+  } = useAllProfesionals();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedProfesional, setSelectedProfesional] = useState('');
+  const [selectedProfesional, setSelectedProfesional] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  console.log(idsProfesionalesVinculados);
 
   const handleSelect = async (e) => {
     e.preventDefault();
@@ -21,48 +39,53 @@ const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
     setMensaje(null);
 
     if (!selectedProfesional) {
-      setMensajeError('Debe seleccionar un profesional.');
+      setMensajeError("Debe seleccionar un profesional.");
       return;
     }
     if (!consultorioID) {
-      setMensajeError('No se especificó el consultorio.');
+      setMensajeError("No se especificó el consultorio.");
       return;
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/unionprofesionalconsultorio`, {
-        profesionalID: selectedProfesional,
-        consultorioID: consultorioID,
-      });
+      const response = await axios.post(
+        `${API_URL}/api/unionprofesionalconsultorio`,
+        {
+          profesionalID: selectedProfesional,
+          consultorioID: consultorioID,
+        }
+      );
 
-      setMensaje('✅ Profesional asociado correctamente al consultorio.');
-      toast.success('Vinculación exitosa');
+      setMensaje("✅ Profesional asociado correctamente al consultorio.");
+      toast.success("Vinculación exitosa");
 
       // Recargar después de un breve delay
       setTimeout(() => {
         window.location.reload();
       }, 1200);
-
     } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.statusText || 'Error de conexión';
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Error de conexión";
       setMensajeError(`❌ ${errorMsg}`);
-      toast.error('Error al asociar profesional');
-      console.error('Error al asociar profesional:', err);
+      toast.error("Error al asociar profesional");
+      console.error("Error al asociar profesional:", err);
     }
   };
 
   const handleCreateSuccess = () => {
-    if (typeof actualizarProfesionales === 'function') {
+    if (typeof actualizarProfesionales === "function") {
       actualizarProfesionales();
     }
-    toast.success('Nuevo profesional creado y listo para vincular');
+    toast.success("Nuevo profesional creado y listo para vincular");
   };
 
   return (
     <>
       {/* Fondo oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in"
         onClick={onClose}
       >
         <div
@@ -114,14 +137,17 @@ const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
             {isLoading ? (
               <div className="py-10 text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
-                <p className="text-gray-500 text-sm">Cargando profesionales...</p>
+                <p className="text-gray-500 text-sm">
+                  Cargando profesionales...
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
                 {/* Selector de profesional */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserMd className="text-purple-500" /> Seleccionar Profesional *
+                    <FaUserMd className="text-purple-500" /> Seleccionar
+                    Profesional *
                   </label>
                   <select
                     value={selectedProfesional}
@@ -130,8 +156,16 @@ const AsociarProfesionalAConsultorio = ({ onClose, consultorioID }) => {
                   >
                     <option value="">Seleccionar profesional</option>
                     {profesionales?.map((prof) => (
-                      <option key={prof.id} value={prof.id}>
-                        {prof.nombre} {prof.apellido} • {prof.especialidad} • MP: {prof.matricula}
+                      <option
+                        key={prof.id}
+                        value={prof.id}
+                        disabled={idsProfesionalesVinculados?.includes(prof.id)}
+                      >
+                        {prof.nombre} {prof.apellido} • {prof.especialidad} •
+                        MP: {prof.matricula}
+                        {idsProfesionalesVinculados?.includes(prof.id)
+                          ? " (Ya vinculado)"
+                          : ""}
                       </option>
                     ))}
                   </select>

@@ -216,7 +216,8 @@ app.get("/api/profesionalxidconsultorio/:id", async (req, res) => {
     p.nombre AS nombre,
     p.apellido AS apellido,
     p.especialidad AS especialidad,
-    p.matricula AS matricula
+    p.matricula AS matricula,
+    p.telefono
      FROM profesional_consultorio AS pc
      JOIN 
      profesionales AS p ON p.id = pc.profesional_id
@@ -996,7 +997,9 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
 // CREAR PROFESIONAL //
 
 app.post("/api/crearprofesional", async (req, res) => {
-  const { nombre, apellido, matricula, especialidad, titulo } = req.body;
+  const { nombre, apellido, matricula, especialidad, titulo, telefono } = req.body;
+
+  console.log("Datos recibidos:", req.body);
 
   // Validación
   if (!nombre || !apellido || !matricula || !especialidad) {
@@ -1018,8 +1021,8 @@ app.post("/api/crearprofesional", async (req, res) => {
 
     // Insertar nuevo profesional
     const [result] = await pool.execute(
-      "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula) VALUES (?, ?, ?, ?, ?)",
-      [nombre, apellido, especialidad, titulo || null, matricula]
+      "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
+      [nombre, apellido, especialidad, titulo || null, matricula, telefono]
     );
 
     // ✅ Usamos `res` para responder, NO `result`
@@ -1031,6 +1034,7 @@ app.post("/api/crearprofesional", async (req, res) => {
       especialidad,
       matricula,
       titulo,
+      telefono
     });
 
   } catch (error) {
@@ -1088,6 +1092,32 @@ app.post("/api/unionprofesionalconsultorio", async (req, res) => {
     });
   }
 });
+
+// DESVINCULAR PROFESIONAL DE CENTRO MEDICO //
+
+app.delete("/api/desvincularprofesional/:consultorioId/:profesionalId", async(req, res) => {
+  const { consultorioId, profesionalId } = req.params;
+
+  try{
+    const query = `
+    DELETE FROM profesional_consultorio 
+    WHERE profesional_id = ? AND consultorio_id = ?`;
+
+    const [resultado] = await pool.execute(query,[
+      profesionalId, 
+      consultorioId
+    ]);
+
+    if(resultado.affectedRows === 0) {
+      return res.status(404).json({message: "Profesional no encontrado en centro médico"});
+    };
+
+    res.status(200).json({message: "Profesional encontrado y desvinculado"})
+  }catch(err){
+    console.error("Error al desvincular profesional",err);
+    res.status(500).json({message: "Error interno al no desvincular profesional"})
+  }
+})
 
 
 
