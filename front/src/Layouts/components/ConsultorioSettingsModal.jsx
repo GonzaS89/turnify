@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaBuilding, FaUserShield, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaBuilding, FaUserShield, FaTimesCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import EditCredentialsModal from '../components/EditCredentialsModal';
 
 const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) => {
@@ -7,6 +7,9 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   if (!isOpen) return null;
+
+  // Previene scroll del fondo
+  document.body.style.overflow = 'hidden';
 
   const handleCloseEditCredentialsModal = () => setIsEditCredentialsModalOpen(false);
   const handleSaveEditedCredentials = (updatedCredentials) => {
@@ -16,122 +19,118 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
 
   return (
     <>
-      {/* Fondo oscuro */}
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 xlp-4 transition-all duration-300">
-        <div className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-4xl h-screen xl:max-h-[90vh] flex flex-col overflow-hidden animate-fade-up">
-          
+      {/* Overlay oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={onClose}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Encabezado con gradiente */}
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 mb-8">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-600 rounded-full text-white">
-                <FaUserShield className="w-6 h-6" />
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-full">
+                  <FaUserShield className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold">Ajustes del Consultorio</h3>
+                  <p className="text-blue-100 text-sm opacity-90">
+                    Gestiona la información y credenciales de acceso.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Ajustes del Consultorio</h2>
-                <p className="text-gray-600 text-sm">Gestiona la información de tu consultorio y tus credenciales</p>
-              </div>
+              <button
+                onClick={onClose}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                aria-label="Cerrar"
+              >
+                <FaTimesCircle size={20} />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full p-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              aria-label="Cerrar modal"
-            >
-              <FaTimes className="w-6 h-6" />
-            </button>
           </div>
 
-          {/* Contenido con scroll */}
-          <div className="flex-grow overflow-y-auto px-6 pb-6 custom-scrollbar">
+          {/* Cuerpo scrollable */}
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
             {consultorio ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                {/* --- Sección: Datos del Consultorio --- */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* --- Información del Consultorio --- */}
                 <section>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <FaBuilding className="text-blue-500 mr-2 w-5 h-5" />
-                    Información del Consultorio
-                  </h3>
-                  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
-                    {consultorio?.nombre && (
-                       <DetailItem label="Nombre" value={consultorio.nombre}/>
-                    )}
-                   
-                    <DetailItem 
-                      label="Tipo" 
+                  <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaBuilding className="text-blue-500" /> Información del Consultorio
+                  </h4>
+                  <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-xl p-5">
+                    <DetailItem label="Nombre" value={consultorio.nombre || 'No especificado'} />
+                    <DetailItem
+                      label="Tipo"
                       value={
-                        consultorio.tipo === 'particular' 
-                          ? 'Consultorio Particular' 
+                        consultorio.tipo === 'particular'
+                          ? 'Consultorio Particular'
                           : `Centro Médico: ${consultorio.nombre}`
-                      } 
+                      }
                     />
                     <DetailItem label="Dirección" value={consultorio.direccion || 'No especificado'} />
                     <DetailItem label="Localidad" value={consultorio.localidad || 'No especificado'} />
                     <DetailItem label="Provincia" value={consultorio.provincia || 'No especificado'} />
                     <DetailItem label="Teléfono" value={consultorio.telefono || 'No especificado'} />
-                   
-                  </div>
-                  <div className="mt-4 flex justify-center">
-                    {/* <button
-                      onClick={handleOpenEditConsultorioModal}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <FaEdit /> Editar Datos
-                    </button> */}
                   </div>
                 </section>
 
-                {/* --- Sección: Cuenta de Usuario --- */}
-                {/* --- Sección: Cuenta de Usuario --- */}
-<section>
-  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-    <FaUserShield className="text-purple-500 mr-2 w-5 h-5" />
-    Credenciales de Acceso
-  </h3>
-  <div className="space-y-4 bg-gray-50 rounded-lg p-5 border border-gray-200">
-    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
-    
-    {/* Contraseña con toggle de visibilidad */}
-    <div>
-      <p className="text-sm font-semibold text-gray-700 mb-1">Contraseña</p>
-      <div className="flex items-center gap-2">
-        <p className="text-base font-medium text-gray-900">
-          {isPasswordVisible ? password: '••••••••'}
-        </p>
-        <button
-          type="button"
-          onClick={() => setIsPasswordVisible(prev => !prev)}
-          className="text-gray-500 hover:text-gray-700 focus:outline-none"
-          aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-        >
-          {isPasswordVisible ? (
-            <FaEyeSlash className="w-5 h-5" />
-          ) : (
-            <FaEye className="w-5 h-5" />
-          )}
-        </button>
-      </div>
-      <p className="text-xs text-gray-500 italic mt-1">Oculta por seguridad</p>
-    </div>
-  </div>
-</section>
+                {/* --- Credenciales de Acceso --- */}
+                <section>
+                  <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaUserShield className="text-purple-500" /> Credenciales de Acceso
+                  </h4>
+                  <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-xl p-5">
+                    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Contraseña</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-base font-medium text-gray-900 truncate">
+                          {isPasswordVisible ? password : '••••••••••••'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setIsPasswordVisible(prev => !prev)}
+                          className="text-gray-500 hover:text-gray-700 focus:outline-none transition"
+                          aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        >
+                          {isPasswordVisible ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 italic mt-1">Oculta por seguridad</p>
+                    </div>
+                  </div>
 
+                  {/* Botón para abrir modal de edición */}
+                  {/* <div className="mt-5 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditCredentialsModalOpen(true)}
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm px-5 py-2.5 rounded-xl hover:from-indigo-600 hover:to-purple-700 transition shadow-md hover:shadow-lg transform hover:scale-105 font-medium"
+                    >
+                      Cambiar Contraseña
+                    </button>
+                  </div> */}
+                </section>
               </div>
             ) : (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-5 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="font-bold">Error al cargar los datos</p>
-                <p className="text-sm mt-1">No se pudieron obtener los datos del consultorio. Intenta más tarde.</p>
+              // Error de carga
+              <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-center">
+                <FaTimesCircle className="text-red-500 mx-auto mb-3" size={24} />
+                <p className="text-red-700 font-medium">Error al cargar los datos</p>
+                <p className="text-red-600 text-sm mt-1">No se pudieron obtener los datos del consultorio.</p>
               </div>
             )}
           </div>
 
-          {/* Pie del modal */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+          {/* Footer */}
+          <div className="flex justify-end gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
             >
               Cerrar
             </button>
@@ -139,9 +138,7 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
         </div>
       </div>
 
-      {/* Modales secundarios */}
-      
-
+      {/* Modal secundario */}
       <EditCredentialsModal
         consultorioId={consultorio?.id}
         isOpen={isEditCredentialsModalOpen}
@@ -154,11 +151,10 @@ const ConsultorioSettingsModal = ({ isOpen, onClose, consultorio, password }) =>
 };
 
 // Componente auxiliar para mostrar pares label/valor
-const DetailItem = ({ label, value, hint }) => (
+const DetailItem = ({ label, value }) => (
   <div>
     <p className="text-sm font-semibold text-gray-700 mb-1">{label}</p>
     <p className="text-base font-medium text-gray-900">{value}</p>
-    {hint && <p className="text-xs text-gray-500 italic mt-1">{hint}</p>}
   </div>
 );
 

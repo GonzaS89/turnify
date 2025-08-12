@@ -1,269 +1,295 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
-import { useParams ,useNavigate } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
+import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaCheck } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserFormModalInterno = ({ onSubmit }) => {
-    const [formData, setFormData] = useState({
-        nombre: '',
-        apellido: '',
-        dni: '',
-        telefono: '',
-        selectedOption: '', // Para la cobertura médica
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellido: '',
+    dni: '',
+    telefono: '',
+    selectedOption: '',
+  });
+
+  const navigate = useNavigate();
+  const { consultorioId } = useParams();
+  const { profesionalId } = useParams();
+
+  const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
+
+  const [options, setOptions] = useState([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true);
+  const [errorOptions, setErrorOptions] = useState(null);
+
+  // Cargar coberturas y resetear formulario
+  useEffect(() => {
+    setIsLoadingOptions(true);
+    setErrorOptions(null);
+
+    if (coberturas) {
+      if (Array.isArray(coberturas)) {
+        setOptions(coberturas);
+      } else {
+        console.error("Coberturas no es un array:", coberturas);
+        setErrorOptions("Formato de coberturas incorrecto.");
+      }
+    } else {
+      setErrorOptions("No se encontraron coberturas disponibles.");
+    }
+
+    setIsLoadingOptions(false);
+
+    // Resetear formulario
+    setFormData({
+      nombre: '',
+      apellido: '',
+      dni: '',
+      telefono: '',
+      selectedOption: '',
     });
+  }, [coberturas]);
 
-    const navigate = useNavigate();
-    const { consultorioId } = useParams();
-    const { profesionalId } = useParams();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    const { coberturas } = useCoberturaxIdConsultorio(consultorioId);
+    if (name === 'dni') {
+      const numericValue = value.replace(/\D/g, '');
+      if (numericValue.length <= 8) {
+        setFormData((prev) => ({ ...prev, dni: numericValue }));
+      }
+      return;
+    }
 
-    const [options, setOptions] = useState([]);
-    const [isLoadingOptions, setIsLoadingOptions] = useState(true);
-    const [errorOptions, setErrorOptions] = useState(null);
+    if (name === 'telefono') {
+      const numericValue = value.replace(/\D/g, '');
+      if (numericValue.length <= 10) {
+        setFormData((prev) => ({ ...prev, telefono: numericValue }));
+      }
+      return;
+    }
 
-    useEffect(() => {
-       
-            if (coberturas) {
-                if (Array.isArray(coberturas)) {
-                    setOptions(coberturas);
-                    setIsLoadingOptions(false);
-                    setErrorOptions(null);
-                } else {
-                    console.error("La prop 'coberturas' no es un array:", coberturas);
-                    setErrorOptions("Las opciones de cobertura no están en el formato correcto.");
-                    setIsLoadingOptions(false);
-                    setOptions([]);
-                }
-            } else {
-                setIsLoadingOptions(false);
-                setErrorOptions("No se proporcionaron opciones de cobertura.");
-                setOptions([]);
-            }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-            // Resetear el formulario cada vez que se abre
-            setFormData({
-                nombre: '',
-                apellido: '',
-                dni: '',
-                telefono: '',
-                selectedOption: '',
-            });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (formData.nombre.trim().length < 2) {
+      toast.error('El nombre es demasiado corto.');
+      return;
+    }
+
+    if (formData.apellido.trim().length < 2) {
+      toast.error('El apellido es demasiado corto.');
+      return;
+    }
+
+    if (formData.dni.length < 7 || formData.dni.length > 8) {
+      toast.error('El DNI debe tener entre 7 y 8 dígitos.');
+      return;
+    }
+
+    if (formData.telefono.length !== 10) {
+      toast.error('El teléfono debe tener 10 dígitos.');
+      return;
+    }
+
+    if (!formData.selectedOption) {
+      toast.warn('Por favor, selecciona una cobertura médica.');
+      return;
+    }
+
+    onSubmit(formData);
+    setTimeout(() => {
+      navigate(`/micuenta/confirmacionturno/${consultorioId}/${profesionalId}`);
+    }, 500);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all hover:scale-[1.01]">
         
-    }, [coberturas]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        if (name === 'dni') {
-            // Solo números, máximo 8 dígitos
-            const numericValue = value.replace(/\D/g, '');
-            if (numericValue.length <= 8) {
-                setFormData(prevData => ({
-                    ...prevData,
-                    [name]: numericValue,
-                }));
-            }
-            return;
-        }
-
-        if (name === 'telefono') {
-            // Solo números, máximo 10 dígitos
-            const numericValue = value.replace(/\D/g, '');
-            if (numericValue.length <= 10) {
-                setFormData(prevData => ({
-                    ...prevData,
-                    [name]: numericValue,
-                }));
-            }
-            return;
-        }
-
-        // Para otros campos
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        // Validación adicional al enviar
-        if (formData.dni.length < 7 || formData.dni.length > 8) {
-            alert('El DNI debe tener entre 7 y 8 dígitos.');
-            return;
-        }
-
-        if (formData.telefono.length !== 10) {
-            alert('El teléfono debe tener exactamente 10 dígitos.');
-            return;
-        }
-
-        onSubmit(formData);
-        navigate(`/micuenta/confirmacionturno/${consultorioId}/${profesionalId}`)
-    };
-
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] backdrop-blur-sm p-4 sm:p-6">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col relative max-h-[90vh]">
-                {/* Botón de cerrar */}
-                <button
-                    onClick={() => navigate(-1)}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1"
-                    aria-label="Cerrar modal"
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center mb-2 leading-tight">
-                    Confirmá tus Datos
-                </h2>
-                <p className="text-gray-600 text-center mb-4 text-base sm:text-lg">
-                    Por favor, completá tu información para confirmar la reserva de tu turno.
-                </p>
-
-                {/* Contenedor con scroll interno */}
-                <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
-                    <form onSubmit={handleSubmit} id="user-form" className="flex flex-col gap-5">
-                        {/* Nombre */}
-                        <div>
-                            <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Nombre
-                            </label>
-                            <input
-                                type="text"
-                                id="nombre"
-                                name="nombre"
-                                value={formData.nombre}
-                                onChange={handleChange}
-                                className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
-                                required
-                            />
-                        </div>
-
-                        {/* Apellido */}
-                        <div>
-                            <label htmlFor="apellido" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Apellido
-                            </label>
-                            <input
-                                type="text"
-                                id="apellido"
-                                name="apellido"
-                                value={formData.apellido}
-                                onChange={handleChange}
-                                className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
-                                required
-                            />
-                        </div>
-
-                        {/* DNI */}
-                        <div>
-                            <label htmlFor="dni" className="block text-sm font-semibold text-gray-700 mb-2">
-                                DNI
-                            </label>
-                            <input
-                                type="text"
-                                id="dni"
-                                name="dni"
-                                value={formData.dni}
-                                onChange={handleChange}
-                                inputMode="numeric"
-                                maxLength="8"
-                                pattern="[0-9]{7,8}"
-                                title="Debe tener entre 7 y 8 dígitos numéricos"
-                                className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
-                                required
-                            />
-                        </div>
-
-                        {/* Teléfono */}
-                        <div>
-                            <label htmlFor="telefono" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Teléfono
-                            </label>
-                            <input
-                                type="tel"
-                                id="telefono"
-                                name="telefono"
-                                value={formData.telefono}
-                                onChange={handleChange}
-                                inputMode="numeric"
-                                maxLength="10"
-                                pattern="[0-9]{10}"
-                                title="Debe tener exactamente 10 dígitos numéricos"
-                                className="block w-full p-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:border-gray-400"
-                                required
-                            />
-                        </div>
-
-                        {/* Cobertura Médica */}
-                        <div>
-                            <label htmlFor="selectedOption" className="block text-sm font-semibold text-gray-700 mb-2">
-                                Selecciona tu Cobertura Médica
-                            </label>
-                            {isLoadingOptions ? (
-                                <p className="text-blue-600 text-base text-center font-medium animate-pulse py-4 bg-blue-50 rounded-xl shadow-inner border border-blue-100">
-                                    Cargando coberturas...
-                                </p>
-                            ) : errorOptions ? (
-                                <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-center text-sm shadow-md">
-                                    <p className="font-bold mb-1">¡Ups! Error al cargar las coberturas:</p>
-                                    <p>{errorOptions}</p>
-                                    <p className="mt-2 text-xs">Por favor, intenta de nuevo más tarde o contacta al soporte.</p>
-                                </div>
-                            ) : (
-                                <div className="relative">
-                                    <select
-                                        id="selectedOption"
-                                        name="selectedOption"
-                                        value={formData.selectedOption}
-                                        onChange={handleChange}
-                                        className="block w-full p-3 border border-gray-300 rounded-xl text-base text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer pr-10 shadow-sm hover:border-gray-400"
-                                        required
-                                    >
-                                        <option value="" disabled>Elige una cobertura</option>
-                                        <option value="particular">Particular</option>
-                                        {options.map((option) => (
-                                            <option key={option.id} value={option.id}>
-                                                {option.siglas} - {option.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                                        <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </form>
-                </div>
-
-                {/* Botones de acción (siempre visibles) */}
-                <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-gray-200">
-                    <button
-                        type="button"
-                        onClick={()=> navigate(-1)}
-                        className="py-3 px-6 bg-gray-200 text-gray-800 font-semibold rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        form="user-form"
-                        className="py-3 px-6 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
-                    >
-                        Confirmar datos
-                    </button>
-                </div>
+        {/* Encabezado con gradiente */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FaUser className="text-2xl" />
+              <div>
+                <h2 className="text-2xl font-bold">Confirma tus Datos</h2>
+                <p className="text-indigo-100 text-sm opacity-90">Completa para asignar el turno</p>
+              </div>
             </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="text-white hover:bg-white/20 rounded-full p-1 transition"
+              aria-label="Cerrar"
+            >
+              <FaTimesCircle size={20} />
+            </button>
+          </div>
         </div>
-    );
+
+        {/* Cuerpo del formulario */}
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} id="user-form" className="space-y-5">
+            {/* Nombre */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaUser className="text-blue-500" /> Nombre *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="Ej: Juan"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition"
+                  required
+                />
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+            </div>
+
+            {/* Apellido */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaUser className="text-blue-500" /> Apellido *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="apellido"
+                  value={formData.apellido}
+                  onChange={handleChange}
+                  placeholder="Ej: Pérez"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition"
+                  required
+                />
+                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+            </div>
+
+            {/* DNI */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaIdCard className="text-green-500" /> DNI (7-8 dígitos) *
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="dni"
+                  value={formData.dni}
+                  onChange={handleChange}
+                  inputMode="numeric"
+                  maxLength="8"
+                  pattern="[0-9]{7,8}"
+                  placeholder="Ej: 34567890"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition"
+                  required
+                />
+                <FaIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+              <p className="text-gray-500 text-xs mt-1">Solo números. No incluyas puntos.</p>
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaPhone className="text-orange-500" /> Teléfono (10 dígitos) *
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  inputMode="numeric"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                  placeholder="Ej: 1112345678"
+                  className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white transition"
+                  required
+                />
+                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              </div>
+              <p className="text-gray-500 text-xs mt-1">Sin 0, sin 15. Ej: 1112345678</p>
+            </div>
+
+            {/* Cobertura Médica */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaShieldAlt className="text-purple-500" /> Cobertura Médica *
+              </label>
+
+              {isLoadingOptions ? (
+                <div className="py-4 text-center bg-blue-50 rounded-xl border border-blue-200">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600 mb-2"></div>
+                  <p className="text-blue-700 text-sm">Cargando coberturas...</p>
+                </div>
+              ) : errorOptions ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+                  <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Error al cargar coberturas</p>
+                    <p className="mt-1">{errorOptions}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <select
+                    name="selectedOption"
+                    value={formData.selectedOption}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 pl-10 pr-10 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none transition"
+                    required
+                  >
+                    <option value="" disabled>Seleccionar cobertura</option>
+                    <option value="particular">Particular</option>
+                    {options.map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.siglas} - {opt.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <FaShieldAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="user-form"
+            className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <FaCheck className="inline mr-2" /> Confirmar datos
+          </button>
+        </div>
+      </div>
+
+      {/* Toastify (asegúrate de tenerlo en App.jsx) */}
+      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
+    </div>
+  );
 };
 
 export default UserFormModalInterno;

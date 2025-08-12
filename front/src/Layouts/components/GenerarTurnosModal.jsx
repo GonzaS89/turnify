@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
+import { FaCalendarAlt, FaClock, FaStopwatch, FaPlusCircle, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -7,33 +10,26 @@ const GenerarTurnosModal = () => {
   const [endTime, setEndTime] = useState('');
   const [duracionTurno, setDuracionTurno] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-
-  // Previene el scroll del fondo
-  document.body.style.overflow = 'hidden';
 
   const navigate = useNavigate();
-
-  const {consultorioId} = useParams();
-  const {profesionalId} = useParams();
+  const { consultorioId } = useParams();
+  const { profesionalId } = useParams();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Calcular cantidad de turnos basados en rango horario
+  // Previene scroll del fondo
+  document.body.style.overflow = 'hidden';
+
+  // Calcular cantidad de turnos
   const calculatedTurns = useMemo(() => {
-    if (!selectedDate || !startTime || !endTime || duracionTurno <= 0) {
-      return 0;
-    }
+    if (!selectedDate || !startTime || !endTime || duracionTurno <= 0) return 0;
 
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
 
-    if (end <= start) {
-      return 0; // Hora final inválida
-    }
+    if (end <= start) return 0;
 
-    const diffMs = end - start;
-    const diffMins = diffMs / (1000 * 60);
+    const diffMins = (end - start) / (1000 * 60);
     return Math.floor(diffMins / duracionTurno);
   }, [selectedDate, startTime, endTime, duracionTurno]);
 
@@ -45,7 +41,6 @@ const GenerarTurnosModal = () => {
 
   const handleStartTimeChange = (e) => {
     setStartTime(e.target.value);
-    // Opcional: limpiar endTime si startTime cambia
     if (endTime && new Date(`2000-01-01T${e.target.value}`) >= new Date(`2000-01-01T${endTime}`)) {
       setEndTime('');
     }
@@ -61,39 +56,21 @@ const GenerarTurnosModal = () => {
   };
 
   const handleEnableTurns = async () => {
-    if (!selectedDate) {
-      alert("Por favor, selecciona una fecha.");
-      return;
-    }
-    if (!startTime) {
-      alert("Por favor, selecciona una hora de inicio.");
-      return;
-    }
-    if (!endTime) {
-      alert("Por favor, selecciona una hora de finalización.");
-      return;
-    }
+    if (!selectedDate) return toast.warn("Selecciona una fecha.");
+    if (!startTime) return toast.warn("Selecciona una hora de inicio.");
+    if (!endTime) return toast.warn("Selecciona una hora de finalización.");
     if (new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`)) {
-      alert("La hora de finalización debe ser posterior a la hora de inicio.");
-      return;
+      return toast.error("La hora de finalización debe ser posterior a la de inicio.");
     }
-    if (duracionTurno < 5) {
-      alert("La duración mínima del turno es 5 minutos.");
-      return;
-    }
-    if (calculatedTurns <= 0) {
-      alert(`No se pueden generar turnos con una duración de ${duracionTurno} min en este rango horario.`);
-      return;
-    }
+    if (duracionTurno < 5) return toast.error("La duración mínima es 5 minutos.");
+    if (calculatedTurns <= 0) return toast.warn("No se pueden generar turnos con estos parámetros.");
 
     setIsSubmitting(true);
 
     try {
       const response = await fetch(`${API_URL}/api/habilitarturnos`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           consultorioId,
           profesionalId,
@@ -102,148 +79,154 @@ const GenerarTurnosModal = () => {
           horaInicio: startTime,
           duracion: duracionTurno
         }),
-
-       
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al habilitar turnos');
+        const error = await response.json();
+        throw new Error(error.message || 'Error al habilitar turnos');
       }
-
-      navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
 
       const result = await response.json();
 
-      setShowSuccessToast(true);
+      // Éxito
+      toast.success(
+        <div className="text-sm">
+          ✅ <strong>{calculatedTurns} turnos</strong> generados para el{' '}
+          <strong>{new Date(selectedDate).toLocaleDateString('es-AR')}</strong>, de{' '}
+          <strong>{startTime}</strong> a <strong>{endTime}</strong>, cada{' '}
+          <strong>{duracionTurno} min</strong>.
+        </div>,
+        { autoClose: 1500 }
+      );
 
+      // Redirigir tras éxito
       setTimeout(() => {
-        
-        setDuracionTurno(30);
-        setShowSuccessToast(false);
+        navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
       }, 2000);
-    } catch (apiError) {
-      console.error('Error al habilitar turnos:', apiError);
-      alert(`Error: ${apiError.message}`);
+
+    } catch (err) {
+      toast.error(`❌ Error: ${err.message}`);
+      console.error('Error al habilitar turnos:', err);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Formato de fecha legible
   const formattedDate = selectedDate
-    ? (() => {
-      const [year, month, day] = selectedDate.split('-');
-      const date = new Date(+year, +month - 1, +day);
-      return isNaN(date.getTime())
-        ? 'fecha inválida'
-        : date.toLocaleDateString('es-AR', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
-    })()
+    ? new Date(selectedDate).toLocaleDateString('es-AR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
     : '';
 
   return (
     <>
-      {/* Overlay del modal */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-gray-800">Habilitar Turnos</h3>
+      {/* Overlay oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Encabezado con gradiente */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FaCalendarAlt className="text-2xl" />
+                <h3 className="text-2xl font-bold">Habilitar Turnos</h3>
+              </div>
               <button
-                  onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
-                className="text-gray-500 hover:text-gray-700"
+                onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                aria-label="Cerrar"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <FaTimesCircle size={20} />
               </button>
             </div>
-            <p className="text-gray-600 mt-2">Define el rango horario y duración. Los turnos se generarán automáticamente.</p>
+            <p className="text-blue-100 mt-2 text-sm opacity-90">
+              Define fecha, horario y duración. Los turnos se generarán automáticamente.
+            </p>
           </div>
 
           {/* Cuerpo scrollable */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-            <div className="mb-6">
-              <label htmlFor="turn-date" className="block text-gray-700 font-semibold mb-2">
-                Fecha:
+          <div className="p-6 space-y-6 max-h-[calc(90vh-180px)] overflow-y-auto">
+            {/* Fecha */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <FaCalendarAlt className="text-blue-500" /> Fecha *
               </label>
               <input
                 type="date"
-                id="turn-date"
                 value={selectedDate}
                 onChange={handleDateChange}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition"
               />
             </div>
 
             {selectedDate && (
               <>
-                <div className="mb-6">
-                  <label htmlFor="turn-start-time" className="block text-gray-700 font-semibold mb-2">
-                    Hora de inicio:
+                {/* Hora de inicio */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaClock className="text-green-500" /> Hora de inicio *
                   </label>
                   <input
                     type="time"
-                    id="turn-start-time"
                     value={startTime}
                     onChange={handleStartTimeChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
                 </div>
 
-                <div className="mb-6">
-                  <label htmlFor="turn-end-time" className="block text-gray-700 font-semibold mb-2">
-                    Hora de finalización:
+                {/* Hora de finalización */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaClock className="text-orange-500" /> Hora de finalización *
                   </label>
                   <input
                     type="time"
-                    id="turn-end-time"
                     value={endTime}
                     onChange={handleEndTimeChange}
                     min={startTime || undefined}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                   {endTime && new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`) && (
-                    <p className="text-red-500 text-sm mt-1">Debe ser posterior a la hora de inicio.</p>
+                    <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+                      <FaExclamationCircle /> Debe ser posterior a la hora de inicio.
+                    </p>
                   )}
                 </div>
 
-                <div className="mb-6">
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Duración del turno (minutos):
+                {/* Duración del turno */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaStopwatch className="text-purple-500" /> Duración (minutos) *
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => setDuracionTurno(prev => (prev < 10 ? 5 : prev - 5))}
-                      className="px-3 py-1 bg-gray-300 text-gray-800 rounded-lg font-bold hover:bg-gray-400 transition"
+                      onClick={() => setDuracionTurno(prev => Math.max(5, prev - 5))}
+                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition flex items-center justify-center"
                     >
                       −
                     </button>
                     <input
                       type="number"
                       value={duracionTurno}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        if (!isNaN(value) && value >= 5) {
-                          setDuracionTurno(value);
-                        } else if (e.target.value === '') {
-                          setDuracionTurno(30); // valor temporal si borra
-                        }
-                      }}
+                      onChange={handleDuracionChange}
                       min="5"
-                      className="flex-1 p-3 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="30"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     />
                     <button
                       type="button"
                       onClick={() => setDuracionTurno(prev => prev + 5)}
-                      className="px-3 py-1 bg-gray-300 text-gray-800 rounded-lg font-bold hover:bg-gray-400 transition"
+                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition flex items-center justify-center"
                     >
                       +
                     </button>
@@ -251,70 +234,63 @@ const GenerarTurnosModal = () => {
                   <p className="text-gray-500 text-sm mt-1">Recomendado: 15, 30, 45 o 60 minutos</p>
                 </div>
 
-                {/* Mostrar cantidad calculada de turnos */}
-                {calculatedTurns > 0 && (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-800 font-semibold">
-                      Se generarán <strong>{calculatedTurns}</strong> turnos.
-                    </p>
-                    <p className="text-green-700 text-sm">
-                      Desde <strong>{startTime}</strong> hasta <strong>{endTime}</strong>, cada {duracionTurno} min.
-                    </p>
-                  </div>
-                )}
-
-                {calculatedTurns === 0 && startTime && endTime && (
-                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-yellow-800 text-sm">
-                      No se pueden generar turnos completos en este rango horario con duración de {duracionTurno} min.
+                {/* Resumen de turnos */}
+                {calculatedTurns > 0 ? (
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FaCheckCircle className="text-green-600" />
+                      <span className="font-semibold text-green-800">Turnos generados</span>
+                    </div>
+                    <p className="text-green-700 text-sm leading-relaxed">
+                      Se crearán <strong>{calculatedTurns} turnos</strong> el <strong>{formattedDate}</strong>, desde las{' '}
+                      <strong>{startTime}</strong> hasta las <strong>{endTime}</strong>, cada <strong>{duracionTurno} minutos</strong>.
                     </p>
                   </div>
-                )}
+                ) : calculatedTurns === 0 && startTime && endTime ? (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <p className="text-yellow-800 text-sm flex items-center gap-1">
+                      <FaExclamationCircle /> No se pueden generar turnos completos con esta duración.
+                    </p>
+                  </div>
+                ) : null}
               </>
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+          {/* Footer con botones */}
+          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
             <button
+              type="button"
               onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
-              className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
-              disabled={isSubmitting}
+              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
             >
               Cancelar
             </button>
             <button
+              type="button"
               onClick={handleEnableTurns}
               disabled={isSubmitting || calculatedTurns <= 0}
-              className={`px-5 py-2 rounded-lg font-semibold text-white transition-colors duration-200 ${isSubmitting || calculatedTurns <= 0
-                  ? 'bg-green-400 cursor-not-allowed'
-                  : 'bg-green-600 hover:bg-green-700'
-                }`}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
+                isSubmitting || calculatedTurns <= 0
+                  ? 'bg-gray-400'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg'
+              }`}
             >
               {isSubmitting ? (
-                <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Habilitando...
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                  Creando...
                 </div>
               ) : (
-                `Habilitar ${calculatedTurns > 0 ? calculatedTurns : ''} turno${calculatedTurns !== 1 ? 's' : ''}`
+                `Habilitar ${calculatedTurns} turno${calculatedTurns !== 1 ? 's' : ''}`
               )}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Toast de éxito */}
-      {showSuccessToast && (
-        <div className="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-[201]">
-          Se agregaron <strong>{calculatedTurns}</strong> turnos para el{' '}
-          <strong>{formattedDate}</strong> de <strong>{startTime}</strong> a <strong>{endTime}</strong>,
-          cada uno de <strong>{duracionTurno} min</strong>.
-        </div>
-      )}
+    
+
     </>
   );
 };

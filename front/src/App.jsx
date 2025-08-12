@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import useProfesionalxId from "../customHooks/useProfesionalxId";
+import { ToastContainer } from "react-toastify";
 
 // Componentes
 import UserDashboard from "./Layouts/UserDashboard";
@@ -18,6 +19,7 @@ import ConfirmationModalInterno from "./Layouts/components/ConfirmationModalInte
 import UserFormModalInterno from "./Layouts/components/UserFormModalInterno";
 import TurnList from "./Layouts/TurnList";
 import GenerarTurnosModal from "./Layouts/components/GenerarTurnosModal";
+import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
 
 
 const App = () => {
@@ -67,6 +69,8 @@ const App = () => {
             </div>
           )}
 
+          <ToastContainer position="top-right" autoClose={3000} /> 
+
           {/* Contenido principal */}
           <main className="relative flex-grow">
             <Routes>
@@ -77,7 +81,7 @@ const App = () => {
                 element={<UserDashboard />}
               />
 
-              <Route path="/crearconsultorio/:codigoValidacion" element={<CrearConsultorio />} />
+              <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio />} />
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
               <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>
@@ -88,6 +92,7 @@ const App = () => {
               <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
               <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
               <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />}/>
+              <Route path="/codigosdisponibles" element={<PlantillaCodigosActivacion />}/>
  
             </Routes>
           </main>

@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import axios from 'axios'; // ← Importar axios
+import axios from 'axios';
 import useAllEspecialidades from '../../customHooks/useAllEspecialidades';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaUserMd, FaStethoscope, FaIdCard, FaGraduationCap, FaExclamationCircle, FaCheckCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const CrearProfesionalModal = ( { onClose, onCreate}) => {
+const CrearProfesionalModal = ({ onClose, onCreate }) => {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [especialidad, setEspecialidad] = useState('');
@@ -12,7 +15,6 @@ const CrearProfesionalModal = ( { onClose, onCreate}) => {
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
 
-  // Usamos SOLO el loading y error del custom hook
   const { especialidades, isLoading: loading, error: hookError } = useAllEspecialidades();
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -21,13 +23,13 @@ const CrearProfesionalModal = ( { onClose, onCreate}) => {
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
-  
+
     if (!nombre.trim()) return setMensajeError('El nombre es obligatorio.');
     if (!apellido.trim()) return setMensajeError('El apellido es obligatorio.');
     if (!especialidad) return setMensajeError('Debe seleccionar una especialidad.');
     if (!matricula.trim()) return setMensajeError('La matrícula es obligatoria.');
     if (matricula.trim().length < 3) return setMensajeError('La matrícula debe tener al menos 3 caracteres.');
-  
+
     try {
       const nuevoProfesional = {
         nombre: nombre.trim(),
@@ -36,171 +38,194 @@ const CrearProfesionalModal = ( { onClose, onCreate}) => {
         titulo,
         matricula: matricula.trim(),
       };
-  
+
       const response = await axios.post(`${API_URL}/api/crearprofesional`, nuevoProfesional);
       const data = response.data;
-  
+
       setMensaje(`✅ ${data.nombre || 'El profesional'} fue creado con éxito.`);
-  
+      toast.success('Profesional creado correctamente');
+
       // Limpiar formulario
-      setNombre("");
-      setApellido("");
-      setMatricula("");
-      setEspecialidad("");
-      setTitulo("");
-  
-      // Cerrar después de mostrar el mensaje
+      setNombre('');
+      setApellido('');
+      setMatricula('');
+      setEspecialidad('');
+      setTitulo('');
+
+      // Notificar al padre y cerrar
       setTimeout(() => {
         onClose();
-        onCreate(); // si onCreate es para notificar al padre
+        onCreate?.();
       }, 1500);
-  
+
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const errorMsg = err.response?.data?.message || err.response?.statusText || 'Error desconocido';
-        setMensajeError(`❌ Error: ${errorMsg}`);
-      } else {
-        setMensajeError('❌ Error de conexión. Intente más tarde.');
-      }
-      console.error('Error al crear profesional:', err);
+      const errorMsg = err.response?.data?.message || err.response?.statusText || 'Error desconocido';
+      setMensajeError(`❌ ${errorMsg}`);
+      toast.error('Error al crear el profesional');
     }
   };
+
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-     
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <div
-        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md transform transition-all"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100 hover:scale-[1.01]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Crear Profesional</h2>
-          <button onClick={onClose}>
-          <FaTimes className='text-2xl'/>
+        {/* Header con gradiente y ícono */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FaUserMd className="text-2xl" />
+            <h2 className="text-2xl font-bold">Crear Profesional</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:bg-white/20 rounded-full p-1 transition"
+            aria-label="Cerrar modal"
+          >
+            <FaTimes size={20} />
           </button>
         </div>
 
-        {/* Mensaje de error del hook (carga de especialidades) */}
-        {hookError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
-            No se pudieron cargar las especialidades. Intente más tarde.
-          </div>
-        )}
-
-        {/* Mensaje de éxito o error */}
-        {mensajeError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
-            {mensajeError}
-          </div>
-        )}
-        {mensaje && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded text-sm">
-            {mensaje}
-          </div>
-        )}
-
-        {/* Formulario o carga */}
-        {loading ? (
-          <div className="py-8 text-center">
-            <p className="text-gray-600">Cargando especialidades...</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre *
-              </label>
-              <input
-                type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Juan"
-                disabled={loading}
-              />
+        {/* Contenido */}
+        <div className="p-6 space-y-6">
+          {/* Error del hook */}
+          {hookError && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
+              <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                No se pudieron cargar las especialidades. Por favor, intenta más tarde.
+              </span>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Apellido *
-              </label>
-              <input
-                type="text"
-                value={apellido}
-                onChange={(e) => setApellido(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Pérez"
-                disabled={loading}
-              />
+          {/* Mensajes */}
+          {mensajeError && (
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
+              <FaExclamationCircle className="mt-0.5 flex-shrink-0" />
+              <span className="text-sm">{mensajeError}</span>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Título
-              </label>
-              <select
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                disabled={loading}
-              >
-                <option value="">Elegí un título</option>
-                <option value="doctor">Doctor</option>
-                <option value="doctora">Doctora</option>
-                <option value="licenciado">Licenciado</option>
-                <option value="licenciada">Licenciada</option>
-              </select>
+          {mensaje && (
+            <div className="p-4 rounded-xl bg-green-50 border border-green-200 flex items-start gap-3 text-green-700">
+              <FaCheckCircle className="mt-0.5 flex-shrink-0" />
+              <span className="text-sm">{mensaje}</span>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Especialidad Médica *
-              </label>
-              <select
-                value={especialidad}
-                onChange={(e) => setEspecialidad(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                disabled={loading}
-              >
-                <option value="">Seleccionar especialidad</option>
-                {Array.isArray(especialidades) &&
-                  especialidades.map((esp) => (
-                    <option key={esp.id} value={esp.nombre}>
-                      {esp.nombre}
-                    </option>
-                  ))}
-              </select>
+          {/* Cargando */}
+          {loading ? (
+            <div className="py-10 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
+              <p className="text-gray-500 text-sm">Cargando especialidades...</p>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Nombre */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaStethoscope className="text-blue-500" /> Nombre *
+                </label>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Juan"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Matrícula *
-              </label>
-              <input
-                type="text"
-                value={matricula}
-                onChange={(e) => setMatricula(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="12345"
-                disabled={loading}
-              />
-            </div>
+              {/* Apellido */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaStethoscope className="text-blue-500" /> Apellido *
+                </label>
+                <input
+                  type="text"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  placeholder="Pérez"
+                />
+              </div>
 
-            <div className="flex gap-3 pt-2">
-              
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none"
-              >
-                {loading ? 'Creando...' : 'Crear Profesional'}
-              </button>
-            </div>
-          </form>
-        )}
+              {/* Título */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaGraduationCap className="text-indigo-500" /> Título
+                </label>
+                <select
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+                >
+                  <option value="">Elegí un título</option>
+                  <option value="doctor">Doctor</option>
+                  <option value="doctora">Doctora</option>
+                  <option value="licenciado">Licenciado</option>
+                  <option value="licenciada">Licenciada</option>
+                  <option value="bioquímico">Bioquímico</option>
+                  <option value="bioquímica">Bioquímica</option>
+                </select>
+              </div>
+
+              {/* Especialidad */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaStethoscope className="text-purple-500" /> Especialidad Médica *
+                </label>
+                <select
+                  value={especialidad}
+                  onChange={(e) => setEspecialidad(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                >
+                  <option value="">Seleccionar especialidad</option>
+                  {Array.isArray(especialidades) &&
+                    especialidades.map((esp) => (
+                      <option key={esp.id} value={esp.nombre}>
+                        {esp.nombre}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* Matrícula */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaIdCard className="text-green-500" /> Matrícula *
+                </label>
+                <input
+                  type="text"
+                  value={matricula}
+                  onChange={(e) => setMatricula(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                  placeholder="12345"
+                />
+              </div>
+
+              {/* Botones */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  Crear Profesional
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
+
+      {/* Toastify */}
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );
 };

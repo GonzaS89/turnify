@@ -112,8 +112,7 @@ app.get("/api/provincias", async (req, res) => {
 
 //OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
-app.get(
-  "/api/turnos-profesional/:profesionalId/:consultorioId",
+app.get("/api/turnos-profesional/:profesionalId/:consultorioId",
   async (req, res) => {
     const { profesionalId, consultorioId } = req.params;
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import { FaCheckCircle } from "react-icons/fa"; // Importa el icono de check
-import useAllCoberturas from "../../../customHooks/useAllCoberturas"; // Asegúrate de que esta ruta sea correcta
-import { useParams ,useNavigate } from "react-router";
+import { FaCheckCircle, FaExclamationCircle, FaTimesCircle } from "react-icons/fa";
+import useAllCoberturas from "../../../customHooks/useAllCoberturas";
+import { useParams, useNavigate } from "react-router";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
 import useConsultorioxId from "../../../customHooks/useConsultorioxId";
 
@@ -10,70 +10,55 @@ const ConfirmationModalInterno = ({
   formData,
   selectedTurno,
   ordenTurno,
-  actualizarTurnos
+  actualizarTurnos,
 }) => {
+  const { consultorioId } = useParams();
+  const { profesionalId } = useParams();
+  const navigate = useNavigate();
 
- const {consultorioId} = useParams();
- const {profesionalId} = useParams();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Estados internos para la lógica de la API y la UI
-  const [isSubmitting, setIsSubmitting] = useState(false); // Indica si la reserva está en proceso
-  const [submitError, setSubmitError] = useState(null); // Almacena mensajes de error de la API
-  const [isSuccess, setIsSuccess] = useState(false); // Controla si la reserva fue exitosa
-  const [confirmedTurnoId, setConfirmedTurnoId] = useState(null); // Guarda el ID del turno confirmado
+  const { coberturas } = useAllCoberturas();
+  const { profesional: prof, isLoading: loadingProfesional } = useProfesionalxId(profesionalId);
+  const { consultorio: consul, isLoading: loadingConsultorio } = useConsultorioxId(consultorioId);
 
-  const { coberturas } = useAllCoberturas(); // Hook para obtener las coberturas médicas
-
-  const { profesional:prof, isLoading: loadingProfesional, error: errorProfesional } = useProfesionalxId(profesionalId);
-  const { consultorio:consul, isLoading: loadingConsultorio, error: errorConsultorio } = useConsultorioxId(consultorioId);
- 
-  const profesional = prof[0];
-  const consultorio = consul[0];
-
-  console.log(profesional, consultorio)
+  const profesional = prof?.[0];
+  const consultorio = consul?.[0];
 
   const coberturaElegida = coberturas?.find(
-    (cobertura) => cobertura.id == formData?.selectedOption
-  ); // Asegúrate de que selectedOption sea un ID válido
-
-  // Si el modal no está abierto, no renderiza nada
-
-  const navigate = useNavigate();
+    (cobertura) => cobertura.id === formData?.selectedOption
+  );
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Función para formatear la fecha
+  // Formatear fecha y hora
   const formatearFechaSQL = (fecha) => {
     if (!fecha) return "N/A";
     const date = new Date(fecha);
     return date.toLocaleDateString("es-AR", {
-      year: "numeric",
-      month: "long",
+      weekday: "long",
       day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
   const formatearHora = (hora) => {
-    if (!hora) return "";
-    const [horaParte, minutoParte] = hora.split(":");
-    const horaFormateada = `${horaParte.padStart(
-      2,
-      "0"
-    )}:${minutoParte.padStart(2, "0")}`;
-    return horaFormateada;
+    if (!hora) return "N/A";
+    const [h, m] = hora.split(":");
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
 
-  // Función que realiza la llamada a la API para reservar el turno
+  // Reservar turno
   const reservarTurno = async () => {
-    setIsSubmitting(true); // Activa el estado de carga
-    setSubmitError(null); // Limpia cualquier error previo
-    setIsSuccess(false); // Reinicia el estado de éxito
-
-    const turnoId = selectedTurno?.id;
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       const response = await axios.put(
-        `${API_URL}/api/reservarturno/${turnoId}`,
+        `${API_URL}/api/reservarturno/${selectedTurno?.id}`,
         {
           nombre_paciente: formData.nombre,
           apellido_paciente: formData.apellido,
@@ -81,203 +66,202 @@ const ConfirmationModalInterno = ({
           cobertura: formData.selectedOption,
           telefono: formData.telefono,
           estado: "reservado",
-          fecha: formatearFechaSQL(selectedTurno?.fecha),
+          fecha: formatearFechaSQL(selectedTurno.fecha),
           consultorioID: consultorio?.id,
           profesionalID: profesional?.id,
-          hora: formatearHora(selectedTurno?.hora), // Asegúrate de que la hora esté en el formato correcto
+          hora: formatearHora(selectedTurno.hora),
         }
       );
 
-      console.log("Turno actualizado:", response.data);
-      setIsSuccess(true); // Marca la reserva como exitosa
-      setConfirmedTurnoId(response.data.updatedId);
+      setIsSuccess(true);
 
-      // Cierra el modal de selección de turnos
-      // Opcional: Cerrar el modal de éxito automáticamente después de unos segundos
       setTimeout(() => {
-       // Llama a la función de cierre y reseteo
-        // Llama a la prop onClose del padre
-     
-        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`)
-  
-
-        // Recarga la página para reflejar los cambios
-        window.scrollTo(0, 0); // Vuelve al inicio de la página
-      }, 2000); // Cierra después de 3 segundos
+        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
+      }, 2000);
     } catch (error) {
-      console.error("Error al actualizar el turno:", error);
       const errorMessage =
-        error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : "Error al conectar con el servidor o actualizar el turno.";
-      setSubmitError(errorMessage); // Muestra el error en este modal
+        error.response?.data?.message || "Error al conectar con el servidor.";
+      setSubmitError(errorMessage);
     } finally {
-      setIsSubmitting(false); // Desactiva el estado de carga
+      setIsSubmitting(false);
     }
   };
 
-  // Función para cerrar el modal y resetear su estado interno
-  const onCloseAndReset = () => {
-    setIsSuccess(false); // Reinicia el estado de éxito
-    setConfirmedTurnoId(null); // Limpia el ID del turno confirmado
-    setSubmitError(null); // Limpia cualquier error
-  };
+  // Previene scroll del fondo
+  document.body.style.overflow = "hidden";
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-85 flex items-center justify-center p-4">
-      {" "}
-      {/* Ajuste de padding */}
-      <div className="bg-gradient-to-br from-blue-50 to-white rounded-3xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md md:max-w-lg flex flex-col gap-5 border border-blue-100 transform scale-95 animate-scale-in max-h-[90vh] overflow-y-auto">
-        {" "}
-        {/* Ajuste de padding y gap */}
-        {isSuccess ? (
-          // Contenido para el estado de éxito
-          <div className="text-center py-5">
-            {" "}
-            {/* Ajuste de padding */}
-            <FaCheckCircle className="text-blue-500 text-6xl mb-4 mx-auto animate-bounce-in" />{" "}
-            {/* Icono azul y animación */}
-            <h2 className="text-3xl font-extrabold text-blue-800 text-center mb-3 tracking-tight">
-              ¡Reserva Confirmada!
-            </h2>
-            <div className="text-center text-gray-700 text-lg mb-5">
-              <p className="mb-2">Tu turno ha sido reservado exitosamente.</p>
-              <p className="mt-4">Recibirás una confirmación por WhatsApp.</p>
+    <>
+      {/* Overlay oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={() => !isSubmitting && navigate(-1)}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] max-h-[90vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Encabezado con gradiente */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold">
+                {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}
+              </h3>
+              <button
+                onClick={() => !isSubmitting && navigate(-1)}
+                disabled={isSubmitting}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
+                aria-label="Cerrar"
+              >
+                <FaTimesCircle size={20} />
+              </button>
             </div>
-          </div>
-        ) : (
-          // Contenido para el estado de confirmación inicial
-          <>
-            <h2 className="text-3xl font-extrabold text-blue-900 text-center mb-4 tracking-tight">
-              Confirma tu Reserva
-            </h2>
-
-            <p className="text-gray-600 text-center mb-4 text-base">
-              Por favor, revisa cuidadosamente los detalles antes de finalizar.
+            <p className="text-blue-100 mt-2 text-sm opacity-90">
+              {isSuccess
+                ? "Tu turno ha sido reservado correctamente."
+                : "Revisa los datos antes de confirmar."}
             </p>
+          </div>
 
-            {/* Información del Turno y Profesional/Consultorio */}
-            {selectedTurno && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 shadow-inner">
-                <p className="text-lg font-bold text-blue-700 mb-3">
-                  Detalles de la Cita:
+          {/* Cuerpo scrollable */}
+          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+            {isSuccess ? (
+              // Estado de éxito
+              <div className="text-center py-6">
+                <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4 animate-bounce" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva Confirmada!</h2>
+                <p className="text-gray-600 text-sm">
+                  Tu turno ha sido reservado exitosamente.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 text-sm sm:text-base">
-                  <p>
-                    <span className="font-semibold text-blue-600">Fecha:</span>{" "}
-                    {formatearFechaSQL(selectedTurno.fecha)}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-blue-600">Hora:</span>{" "}
-                    {formatearHora(selectedTurno?.hora)}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-blue-600">Orden:</span>{" "}
-                    {ordenTurno}° turno
-                  </p>
-                  <p></p>
-                  <p className="col-span-full">
-                    <span className="font-semibold text-blue-600">
-                      Con quién:
-                    </span>{" "}
-                    Dr/a{" "}
-                    {profesional
-                      ? `${profesional.nombre} ${profesional.apellido}`
-                      : "No disponible"}
-                  </p>
-                  <p className="col-span-full">
-                    <span className="font-semibold text-blue-600">
-                      Especialidad:
-                    </span>{" "}
-                    {profesional ? profesional.especialidad : "No disponible"}
-                  </p>
-                  <p className="col-span-full">
-                    <span className="font-semibold text-blue-600">Dónde:</span>{" "}
-                    {consultorio
-                      ? consultorio.tipo === "Particular"
-                        ? "Consultorio Particular"
-                        : `Centro médico ${consultorio.nombre}`
-                      : "No disponible"}
-                  </p>
-                  <p className="col-span-full">
-                    <span className="font-semibold text-blue-600">
-                      Dirección:
-                    </span>{" "}
-                    {consultorio
-                      ? `${consultorio.direccion}, ${consultorio.localidad}`
-                      : "No disponible"}
-                  </p>
+                <p className="text-gray-500 text-sm mt-1">
+                  Recibirás una confirmación por WhatsApp.
+                </p>
+              </div>
+            ) : (
+              // Estado de confirmación
+              <>
+                {/* Detalles del turno */}
+                {selectedTurno && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                    <h4 className="font-semibold text-blue-800 mb-3 text-lg">Detalles del Turno</h4>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <p>
+                        <span className="font-medium text-blue-600">Fecha:</span>{" "}
+                        {formatearFechaSQL(selectedTurno.fecha)}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Hora:</span>{" "}
+                        {formatearHora(selectedTurno.hora)}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Orden:</span>{" "}
+                        {ordenTurno}° turno
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Profesional:</span>{" "}
+                        Dr/a {profesional?.nombre} {profesional?.apellido}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Especialidad:</span>{" "}
+                        {profesional?.especialidad}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Consultorio:</span>{" "}
+                        {consultorio?.tipo === "Particular"
+                          ? "Consultorio Particular"
+                          : `Centro médico ${consultorio?.nombre}`}
+                      </p>
+                      <p>
+                        <span className="font-medium text-blue-600">Dirección:</span>{" "}
+                        {consultorio?.direccion}, {consultorio?.localidad}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Datos del paciente */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                  <h4 className="font-semibold text-gray-800 mb-3 text-lg">Tus Datos</h4>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <p>
+                      <span className="font-medium text-gray-600">Nombre:</span> {formData.nombre}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-600">Apellido:</span> {formData.apellido}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-600">DNI:</span> {formData.dni}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-600">Teléfono:</span> {formData.telefono}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-600">Cobertura:</span>{" "}
+                      {coberturaElegida
+                        ? `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
+                        : "Particular"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+
+                {/* Error */}
+                {submitError && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                    <FaExclamationCircle className="text-red-600 mt-0.5" />
+                    <p className="text-red-700 text-sm leading-tight">{submitError}</p>
+                  </div>
+                )}
+              </>
             )}
+          </div>
 
-            {/* Datos del Paciente */}
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-inner">
-              {" "}
-              {/* Borde más sutil */}
-              <p className="text-lg font-bold text-gray-800 mb-3">Tus Datos:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-700 text-sm sm:text-base">
-                <p>
-                  <span className="font-semibold text-gray-700">Nombre:</span>{" "}
-                  {formData?.nombre || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700">Apellido:</span>{" "}
-                  {formData?.apellido || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700">DNI:</span>{" "}
-                  {formData?.dni || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700">Teléfono:</span>{" "}
-                  {formData?.telefono || "N/A"}
-                </p>
-                <p className="col-span-full">
-                  <span className="font-semibold text-gray-700">
-                    Cobertura Médica:
-                  </span>{" "}
-                  {coberturaElegida
-                    ? ` ${coberturaElegida.siglas} (${coberturaElegida.nombre})`
-                    : "Particular"}
-                </p>
-              </div>
-            </div>
-
-            {/* Mensaje de error de envío */}
-            {submitError && (
-              <div className="bg-red-50 border border-red-300 text-red-600 px-4 py-3 rounded-lg text-center text-sm mt-4">
-                {" "}
-                {/* Tonos de rojo más suaves */}
-                <p>{submitError}</p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-              {" "}
-              {/* Espaciado aumentado */}
+          {/* Footer */}
+          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+            {!isSuccess ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={reservarTurno}
+                  disabled={isSubmitting}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
+                    isSubmitting
+                      ? "bg-gray-400"
+                      : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                      Confirmando...
+                    </div>
+                  ) : (
+                    "Confirmar Reserva"
+                  )}
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
-                onClick={()=> navigate(-1)}
-                className="py-2.5 px-6 bg-blue-50 border border-blue-300 text-blue-700 font-bold rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 text-base"
-                disabled={isSubmitting}
+                onClick={() =>
+                  navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`)
+                }
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
               >
-                Editar Datos
+                Volver al Panel
               </button>
-              <button
-                type="button"
-                onClick={reservarTurno}
-                className="py-2.5 px-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-full hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-base"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Confirmando..." : "Confirmar Reserva"}
-              </button>
-            </div>
-          </>
-        )}
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
