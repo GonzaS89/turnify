@@ -4,7 +4,7 @@ import { FaWhatsapp, FaCopy } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Opcional: para notificaciones
 import "react-toastify/dist/ReactToastify.css"; // Estilos de toast
 
-const URL = 'http://localhost:5173/crearconsultorio'
+const URL = 'https://yatenesturno-pruebas.netlify.app/crearconsultorio'
 
 const PlantillaCodigosActivacion = () => {
   const { codigosActivacion, isLoading, error } = useAllCodigosActivacion();
