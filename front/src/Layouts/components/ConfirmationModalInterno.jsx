@@ -76,7 +76,7 @@ const ConfirmationModalInterno = ({
       setIsSuccess(true);
 
       setTimeout(() => {
-        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
+        // navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
       }, 2000);
     } catch (error) {
       const errorMessage =
@@ -159,7 +159,7 @@ const ConfirmationModalInterno = ({
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Profesional:</span>{" "}
-                        Dr/a {profesional?.nombre} {profesional?.apellido}
+                        {profesional?.nombre} {profesional?.apellido}
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Especialidad:</span>{" "}

@@ -100,15 +100,15 @@ const ConfirmationModal = ({
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
-        onClick={() => !isSubmitting && navigate(-1)}
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        onClick={() => !isSubmitting && navigate('/')}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-md transform transition-all hover:scale-[1.01] h-[100dvh] lg:max-h-[90vh] flex flex-col"
+          className="bg-white rounded-2xl shadow-2xl w-screen lg:max-w-md transform transition-all hover:scale-[1.01] h-auto lg:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
                 {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}
@@ -165,7 +165,7 @@ const ConfirmationModal = ({
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Profesional:</span>{" "}
-                        Dr/a {profesional?.nombre} {profesional?.apellido}
+                        {profesional?.nombre} {profesional?.apellido}
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Especialidad:</span>{" "}

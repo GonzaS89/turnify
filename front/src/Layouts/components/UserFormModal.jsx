@@ -103,18 +103,17 @@ const UserFormModal = ({ onSubmit }) => {
     }
 
     onSubmit(formData);
-    toast.success('Datos confirmados. Redirigiendo...');
     setTimeout(() => {
       navigate(`/confirmacionturno/${consultorioId}/${profesionalId}`);
     }, 800);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] xl:p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full h-[100dvh] max-w-lg transform transition-all hover:scale-[1.01]">
         
         {/* Encabezado con gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FaUser className="text-2xl" />
