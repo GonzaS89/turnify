@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { FaCheckCircle, FaExclamationCircle, FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
 import useAllCoberturas from "../../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
 import useProfesionalxId from "../../../customHooks/useProfesionalxId";
@@ -76,8 +76,8 @@ const ConfirmationModalInterno = ({
       setIsSuccess(true);
 
       setTimeout(() => {
-        // navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
-      }, 2000);
+        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
+      }, 500);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error al conectar con el servidor.";
@@ -94,11 +94,11 @@ const ConfirmationModalInterno = ({
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
         onClick={() => !isSubmitting && navigate(-1)}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] max-h-[100dvh] flex flex-col"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[100dvh] lg:h-auto lg:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -113,7 +113,7 @@ const ConfirmationModalInterno = ({
                 className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
                 aria-label="Cerrar"
               >
-                <FaTimesCircle size={20} />
+                <FaTimes size={20} />
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
@@ -217,7 +217,7 @@ const ConfirmationModalInterno = ({
 
           {/* Footer */}
           <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            {!isSuccess ? (
+            {!isSuccess && (
               <>
                 <button
                   type="button"
@@ -247,17 +247,8 @@ const ConfirmationModalInterno = ({
                   )}
                 </button>
               </>
-            ) : (
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`)
-                }
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
-              >
-                Volver al Panel
-              </button>
-            )}
+            ) 
+            }
           </div>
         </div>
       </div>

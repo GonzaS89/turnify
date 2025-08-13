@@ -1,102 +1,129 @@
-import React from 'react'
+import React from 'react';
 
-const Benefit = ({ icono, titulo, contenido }) => {
-    return (
-        <div className="
-            group
-            bg-white
-            p-8
-            rounded-2xl
-            shadow-lg
-            border border-gray-100
-            transform
-            transition-all
-            duration-500
-            ease-out
-            hover:scale-105
-            hover:shadow-xl
-            hover:border-indigo-300
-            hover:shadow-indigo-50
-            cursor-pointer
-            flex flex-col items-center
-            text-center
-            h-full
-            relative
-            overflow-hidden
-        ">
-            {/* Efecto de fondo hover */}
-            <div className="
-                absolute
-                inset-0
-                bg-gradient-to-br
-                from-indigo-50
-                to-purple-50
-                opacity-0
-                group-hover:opacity-100
-                transition-opacity
-                duration-500
-                -z-10
-            "></div>
+const Benefit = ({ icono, titulo, contenido, delay = 0 }) => {
+  return (
+    <div
+      className="
+        group
+        relative
+        bg-white
+        p-8
+        rounded-3xl
+        shadow-lg
+        border border-gray-100
+        transition-all duration-500
+        hover:scale-105
+        hover:shadow-2xl
+        hover:border-indigo-200
+        cursor-default
+        flex flex-col
+        items-center
+        text-center
+        h-full
+        overflow-hidden
+        transform
+        will-change-transform
+      "
+      role="article"
+      aria-labelledby={`benefit-title-${titulo.replace(/\s+/g, '-').toLowerCase()}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {/* Fondo animado al hacer hover */}
+      <div
+        className="
+          absolute inset-0
+          bg-gradient-to-br from-indigo-50 via-white to-purple-50
+          opacity-0 group-hover:opacity-100
+          transition-opacity duration-700 ease-out
+          -z-10
+        "
+      />
 
-            {/* Icono container con mejor diseño */}
-            <div className="
-                relative
-                w-20 h-20
-                bg-gradient-to-br
-                from-indigo-100
-                to-blue-100
-                rounded-2xl
-                flex items-center justify-center
-                mb-6
-                text-4xl
-                text-indigo-600
-                transition-all
-                duration-300
-                group-hover:scale-110
-                group-hover:shadow-lg
-                group-hover:from-indigo-200
-                group-hover:to-blue-200
-            ">
-                {icono}
-            </div>
+      {/* Brillo lateral animado (efecto de luz que pasa) */}
+      <div
+        className="
+          absolute inset-0 -z-5
+          bg-gradient-to-r from-transparent via-white/40 to-transparent
+          w-full h-full
+          transform -skew-x-12 -translate-x-full
+          group-hover:translate-x-full
+          transition-transform duration-1000 ease-out
+          pointer-events-none
+        "
+      />
 
-            {/* Título con mejor tipografía */}
-            <h3 className="
-                text-xl
-                font-bold
-                text-gray-800
-                mb-4
-                leading-tight
-            ">
-                {titulo}
-            </h3>
+      {/* Contenedor del ícono con gradiente y efecto 3D */}
+      <div
+        className="
+          relative
+          w-20 h-20
+          rounded-2xl
+          flex items-center justify-center
+          mb-6
+          text-4xl
+          text-indigo-600
+          bg-gradient-to-br from-indigo-50 to-blue-100
+          shadow-inner
+          transition-all duration-300
+          transform
+          group-hover:scale-110
+          group-hover:shadow-lg
+          group-hover:from-indigo-100
+          group-hover:to-blue-200
+          group-hover:shadow-indigo-200/70
+        "
+      >
+        {icono}
+      </div>
 
-            {/* Contenido con mejor legibilidad */}
-            <p className="
-                text-gray-600
-                text-sm
-                leading-relaxed
-                flex-grow
-            ">
-                {contenido}
-            </p>
+      {/* Título */}
+      <h3
+        id={`benefit-title-${titulo.replace(/\s+/g, '-').toLowerCase()}`}
+        className="
+          text-xl
+          font-bold
+          text-gray-900
+          mb-4
+          leading-tight
+          transition-colors duration-300
+          group-hover:text-indigo-700
+        "
+      >
+        {titulo}
+      </h3>
 
-            {/* Elemento decorativo opcional */}
-            <div className="
-                w-12
-                h-1
-                bg-gradient-to-r
-                from-indigo-400
-                to-purple-400
-                rounded-full
-                mt-6
-                opacity-0
-                group-hover:opacity-100
-                transition-opacity
-                duration-300
-            "></div>
-        </div>
-    )
-}
+      {/* Descripción */}
+      <p
+        className="
+          text-gray-600
+          text-sm
+          leading-relaxed
+          flex-grow
+          px-1
+        "
+      >
+        {contenido}
+      </p>
 
-export default Benefit
+      {/* Línea decorativa animada en hover */}
+      <div
+        className="
+          w-16 h-0.5
+          bg-gradient-to-r from-transparent via-indigo-400 to-transparent
+          rounded-full
+          mt-6
+          opacity-0
+          group-hover:opacity-100
+          transform scale-x-0
+          group-hover:scale-x-100
+          transition-all duration-500
+          ease-out
+        "
+      />
+    </div>
+  );
+};
+
+export default Benefit;

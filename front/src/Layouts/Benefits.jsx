@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import {
   FcCalendar,
@@ -8,74 +8,35 @@ import {
   FcLeave,
 } from "react-icons/fc";
 
-
-
-// Asegúrate de que el componente 'Benefit' exista y esté correctamente importado
-// import Benefit from './components/Benefit';
-
-const Benefit = ({ icono, titulo, contenido }) => (
-
-    
-
-  <div
-    className="
-        p-8
-        bg-white
-        rounded-2xl
-        shadow-xl
-        border
-        border-gray-100
-        hover:shadow-2xl
-        transition-shadow
-        duration-300
-        h-full
-        flex
-        flex-col
-        items-center
-        text-center
-        space-y-4
-    "
-  >
-    <div
-      className="
-            p-3
-            bg-indigo-50
-            rounded-full
-            inline-flex
-            justify-center
-            items-center
-            mb-4
-            transform
-            transition-transform
-            duration-300
-            group-hover:scale-110
-        "
+// Componente Benefit (refactorizado para máxima elegancia)
+const Benefit = ({ icono, titulo, contenido }) => {
+  return (
+    <motion.div
+      className="group bg-white p-8 rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl hover:border-indigo-200 transition-all duration-300 h-full flex flex-col text-center"
+      whileHover={{ y: -8, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.4 }}
     >
-      {icono}
-    </div>
-    <h3
-      className="
-            text-xl
-            font-bold
-            text-gray-900
-            leading-tight
-            mb-2
-        "
-    >
-      {titulo}
-    </h3>
-    <p
-      className="
-            text-gray-600
-            leading-relaxed
-            text-base
-            flex-grow
-        "
-    >
-      {contenido}
-    </p>
-  </div>
-);
+      {/* Icono con fondo animado */}
+      <div className="inline-flex justify-center items-center w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 rounded-2xl group-hover:from-indigo-100 group-hover:to-indigo-200 group-hover:scale-110 transition-transform duration-300">
+        {React.cloneElement(icono, { className: "w-8 h-8" })}
+      </div>
+
+      {/* Título */}
+      <h3 className="text-xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-indigo-700 transition-colors">
+        {titulo}
+      </h3>
+
+      {/* Descripción */}
+      <p className="text-gray-600 leading-relaxed flex-grow">
+        {contenido}
+      </p>
+    </motion.div>
+  );
+};
 
 const Benefits = () => {
   const mensaje =
@@ -84,27 +45,26 @@ const Benefits = () => {
     mensaje
   )}`;
 
-  // Crear una referencia al elemento que queremos observar
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "-150px" });
 
-  // Definir las variantes de animación para Framer Motion
+  // Variants para animaciones
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1, // Retraso entre los elementos hijos
-        delayChildren: 0.2, // Retraso antes de que los hijos comiencen a animarse
+        staggerChildren: 0.12,
+        delayChildren: 0.3,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
+    hidden: { opacity: 0, y: 40 },
     visible: {
-      y: 0,
       opacity: 1,
+      y: 0,
       transition: { duration: 0.6, ease: "easeOut" },
     },
   };
@@ -112,76 +72,54 @@ const Benefits = () => {
   return (
     <section
       id="beneficios"
-      className="
-                relative
-                py-24
-                px-6
-                sm:px-8
-                lg:px-12
-            
-                overflow-hidden
-            "
+      className="relative py-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white"
+      aria-labelledby="benefits-title"
     >
-      {/* Fondo de gradiente y formas animadas */}
-      <div className="absolute inset-0">
+      {/* Fondo decorativo con blobs animados */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
-          className="
-                    absolute top-0 left-0 w-64 h-64 rounded-full opacity-20 blur-3xl animate-blob-1
-                "
+          className="absolute top-1/4 -left-20 w-96 h-96 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full opacity-30 blur-3xl animate-pulse-slow"
+          style={{ animationDuration: "8s" }}
         ></div>
         <div
-          className="
-                    absolute bottom-10 right-10 w-80 h-80 bg-indigo-200 rounded-full opacity-20 blur-3xl animate-blob-2
-                "
+          className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-l from-pink-100 to-rose-100 rounded-full opacity-25 blur-3xl animate-pulse-slow"
+          style={{ animationDuration: "10s", animationDelay: "2s" }}
         ></div>
         <div
-          className="
-                    absolute -bottom-20 left-1/4 w-96 h-96 bg-pink-200 rounded-full opacity-15 blur-3xl animate-blob-3
-                "
+          className="absolute -top-20 right-1/3 w-72 h-72 bg-gradient-to-t from-blue-100 to-indigo-100 rounded-full opacity-20 blur-3xl animate-pulse-slow"
+          style={{ animationDuration: "12s", animationDelay: "4s" }}
         ></div>
       </div>
 
-      {/* Contenido principal, envuelto en motion.div para animar */}
+      {/* Contenido principal */}
       <motion.div
-        ref={ref} // Asignamos la referencia para detectar la visibilidad
+        ref={ref}
         variants={containerVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
-        className="
-                    max-w-7xl
-                    mx-auto
-                    relative
-                    z-10
-                    text-center
-                "
+        className="max-w-7xl mx-auto relative z-10"
+        aria-labelledby="benefits-title"
       >
-        {/* Badge decorativo */}
+        {/* Badge con efecto de brillo */}
         <motion.div
           variants={itemVariants}
-          className="
-                    inline-flex items-center justify-center gap-2 px-5 py-2
-                    bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700
-                    rounded-full text-sm font-semibold uppercase tracking-wide mb-6
-                "
+          className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-md border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider rounded-full shadow-md mb-8 mx-auto"
         >
-          <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-ping-slow"></div>
-          <span>Beneficios de afiliarte</span>
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+          </span>
+          <span>Beneficios de Afiliarte</span>
         </motion.div>
 
         {/* Título principal */}
         <motion.h2
+          id="benefits-title"
           variants={itemVariants}
-          className="
-                    text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4
-                    leading-tight
-                "
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight"
         >
-          Optimiza tu gestión y expande tu <br />
-          <span
-            className="
-                        bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent
-                    "
-          >
+          Optimiza tu gestión y expande tu{" "}
+          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
             práctica profesional
           </span>
         </motion.h2>
@@ -189,136 +127,129 @@ const Benefits = () => {
         {/* Subtítulo */}
         <motion.p
           variants={itemVariants}
-          className="
-                    text-lg text-gray-600 max-w-4xl mx-auto mb-16 leading-relaxed
-                "
+          className="text-lg text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
         >
           Para médicos y centros de salud, nuestra plataforma es la herramienta
-          clave para
-          <span className="font-bold text-gray-800"> simplificar procesos</span>
-          ,
-          <span className="font-bold text-gray-800">
-            {" "}
-            atraer nuevos pacientes
-          </span>{" "}
-          y
-          <span className="font-bold text-gray-800">
-            {" "}
-            mejorar la experiencia
-          </span>
-          .
+          clave para{" "}
+          <span className="font-semibold text-gray-800">simplificar procesos</span>,{" "}
+          <span className="font-semibold text-gray-800">atraer nuevos pacientes</span>{" "}
+          y{" "}
+          <span className="font-semibold text-gray-800">mejorar la experiencia</span>.
         </motion.p>
 
         {/* Grid de beneficios */}
-        <div
-          className="
-                    grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 auto-rows-fr
-                "
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 lg:gap-6 auto-rows-fr"
         >
-          <motion.div variants={itemVariants}>
-            <Benefit
-              icono={<FcCalendar className="w-12 h-12" />}
-              titulo={"Gestión 24/7"}
-              contenido={
-                "Ofrece un sistema de turnos online y reduce la carga administrativa. Tu agenda siempre organizada."
-              }
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <Benefit
-              icono={<FcBullish className="w-12 h-12" />}
-              titulo={"Más Pacientes"}
-              contenido={
-                "Aparece en nuestro directorio y llega a una audiencia más amplia. Expande tu visibilidad sin esfuerzo."
-              }
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <Benefit
-              icono={<FcSms className="w-12 h-12" />}
-              titulo={"Recordatorios Smart"}
-              contenido={
-                "Envía notificaciones automáticas y personalizadas a tus pacientes, mejorando la comunicación."
-              }
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <Benefit
-              icono={<FcSmartphoneTablet className="w-12 h-12" />}
-              titulo={"Reserva Móvil"}
-              contenido={
-                "Tus pacientes pueden reservar, modificar o cancelar turnos desde cualquier dispositivo, a su conveniencia."
-              }
-            />
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <Benefit
-              icono={<FcLeave className="w-12 h-12" />}
-              titulo={"Minimiza Ausencias"}
-              contenido={
-                "Reduce significativamente la tasa de ausentismo con recordatorios de turno proactivos vía WhatsApp."
-              }
-            />
-          </motion.div>
-        </div>
+          <Benefit
+            icono={<FcCalendar />}
+            titulo="Gestión 24/7"
+            contenido="Agenda online siempre activa. Reduce carga administrativa y mantén tu calendario perfectamente organizado."
+          />
+          <Benefit
+            icono={<FcBullish />}
+            titulo="Más Pacientes"
+            contenido="Aparece en nuestro directorio médico y llega a miles de pacientes en busca de especialistas como vos."
+          />
+          <Benefit
+            icono={<FcSms />}
+            titulo="Recordatorios Smart"
+            contenido="Envía notificaciones automáticas por WhatsApp y email para reducir ausencias y mejorar la comunicación."
+          />
+          <Benefit
+            icono={<FcSmartphoneTablet />}
+            titulo="Reserva Móvil"
+            contenido="Tus pacientes reservan, modifican o cancelan turnos desde cualquier dispositivo, con solo unos toques."
+          />
+          <Benefit
+            icono={<FcLeave />}
+            titulo="Minimiza Ausencias"
+            contenido="Reduce hasta un 70% las faltas gracias a recordatorios proactivos y confirmaciones automáticas."
+          />
+        </motion.div>
 
-        {/* Call to Action */}
-        <motion.div variants={itemVariants} className="mt-20">
- <motion.a
-    href={whatsappLink}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="
-      inline-flex items-center justify-center gap-3 px-8 py-4
-      text-lg font-semibold text-white
-      rounded-full
-      shadow-lg
-      relative overflow-hidden
-      group
-    "
-    // Animación suave de latido (cada 3 segundos, muy leve)
-    animate={{
-      scale: [1, 1.02, 1],
-    }}
-    transition={{
-      duration: 2,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
-    whileHover={{
-      scale: 1.08,
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15)",
-    }}
-    whileTap={{ scale: 0.95 }}
-  >
-    {/* Fondo fuerte: gradiente moderno (azul profundo a morado) */}
-    <span
-      className="absolute inset-0 rounded-full"
-      style={{
-        background: 'linear-gradient(45deg, #1e40af, #3730a3, #5b21b6, #7c3aed)',
-      }}
-    />
+        {/* Call to Action – Botón premium con animación */}
+        <motion.div
+          variants={itemVariants}
+          className="mt-20 text-center"
+        >
+          <motion.a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Contactar por WhatsApp para afiliarte"
+            className="group inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-semibold text-white rounded-full shadow-xl relative overflow-hidden transition-all duration-300"
+            whileHover={{
+              scale: 1.08,
+              boxShadow: "0 25px 35px -10px rgba(0, 0, 0, 0.2)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            animate={{
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            {/* Fondo gradiente animado */}
+            <span
+              className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"
+            ></span>
+            {/* Efecto de brillo lateral */}
+            <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 group-hover:animate-shine"></span>
 
-    {/* Texto y flecha */}
-    <span className="relative flex items-center gap-2 z-10">
-      Conectá tu consultorio hoy
-      <svg
-        className="w-5 h-5 text-white group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M14 5l7 7m0 0l-7 7m7-7H3"
-        />
-      </svg>
-    </span>
-  </motion.a>
+            {/* Contenido */}
+            <span className="relative z-10 flex items-center gap-2">
+              Conectá tu consultorio hoy
+              <svg
+                className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                />
+              </svg>
+            </span>
+          </motion.a>
+
+          {/* Texto secundario opcional */}
+          <motion.p
+            variants={itemVariants}
+            className="text-sm text-gray-500 mt-4"
+          >
+            Soporte rápido y asistencia personalizada en cada paso del proceso.
+          </motion.p>
         </motion.div>
       </motion.div>
+
+      {/* Estilos globales adicionales (puedes ponerlos en tu CSS global o en un archivo aparte) */}
+      <style jsx>{`
+        @keyframes shine {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shine {
+          animation: shine 3s infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse 6s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.05); }
+        }
+        .group:hover .group-hover\\:scale-110 {
+          transform: scale(1.1);
+        }
+      `}</style>
     </section>
   );
 };

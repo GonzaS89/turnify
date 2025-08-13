@@ -126,11 +126,11 @@ const GenerarTurnosModal = () => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
         onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-screen max-w-md h-auto transform transition-all hover:scale-[1.01]"
+          className="bg-white rounded-2xl shadow-2xl w-screen max-w-md h-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}

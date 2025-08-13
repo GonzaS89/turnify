@@ -4,7 +4,7 @@ import useAllConsultorios from "../../customHooks/useAllConsultorios";
 import axios from 'axios';
 import { FaUser, FaLock } from 'react-icons/fa';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
-impo
+import { FaTimes }  from 'react-icons/fa'
 
 const Login = ({ closeLogin }) => {
   const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
@@ -137,20 +137,7 @@ const Login = ({ closeLogin }) => {
           aria-label="Cerrar"
           title="Cerrar"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <FaTimes size={20} />
         </button>
 
         {/* Header */}

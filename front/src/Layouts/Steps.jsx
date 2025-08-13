@@ -1,194 +1,215 @@
 import React, { useState, useEffect } from "react";
-import Step from "./components/Step"; // Asumo que tienes un componente Step
+import { motion, useAnimation, useInView } from "framer-motion";
+
+// Si no usas un componente externo "Step", lo integramos directamente
+// Aquí no necesitas importarlo, lo creamos inline
 
 const Steps = () => {
-    const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = React.useRef(null);
+  const inView = useInView(ref, { threshold: 0.15 });
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.unobserve(entry.target);
-                }
-            },
-            { threshold: 0.2 } // Aumentado el umbral para que la animación empiece un poco más tarde
-        );
+  const controls = useAnimation();
 
-        const current = document.getElementById("info");
-        if (current) observer.observe(current);
+  const steps = [
+    {
+      titulo: "1. Busca a tu médico",
+      contenido:
+        "Usa nuestro buscador inteligente para filtrar por especialidad, nombre o fecha y encuentra al profesional de la salud ideal.",
+      icon: "🔍",
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      titulo: "2. Elige un horario",
+      contenido:
+        "Selecciona el turno que mejor se adapte a tu agenda de entre los horarios disponibles. Es rápido y sencillo.",
+      icon: "📅",
+      color: "from-teal-500 to-emerald-600",
+    },
+    {
+      titulo: "3. Confirma tu reserva",
+      contenido:
+        "Completa tus datos personales y recibe la confirmación de tu turno al instante por correo y WhatsApp.",
+      icon: "✅",
+      color: "from-green-500 to-teal-500",
+    },
+  ];
 
-        return () => {
-            if (current) observer.unobserve(current);
-        };
-    }, []);
+  useEffect(() => {
+    if (inView) {
+      controls.start("visible");
+    }
+  }, [inView, controls]);
 
-    const contenidoSteps = [
-        {
-            titulo: "1. Busca a tu médico",
-            contenido: "Usa nuestro buscador inteligente para filtrar por especialidad, nombre o fecha y encuentra al profesional de la salud ideal.",
-            referencia: "medico",
-            color: "from-blue-500 to-blue-600",
-            icon: "🔍",
-        },
-        {
-            titulo: "2. Elige un horario",
-            contenido: "Selecciona el turno que mejor se adapte a tu agenda de entre los horarios disponibles. Es rápido y sencillo.",
-            referencia: "dia",
-            color: "from-teal-500 to-emerald-600",
-            icon: "📅",
-        },
-        {
-            titulo: "3. Confirma tu reserva",
-            contenido: "Completa tus datos personales y recibe la confirmación de tu turno al instante por correo y WhatsApp.",
-            referencia: "ok",
-            color: "from-green-500 to-teal-500",
-            icon: "✅",
-        },
-    ];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3,
+        delayChildren: 0.4,
+      },
+    },
+  };
 
-    return (
-        <section
-            id="info"
-            className="py-24 relative overflow-hidden"
+  const itemVariants = {
+    hidden: { y: 50, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <section
+      id="info"
+      ref={ref}
+      className="py-28 relative overflow-hidden bg-white"
+      aria-labelledby="steps-title"
+    >
+      {/* === Fondo decorativo con blobs animados === */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute top-1/3 -left-20 w-96 h-96 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-full opacity-30 blur-3xl animate-pulse-slow"
+          style={{ animationDuration: "7s" }}
+        ></div>
+        <div
+          className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-l from-teal-100 to-emerald-100 rounded-full opacity-25 blur-3xl animate-pulse-slow"
+          style={{ animationDuration: "9s", animationDelay: "2s" }}
+        ></div>
+      </div>
+
+      {/* === CONTENIDO PRINCIPAL === */}
+      <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+        {/* Encabezado animado */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="text-center max-w-3xl mx-auto mb-20"
         >
-            {/* === Fondo estilizado y gradientes flotantes === */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0"></div>
-               
-            </div>
+          <motion.div
+            variants={itemVariants}
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-md border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider rounded-full shadow-md mx-auto mb-6"
+          >
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+            </span>
+            <span>CÓMO FUNCIONA</span>
+          </motion.div>
 
-            {/* === CONTENIDO PRINCIPAL === */}
-            <div className="container mx-auto px-6 relative z-10">
-                {/* Encabezado */}
-                <div className={`text-center max-w-3xl mx-auto mb-20 transition-all duration-1000 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-                    <span className="
-                        inline-flex
-                        items-center
-                        gap-2
-                        px-6
-                        py-2
-                        text-sm
-                        font-semibold
-                        bg-white
-                        backdrop-blur-sm
-                        text-indigo-700
-                        rounded-full
-                        mb-6
-                        shadow-md
-                        border
-                        border-indigo-100
-                        animate-fade-in
-                    ">
-                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse-slow"></div>
-                        <span>CÓMO FUNCIONA</span>
-                    </span>
-                    <h2 className="
-                        text-3xl
-                        sm:text-4xl
-                        md:text-5xl
-                        font-extrabold
-                        text-gray-900
-                        leading-tight
-                        mb-6
-                        
-                    ">
-                        Agenda tu turno en{" "}
-                        <span className="
-                            bg-gradient-to-r
-                            from-indigo-600
-                            to-blue-600
-                            text-transparent
-                            bg-clip-text
-                        ">
-                            3 simples pasos
-                        </span>
-                    </h2>
-                    <p className="
-                        text-lg
-                        text-gray-600
-                        leading-relaxed
-                        font-light
-                        
-                    ">
-                        Rápido, fácil y sin complicaciones. Tu salud merece lo mejor, y tu tiempo también.
-                    </p>
+          <motion.h2
+            id="steps-title"
+            variants={itemVariants}
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6"
+          >
+            Agenda tu turno en{" "}
+            <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-500 bg-clip-text text-transparent">
+              3 simples pasos
+            </span>
+          </motion.h2>
+
+          <motion.p
+            variants={itemVariants}
+            className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto"
+          >
+            Rápido, fácil y sin complicaciones. Tu salud merece lo mejor, y tu tiempo también.
+          </motion.p>
+        </motion.div>
+
+        {/* Contenedor de pasos */}
+        <div className="max-w-6xl mx-auto relative">
+          {/* Línea de progreso (solo desktop) */}
+          <div className="hidden md:block absolute top-1/2 left-12 right-12 h-0.5 bg-gray-200 -translate-y-1/2 z-0">
+            <motion.div
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-400 to-blue-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={inView ? { width: "90%" } : { width: 0 }}
+              transition={{ duration: 1.5, ease: "easeOut", delay: 0.8 }}
+            />
+          </div>
+
+          {/* Grid de pasos */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10"
+          >
+            {steps.map((step, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                custom={index}
+                className="relative"
+                whileHover={{ y: -10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              >
+                {/* Número del paso (decorativo) */}
+                <div
+                  className={`absolute -top-6 -left-6 w-12 h-12 rounded-full bg-gradient-to-br ${step.color} text-white font-bold text-lg flex items-center justify-center shadow-lg z-20`}
+                >
+                  {index + 1}
                 </div>
 
-                {/* Contenedor de pasos */}
-                <div className="max-w-6xl mx-auto relative">
-                    {/* Línea progresiva animada (solo desktop) */}
-                    <div className="hidden md:block absolute top-1/2 left-10 right-10 h-0.5 bg-gray-200 -translate-y-1/2 z-0">
-                        <div
-                            className={`absolute left-0 top-0 h-full bg-gradient-to-r from-indigo-400 to-blue-400 rounded-full transition-all duration-1000 ease-out ${isVisible ? "w-[calc(100%-10%)]" : "w-0"}`}
-                        ></div>
-                    </div>
+                {/* Tarjeta del paso */}
+                <motion.div
+                  className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-3xl transition-all duration-500 h-full cursor-default relative group"
+                  whileHover={{
+                    scale: 1.03,
+                    boxShadow: "0 30px 40px -10px rgba(0, 0, 0, 0.18)",
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* Icono */}
+                  <div className="text-6xl mb-6 drop-shadow-sm group-hover:scale-110 transition-transform duration-300">
+                    {step.icon}
+                  </div>
 
-                    {/* Grid de los pasos */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10">
-                        {contenidoSteps.map((step, index) => (
-                            <div
-                                key={index}
-                                index={index+1}
-                                className={`
-                                    relative
-                                    transform
-                                    transition-all
-                                    duration-700
-                                    ease-out
-                                    ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}
-                                `}
-                                style={{ transitionDelay: `${400 + index * 250}ms` }}
-                            >
-                               
-                                {/* Tarjeta */}
-                                <div className="
-                                    bg-white
-                                    p-8
-                                    rounded-3xl
-                                    shadow-2xl
-                                    border
-                                    border-gray-200
-                                    transition-all
-                                    duration-500
-                                    transform
-                                    h-full
-                                    hover:scale-[1.03]
-                                    hover:shadow-3xl
-                                    md:mt-0
-                                    mt-8
-                                ">
-                                    {/* Icono del paso */}
-                                    <div className="
-                                        text-5xl
-                                        mb-4
-                                        inline-block
-                                        text-blue-500
-                                    ">
-                                        {step.icon}
-                                    </div>
-                                    <h3 className="
-                                        text-2xl
-                                        font-bold
-                                        text-gray-800
-                                        mb-2
-                                    ">
-                                        {step.titulo}
-                                    </h3>
-                                    <p className="
-                                        text-gray-600
-                                        leading-relaxed
-                                    ">
-                                        {step.contenido}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+                  {/* Título */}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4 leading-tight">
+                    {step.titulo}
+                  </h3>
+
+                  {/* Descripción */}
+                  <p className="text-gray-600 leading-relaxed">
+                    {step.contenido}
+                  </p>
+
+                  {/* Efecto de brillo lateral (opcional) */}
+                  <span className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></span>
+                </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+
+      {/* === Estilos custom para animaciones === */}
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%,
+          100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(1.05);
+          }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 6s ease-in-out infinite;
+        }
+
+        .group:hover .group-hover\\:scale-110 {
+          transform: scale(1.1);
+        }
+      `}</style>
+    </section>
+  );
 };
 
 export default Steps;

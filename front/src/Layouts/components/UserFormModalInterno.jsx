@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import { useParams, useNavigate } from 'react-router';
-import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaCheck } from 'react-icons/fa';
+import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimes, FaExclamationCircle, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -109,8 +109,11 @@ const UserFormModalInterno = ({ onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all hover:scale-[1.01]">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] p-4 min-h-screen">
+    <div 
+      className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col"
+      style={{ maxHeight: "90dvh" }}
+    >
         
         {/* Encabezado con gradiente */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 rounded-t-2xl">
@@ -127,7 +130,7 @@ const UserFormModalInterno = ({ onSubmit }) => {
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
               aria-label="Cerrar"
             >
-              <FaTimesCircle size={20} />
+              <FaTimes size={20} />
             </button>
           </div>
         </div>

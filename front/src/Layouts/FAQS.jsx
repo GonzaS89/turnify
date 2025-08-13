@@ -11,130 +11,149 @@ const FAQS = () => {
     const faqData = [
         {
             q: '¿Cómo reservo un turno?',
-            a: 'Simplemente usa el buscador en la parte superior, filtra por especialidad o médico, y elige un horario disponible. Completa tus datos para confirmar, ¡es así de fácil!'
+            a: 'Simplemente usa el buscador en la parte superior, filtra por especialidad o médico, y elige un horario disponible. Completa tus datos para confirmar, ¡es así de fácil!',
         },
         {
             q: '¿Qué hago si necesito cancelar un turno?',
-            a: 'Puedes cancelar tu turno a través del enlace que recibiste en el correo de confirmación. Te pedimos que canceles con al menos 24 horas de anticipación para que otro paciente pueda usar ese horario.'
+            a: 'Puedes cancelar tu turno a través del enlace que recibiste en el correo de confirmación. Te pedimos que canceles con al menos 24 horas de anticipación para que otro paciente pueda usar ese horario.',
         },
         {
             q: '¿Cómo puedo afiliarme como médico o centro médico?',
-            a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón de contacto para hablar con nuestro equipo. Te guiaremos en la creación de tu perfil para que empieces a recibir reservas de inmediato.'
+            a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón de contacto para hablar con nuestro equipo. Te guiaremos en la creación de tu perfil para que empieces a recibir reservas de inmediato.',
         },
     ];
 
+    // Animaciones
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.3,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: 'easeOut' },
+        },
+    };
+
+    const iconRotate = {
+        open: { rotate: 45, transition: { duration: 0.3, ease: 'easeInOut' } },
+        closed: { rotate: 0, transition: { duration: 0.3, ease: 'easeInOut' } },
+    };
+
     return (
-        <section id="preguntas-frecuentes" className="py-20 lg:py-24">
-            <div className="
-                max-w-7xl
-                mx-auto
-                px-4
-                sm:px-6
-                lg:px-8
-            ">
-                <div className="text-center mb-16 animate-fade-in-up">
-                    <h2 className="
-                        text-3xl
-                        sm:text-4xl
-                        lg:text-5xl
-                        font-extrabold
-                        text-gray-900
-                        mb-4
-                    ">
-                        ¿Tienes Preguntas?
+        <section
+            id="preguntas-frecuentes"
+            className="py-20 lg:py-28 bg-gradient-to-b from-white via-indigo-50 to-white overflow-hidden"
+            aria-labelledby="faq-title"
+        >
+            <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
+                {/* Encabezado con animación */}
+                <motion.div
+                    initial={{ opacity: 0, y: -30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className="text-center mb-16 lg:mb-20"
+                >
+                    <h2
+                        id="faq-title"
+                        className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-5"
+                    >
+                        Preguntas <span className="text-indigo-600">Frecuentes</span>
                     </h2>
-                    <p className="
-                        text-lg
-                        text-gray-600
-                        max-w-xl
-                        mx-auto
-                        leading-relaxed
-                    ">
+                    <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed opacity-90">
                         Aquí respondemos a las dudas más comunes. Si no encuentras lo que buscas, no dudes en contactarnos.
                     </p>
-                </div>
+                </motion.div>
 
-                <div className="
-                    max-w-4xl
-                    mx-auto
-                    space-y-6
-                ">
+                {/* Lista de FAQs */}
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="space-y-5 max-w-4xl mx-auto"
+                >
                     {faqData.map((item, index) => (
                         <motion.div
                             key={index}
-                            className="
-                                bg-white
-                                rounded-3xl
-                                shadow-lg
-                                overflow-hidden
-                                transition-all
-                                duration-300
-                                border
-                                border-gray-200
-                                hover:border-indigo-400
-                                cursor-pointer
-                            "
-                            whileHover={{ scale: 1.02, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)' }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                            variants={itemVariants}
+                            className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 focus-within:ring-4 focus-within:ring-indigo-100"
                             onClick={() => toggleFAQ(index)}
+                            tabIndex="0"
+                            role="button"
+                            aria-expanded={openFAQ === index}
+                            aria-controls={`faq-answer-${index}`}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleFAQ(index);
+                                }
+                            }}
                         >
-                            <div className="
-                                flex
-                                justify-between
-                                items-center
-                                p-6
-                                sm:p-8
-                                select-none
-                            ">
-                                <span className="
-                                    font-bold
-                                    text-xl
-                                    text-gray-800
-                                ">
+                            {/* Pregunta */}
+                            <div className="flex justify-between items-center p-6 sm:p-8 cursor-pointer group">
+                                <h3 className="font-semibold text-xl sm:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
                                     {item.q}
-                                </span>
+                                </h3>
                                 <motion.span
-                                    className="
-                                        text-3xl
-                                        text-indigo-600
-                                        font-light
-                                        ml-4
-                                    "
-                                    animate={{ rotate: openFAQ === index ? 45 : 0 }}
-                                    transition={{ duration: 0.3 }}
+                                    className="text-3xl font-light text-indigo-600 bg-indigo-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 ml-6"
+                                    variants={iconRotate}
+                                    animate={openFAQ === index ? 'open' : 'closed'}
                                 >
                                     +
                                 </motion.span>
                             </div>
 
-                            <AnimatePresence>
+                            {/* Respuesta */}
+                            <AnimatePresence initial={false}>
                                 {openFAQ === index && (
                                     <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
+                                        id={`faq-answer-${index}`}
+                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
                                         transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                        className="
-                                            p-6
-                                            sm:p-8
-                                            pt-0
-                                        "
+                                        className="px-6 sm:px-8 pb-6 sm:pb-8"
+                                        role="region"
+                                        aria-labelledby={`faq-question-${index}`}
                                     >
-                                        <p className="
-                                            text-gray-700
-                                            leading-relaxed
-                                            border-t
-                                            border-gray-200
-                                            pt-6
-                                        ">
-                                            {item.a}
-                                        </p>
+                                        <div className="border-t border-gray-200 pt-6">
+                                            <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+                                                {item.a}
+                                            </p>
+                                        </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                         </motion.div>
                     ))}
-                </div>
+                </motion.div>
+
+                {/* Llamado a la acción final */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                    className="text-center mt-16"
+                >
+                    <a
+                        href="#contacto"
+                        className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold text-lg rounded-2xl shadow-lg hover:shadow-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
+                    >
+                        ¿Tienes otra pregunta? Contáctanos
+                    </a>
+                </motion.div>
             </div>
         </section>
     );
