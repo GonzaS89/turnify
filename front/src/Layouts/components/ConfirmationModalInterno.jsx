@@ -98,7 +98,7 @@ const ConfirmationModalInterno = ({
         onClick={() => !isSubmitting && navigate(-1)}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] max-h-[90vh] flex flex-col"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] max-h-[100dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
