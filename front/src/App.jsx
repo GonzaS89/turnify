@@ -68,7 +68,7 @@ const App = () => {
           {openLoginModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
               <div
-                className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/75"
                 onClick={closeLogin}
               ></div>
               
@@ -77,7 +77,7 @@ const App = () => {
             </div>
           )}
 
-          <ToastContainer position="top-right" autoClose={3000} /> 
+          {/* <ToastContainer position="top-right" autoClose={1000} />  */}
 
           {/* Contenido principal */}
           <main className="relative flex-grow">
@@ -89,7 +89,7 @@ const App = () => {
                 element={<UserDashboard enviarPass = {recibirPass}/>}
               />
 
-              <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio />} />
+              <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio handleCrearConsultorio = {() => setOpenLoginModal(true)}/>} />
               <Route path="/crearprofesional" element={<CrearProfesional />} />
               <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
               <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>

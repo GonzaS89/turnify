@@ -7,7 +7,7 @@ import { FaEye, FaEyeSlash, FaBuilding, FaHome, FaMapMarkerAlt, FaPhone, FaUser,
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const CrearConsultorio = () => {
+const CrearConsultorio = ( { handleCrearConsultorio }) => {
   const { codigo: codigoValidacion } = useParams();
   const navigate = useNavigate();
 
@@ -96,7 +96,8 @@ const CrearConsultorio = () => {
       toast.success('✅ ¡Consultorio creado! Redirigiendo...');
       
       setTimeout(() => {
-        navigate('/');
+        handleCrearConsultorio();
+        navigate('/')
       }, 1500);
 
       // Resetear formulario

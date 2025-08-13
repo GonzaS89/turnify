@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import useAllCoberturas from '../../../customHooks/useAllCoberturas';
-import { FaSearch, FaPlusCircle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaSearch, FaPlusCircle, FaCheckCircle, FaTimesCircle, FaTimes } from "react-icons/fa";
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -110,11 +110,11 @@ const GestionCoberturas = () => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
         onClick={() => navigate('/micuenta')}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-screen xl:h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
+          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-screen xl:max-h-[100dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -129,10 +129,10 @@ const GestionCoberturas = () => {
               <button
                 onClick={() => navigate('/micuenta')}
                 disabled={isLoadingState}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
+                className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
               >
-                <FaTimesCircle size={20} />
+                <FaTimes size={20} />
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
@@ -282,7 +282,7 @@ const GestionCoberturas = () => {
           onClick={handleCancelDelete}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Encabezado rojo */}

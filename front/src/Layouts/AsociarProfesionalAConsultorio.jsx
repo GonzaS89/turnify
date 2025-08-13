@@ -12,11 +12,13 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
 
 const AsociarProfesionalAConsultorio = ({
   onClose,
   consultorioID,
   idsProfesionalesVinculados,
+  refrescarListaProfesionales
 }) => {
   const {
     profesionales,
@@ -31,7 +33,7 @@ const AsociarProfesionalAConsultorio = ({
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  console.log(idsProfesionalesVinculados);
+  const navigate = useNavigate()
 
   const handleSelect = async (e) => {
     e.preventDefault();
@@ -61,8 +63,10 @@ const AsociarProfesionalAConsultorio = ({
 
       // Recargar después de un breve delay
       setTimeout(() => {
-        window.location.reload();
-      }, 1200);
+        refrescarListaProfesionales()
+        onClose()
+
+      }, 500);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
@@ -77,8 +81,11 @@ const AsociarProfesionalAConsultorio = ({
   const handleCreateSuccess = () => {
     if (typeof actualizarProfesionales === "function") {
       actualizarProfesionales();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     }
-    toast.success("Nuevo profesional creado y listo para vincular");
+    toast.success("Nuevo profesional creado y vinculado");
   };
 
   return (
@@ -89,7 +96,7 @@ const AsociarProfesionalAConsultorio = ({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100 hover:scale-[1.01]"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -152,7 +159,22 @@ const AsociarProfesionalAConsultorio = ({
                   <select
                     value={selectedProfesional}
                     onChange={(e) => setSelectedProfesional(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white transition"
+                    className="
+    w-full 
+    px-4 py-3 
+    border-2 border-gray-300 
+    rounded-xl 
+    bg-white text-gray-700
+    focus:outline-none 
+    focus:border-purple-500 
+    focus:ring-0 
+    hover:border-purple-400
+    transition-all 
+    duration-200
+    ease-in-out
+    appearance-none
+    disabled:opacity-50
+  "
                   >
                     <option value="">Seleccionar profesional</option>
                     {profesionales?.map((prof) => (
@@ -160,9 +182,9 @@ const AsociarProfesionalAConsultorio = ({
                         key={prof.id}
                         value={prof.id}
                         disabled={idsProfesionalesVinculados?.includes(prof.id)}
+                        className="font-semibold"
                       >
-                        {prof.nombre} {prof.apellido} • {prof.especialidad} •
-                        MP: {prof.matricula}
+                        {prof.nombre} {prof.apellido} • {prof.especialidad} • MP: {prof.matricula}
                         {idsProfesionalesVinculados?.includes(prof.id)
                           ? " (Ya vinculado)"
                           : ""}
@@ -199,8 +221,9 @@ const AsociarProfesionalAConsultorio = ({
       {/* Modal de creación (reutilizado con estilo consistente) */}
       {showCreateModal && (
         <CrearProfesionalModal
-          onClose={() => setShowCreateModal(false)}
+          onClose={()=> setShowCreateModal(false)}
           onCreate={handleCreateSuccess}
+          consultorioID={consultorioID}
         />
       )}
     </>

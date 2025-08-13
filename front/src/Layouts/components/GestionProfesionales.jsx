@@ -8,6 +8,7 @@ import {
   FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
+  FaTimes
 } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router";
 import AsociarProfesionalAConsultorio from "../AsociarProfesionalAConsultorio";
@@ -60,6 +61,10 @@ const GestionProfesionales = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const refrescarListaProfesionales = () => {
+    setRefreshProfesionales((prev) => prev + 1);
+  }
+
   const especialidades = [
     ...new Set(profesionales?.map((p) => p.especialidad) || []),
   ];
@@ -105,12 +110,10 @@ const GestionProfesionales = () => {
 
       if (response.status === 200) {
         toast.success("✅ Desvinculado con éxito", { autoClose: 1500 });
-        setTimeout(() => {
-          navigate(`/micuenta/gestionprofesionales/${consultorioId}`);
-        }, 1500);
+        
       }
 
-      setRefreshProfesionales((prev) => prev + 1);
+      refrescarListaProfesionales()
     } catch {
       toast.error("❌ Error al desvincular profesional");
     } finally {
@@ -138,8 +141,8 @@ const GestionProfesionales = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-screen xl:max-w-7xl p-8 text-center transform transition-all hover:scale-[1.01]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md p-8 text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando profesionales...</p>
         </div>
@@ -149,8 +152,8 @@ const GestionProfesionales = () => {
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all hover:scale-[1.01]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
           <FaTrashAlt className="text-red-500 mx-auto mb-3" size={24} />
           <p className="text-red-700 font-medium">Error al cargar</p>
           <p className="text-red-600 text-sm mt-1">{error.message}</p>
@@ -163,11 +166,11 @@ const GestionProfesionales = () => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
         onClick={() => navigate("/micuenta")}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-7xl h-screen xl:h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen xl:max-w-7xl h-screen xl:h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -184,19 +187,8 @@ const GestionProfesionales = () => {
                 className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <FaTimes size={20} />
+               
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
@@ -360,10 +352,16 @@ const GestionProfesionales = () => {
                         Especialidad
                       </th>
                       <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                        Matrícula
+                      </th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
                         Teléfono
                       </th>
                       <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                        Acciones
+                        Turnos
+                      </th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                        Desvincular
                       </th>
                     </tr>
                   </thead>
@@ -398,6 +396,9 @@ const GestionProfesionales = () => {
                           {profesional.especialidad}
                         </td>
                         <td className="py-3 px-4 text-gray-600 text-sm truncate max-w-xs">
+                          {profesional.matricula}
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 text-sm truncate max-w-xs">
                           {profesional.telefono}
                         </td>
                         <td className="py-3 px-4">
@@ -415,6 +416,11 @@ const GestionProfesionales = () => {
                             >
                               <FaEdit className="w-4 h-4" />
                             </button> */}
+                           
+                           
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
                             <button
                               className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors"
                               aria-label="Eliminar"
@@ -424,8 +430,7 @@ const GestionProfesionales = () => {
                             >
                               <FaTrashAlt className="w-4 h-4" />
                             </button>
-                          </div>
-                        </td>
+                            </td>
                       </tr>
                     ))}
                   </tbody>
@@ -454,6 +459,7 @@ const GestionProfesionales = () => {
               consultorioID={consultorioId}
               onClose={() => setShowModalAsociarProfesional(false)}
               idsProfesionalesVinculados = {idsProfesionalesVinculados}
+              refrescarListaProfesionales={refrescarListaProfesionales}
             />
           )}
         </div>

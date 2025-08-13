@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
-import { FaCalendarAlt, FaClock, FaStopwatch, FaPlusCircle, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -145,7 +145,7 @@ const GenerarTurnosModal = () => {
                 className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
               >
-                <FaTimesCircle size={20} />
+                <FaTimes size={20} />
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">

@@ -159,7 +159,7 @@ const PlantillaCodigosActivacion = () => {
       </button>
 
       {/* Toastify para notificaciones */}
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="bottom-right" autoClose={500} />
     </section>
   );
 };

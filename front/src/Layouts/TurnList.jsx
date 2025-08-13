@@ -133,8 +133,8 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   // Estado vacío
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all hover:scale-[1.01]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all ">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando tu agenda...</p>
         </div>
@@ -145,7 +145,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   if (turnos.length === 0) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           {/* Encabezado con gradiente */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-3">
@@ -195,11 +195,11 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
         onClick={() => navigate("/micuenta")}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:h-[90vh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado */}

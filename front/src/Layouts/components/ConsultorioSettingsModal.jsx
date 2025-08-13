@@ -35,7 +35,7 @@ const ConsultorioSettingsModal = ({ password }) => {
         onClick={()=> navigate('/micuenta')}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-4xl  h-screen xl:h-[90vh] flex flex-col transform transition-all hover:scale-[1.01]"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen lg:max-w-4xl  h-screen xl:max-h-[100dvh] flex flex-col transform transition-all hover:scale-[1.01]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}

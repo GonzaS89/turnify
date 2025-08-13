@@ -14,6 +14,17 @@ const Login = ({ closeLogin }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    // Bloquea el scroll al montar
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Restaura el scroll al desmontar
+    return () => {
+      document.body.style.overflow = prevOverflow || 'auto';
+    };
+  }, []);
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -55,7 +66,7 @@ const Login = ({ closeLogin }) => {
   
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 sm:p-6">
       <div
         className="
         relative
@@ -75,7 +86,7 @@ const Login = ({ closeLogin }) => {
         animate-fade-in-up
       "
       >
-        <div
+        {/* <div
           className="
           absolute
           -top-24
@@ -85,7 +96,7 @@ const Login = ({ closeLogin }) => {
           bg-blue-50
           rounded-full
           opacity-50
-          blur-3xl
+     
         "
         ></div>
         <div
@@ -98,9 +109,9 @@ const Login = ({ closeLogin }) => {
           bg-indigo-50
           rounded-full
           opacity-50
-          blur-3xl
+   
         "
-        ></div>
+        ></div> */}
 
         {/* Botón de cerrar */}
         <button
@@ -185,7 +196,7 @@ const Login = ({ closeLogin }) => {
             mb-2
           "
           >
-            Bienvenido a <span className="text-indigo-600">Ya tenes turnos</span>
+            Bienvenido a <span className="text-indigo-600 uppercase -tracking-wide font-principal font-extralight">Ya tenes turnos</span>
           </h2>
           <p
             className="
@@ -529,7 +540,7 @@ const Login = ({ closeLogin }) => {
             text-gray-500
           "
           >
-            © 2024 TurniFy. Todos los derechos reservados.
+            © 2025 Ya tenes turno. Todos los derechos reservados.
           </p>
         </div>
       </div>
