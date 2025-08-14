@@ -1,8 +1,10 @@
+// src/App.js
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import useProfesionalxId from "../customHooks/useProfesionalxId";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+
 
 // Componentes
 import UserDashboard from "./Layouts/UserDashboard";
@@ -25,8 +27,15 @@ import GestionCoberturas from "./Layouts/components/GestionCoberturas";
 import GestionProfesionales from "./Layouts/components/GestionProfesionales";
 import TurnListCentroMedico from "./Layouts/TurnListCentroMedico";
 
+// React Icons
+import { FaSun, FaMoon } from 'react-icons/fa';
+
+// Contexto
+import { useTheme } from "./ThemeContext"; // Ajusta la ruta según tu estructura
 
 const App = () => {
+  const { darkMode, toggleDarkMode } = useTheme(); // ✅ Usamos el contexto
+
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [idProfesional, setIdProfesional] = useState(null);
   const [consultorio, setConsultorio] = useState(null);
@@ -60,12 +69,29 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      {/* ✅ Este div ya no tiene container */}
-      <div className="flex flex-col min-h-screen bg-gradient-to-r from-green-100 to-cyan-200 rounded-xl shadow relative">
+      <div className="flex flex-col min-h-screen 
+                     bg-gradient-to-r from-green-100 to-cyan-200 
+                     dark:from-gray-900 dark:to-gray-800
+                     rounded-xl shadow relative
+                     transition-colors duration-700 ease-in-out">
         
+        {/* Botón de modo oscuro usando contexto */}
+        <button
+          onClick={toggleDarkMode}
+          className="fixed top-4 right-4 z-50 p-3 rounded-full
+                     bg-yellow-100 dark:bg-gray-800
+                     text-yellow-600 dark:text-yellow-300
+                     shadow-lg hover:shadow-xl
+                     transition-transform duration-200 ease-in-out transform hover:scale-110
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
+          aria-label={darkMode ? "Activar modo claro" : "Activar modo oscuro"}
+        >
+          {darkMode ? <FaSun className="h-6 w-6" /> : <FaMoon className="h-6 w-6" />}
+        </button>
+
         {/* Modal de Login */}
         {openLoginModal && (
-          <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6  z-[200]">
+          <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-[200]">
             <div
               className="absolute inset-0 bg-black/75"
               onClick={closeLogin}
@@ -76,13 +102,10 @@ const App = () => {
 
         <ToastContainer position="top-right" autoClose={1000} />
 
-        {/* Contenido principal: ahora Main controla el container */}
         <main className="relative flex-grow">
           <Routes>
             <Route path="/" element={<Main openLogin={openLogin} />} />
-
             <Route path="/micuenta" element={<UserDashboard enviarPass={recibirPass} />} />
-
             <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio handleCrearConsultorio={() => setOpenLoginModal(true)} />} />
             <Route path="/crearprofesional" element={<CrearProfesional />} />
             <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
@@ -102,12 +125,9 @@ const App = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-
-        {/* Aquí iría el Footer si lo agregas */}
       </div>
     </BrowserRouter>
   );
 };
 
 export default App;
-
