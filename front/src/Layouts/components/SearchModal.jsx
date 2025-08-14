@@ -26,20 +26,18 @@ const SearchModal = ({ enviarIds }) => {
 
   // Pre-procesar y normalizar nombres una vez
   const processedProfesionales = useMemo(() => {
-    return (
-      profesionales?.map((p) => ({
-        ...p,
-        fullNameNormalized: normalizeString(`${p.nombre} ${p.apellido}`),
-        especialidadNormalized: normalizeString(p.especialidad),
-      })) || []
-    );
+    if (!Array.isArray(profesionales)) return [];
+
+    return profesionales.map((p) => ({
+      ...p,
+      fullNameNormalized: normalizeString(`${p.nombre} ${p.apellido}`),
+      especialidadNormalized: normalizeString(p.especialidad),
+    }));
   }, [profesionales]);
 
   // Filtrar doctores solo cuando cambien los filtros o profesionales
   const filteredDoctors = useMemo(() => {
-    if (!processedProfesionales || processedProfesionales.length === 0) {
-      return [];
-    }
+    if (!processedProfesionales.length) return [];
 
     const hasFilters = specialty || searchQuery;
     if (!hasFilters) return [];
@@ -53,10 +51,7 @@ const SearchModal = ({ enviarIds }) => {
 
     if (searchQuery) {
       const query = normalizeString(searchQuery);
-      results = results.filter(
-        (doc) =>
-          doc.fullNameNormalized.includes(query)
-      );
+      results = results.filter((doc) => doc.fullNameNormalized.includes(query));
     }
 
     return results;
@@ -67,7 +62,7 @@ const SearchModal = ({ enviarIds }) => {
     setPage(1);
   }, [specialty, searchQuery]);
 
-  const hasSearched = specialty || searchQuery;
+  const hasSearched = !!specialty || !!searchQuery;
 
   const displayedDoctors = filteredDoctors.slice(0, page * itemsPerPage);
   const hasMore = displayedDoctors.length < filteredDoctors.length;
@@ -118,7 +113,10 @@ const SearchModal = ({ enviarIds }) => {
           </div>
 
           {/* Filtros */}
-          <form className="bg-white/60 p-6 rounded-3xl mb-6 mx-6 border border-white/50 shadow-lg">
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="bg-white/60 p-6 rounded-3xl mb-6 mx-6 border border-white/50 shadow-lg"
+          >
             <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4">
               
               {/* Especialidad */}
@@ -136,13 +134,14 @@ const SearchModal = ({ enviarIds }) => {
                   className="p-3 border border-white/50 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white/80 shadow-sm"
                 >
                   <option value="">Todas</option>
-                  {[...new Set(profesionales?.map(p => p.especialidad))]
-                    .sort()
-                    .map((spec) => (
-                      <option key={spec} value={spec}>
-                        {spec}
-                      </option>
-                    ))}
+                  {Array.isArray(profesionales) &&
+                    [...new Set(profesionales.map((p) => p.especialidad))]
+                      .sort()
+                      .map((spec) => (
+                        <option key={spec} value={spec}>
+                          {spec}
+                        </option>
+                      ))}
                 </select>
               </div>
 
@@ -199,52 +198,57 @@ const SearchModal = ({ enviarIds }) => {
                 {/* Resultados encontrados */}
                 {hasSearched && filteredDoctors.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
-                    {displayedDoctors.map((doctor) => (
-                      <div
-                        key={doctor.id}
-                        className="bg-white rounded-3xl shadow-md border border-gray-100 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full w-80 overflow-hidden"
-                      >
-                        <div className="p-6 pb-4 border-b border-gray-100">
-                          <div className="flex items-start gap-4">
-                            <div className="bg-gradient-to-br from-indigo-500 to-blue-600 p-3 rounded-xl text-white flex-shrink-0">
-                              <FaUserDoctor className="text-2xl" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-bold text-gray-900 truncate">
-                                {doctor.apellido}, {doctor.nombre}
-                              </h3>
-                              <p className="text-indigo-700 font-medium text-sm mt-1">
-                                {doctor.especialidad}
-                              </p>
-                              <p className="text-gray-500 text-xs mt-1">
-                                Matrícula: {doctor.matricula}
-                              </p>
-                              {doctor.consultorios && doctor.consultorios.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1">
-                                  {doctor.consultorios.slice(0, 2).map((consultorio) => (
-                                    <span
-                                      key={consultorio.id}
-                                      className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-semibold truncate max-w-[120px]"
-                                      title={consultorio.nombre}
-                                    >
-                                      {consultorio.nombre}
-                                    </span>
-                                  ))}
-                                  {doctor.consultorios.length > 2 && (
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                      +{doctor.consultorios.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                    {displayedDoctors.map((doctor) => {
+                      // Validar que el doctor tenga ID válido
+                      if (!doctor || !doctor.id) return null;
+
+                      return (
+                        <div
+                          key={doctor.id}
+                          className="bg-white rounded-3xl shadow-md border border-gray-100 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full w-80 overflow-hidden"
+                        >
+                          <div className="p-6 pb-4 border-b border-gray-100">
+                            <div className="flex items-start gap-4">
+                              <div className="bg-gradient-to-br from-indigo-500 to-blue-600 p-3 rounded-xl text-white flex-shrink-0">
+                                <FaUserDoctor className="text-2xl" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-bold text-gray-900 truncate">
+                                  {doctor.apellido}, {doctor.nombre}
+                                </h3>
+                                <p className="text-indigo-700 font-medium text-sm mt-1">
+                                  {doctor.especialidad}
+                                </p>
+                                <p className="text-gray-500 text-xs mt-1">
+                                  Matrícula: {doctor.matricula}
+                                </p>
+                                {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {doctor.consultorios.slice(0, 2).map((consultorio) => (
+                                      <span
+                                        key={consultorio.id}
+                                        className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-semibold truncate max-w-[120px]"
+                                        title={consultorio.nombre}
+                                      >
+                                        {consultorio.nombre}
+                                      </span>
+                                    ))}
+                                    {doctor.consultorios.length > 2 && (
+                                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                        +{doctor.consultorios.length - 2}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <div className="p-4 bg-gray-50 rounded-b-3xl border-t border-gray-100">
+                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} />
+                          </div>
                         </div>
-                        <div className="p-4 bg-gray-50 rounded-b-3xl border-t border-gray-100">
-                          <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -252,7 +256,7 @@ const SearchModal = ({ enviarIds }) => {
                 {hasSearched && filteredDoctors.length > 0 && hasMore && (
                   <div className="text-center mt-8">
                     <button
-                      onClick={() => setPage(p => p + 1)}
+                      onClick={() => setPage((p) => p + 1)}
                       className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors duration-200"
                     >
                       Cargar más

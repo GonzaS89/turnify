@@ -99,6 +99,7 @@ const App = () => {
             <Route path="/micuenta/datosconsultorio/:consultorioId" element={<ConsultorioSettingsModal password={pass} />} />
             <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />} />
             <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
 
