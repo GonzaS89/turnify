@@ -100,8 +100,8 @@ const Hero = ({ enviarIds, openModalProf }) => {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <span className="flex items-center gap-2">
-                  🔍 Buscar Profesionales
+                <span className="flex items-center gap-2 uppercase">
+                  🔍 Buscar turnos aquí
                   <svg
                     className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
                     fill="none"

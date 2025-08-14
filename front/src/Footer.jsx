@@ -1,13 +1,16 @@
-import React from "react";
 import { FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaPhone, FaInstagram } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Link } from "react-scroll";
+import logo from './assets/logo.png'
+
+// 📁 Asegúrate de que el logo esté en: public/assets/logo.png
+// O en: src/assets/logo.png (dependiendo de tu estructura)
 
 export const Footer = () => {
   const mensaje = "Hola, estoy interesado en afiliar mi consultorio o centro médico.";
   const whatsappUrl = `https://wa.me/5493815588504?text=${encodeURIComponent(mensaje)}`;
 
-  const marca = 'Turnate'
+  const marca = 'Turnate';
 
   // Animaciones
   const containerVariants = {
@@ -66,15 +69,11 @@ export const Footer = () => {
                   WhatsApp
                 </a>
               </li>
-              <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600 hover:text-indigo-600 transition-colors">
+              {/* <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600 hover:text-indigo-600 transition-colors">
                 <FaInstagram className="text-purple-500" size={18} />
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-sm">
                   Instagram
                 </a>
-              </li>
-              {/* <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600">
-                <FaEnvelope className="text-indigo-500" size={18} />
-                <span className="text-sm">hola@yatenturno.com</span>
               </li> */}
               <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600">
                 <FaPhone className="text-indigo-500" size={18} />
@@ -89,66 +88,63 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <Link 
-                to={'info'} 
-                smooth = {true}
-                offset={-150}
-                className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer">
+                  to="info" 
+                  smooth 
+                  offset={-150}
+                  className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer"
+                >
                   Info
                 </Link>
               </li>
               <li>
                 <Link 
-                to={'beneficios'} 
-                smooth = {true}
-                offset={-25}
-                className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer">
+                  to="beneficios" 
+                  smooth 
+                  offset={-25}
+                  className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer"
+                >
                   Beneficios
                 </Link>
               </li>
               <li>
                 <Link 
-                to={'preguntas-frecuentes'} 
-                smooth = {true}
-                offset={-150}
-                className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer">
-                  Preguntas frecuentas
+                  to="preguntas-frecuentes" 
+                  smooth 
+                  offset={-150}
+                  className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer"
+                >
+                  Preguntas frecuentes
                 </Link>
               </li>
-            
             </ul>
           </motion.div>
-
-          {/* CTA Premium: Botón WhatsApp */}
-          <motion.div variants={itemVariants} className="flex flex-col items-center md:items-end">
-            <motion.a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="group w-full max-w-xs inline-flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold text-sm rounded-full shadow-xl relative overflow-hidden transition-all duration-300"
+          <motion.div variants={itemVariants} className="flex flex-col items-center md:items-end justify-center">
+            <motion.div
+              whileHover={{ scale: 1.08 }}  // Agrandar ligeramente al pasar el mouse
+              whileTap={{ scale: 0.95 }}
+              className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center overflow-hidden rounded-full shadow-2xl transition-transform duration-300"
             >
-              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></span>
-              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 group-hover:animate-shine"></span>
-              <span className="relative flex items-center gap-2 z-10">
-                <FaWhatsapp size={18} />
-                Chateá con nosotros
-              </span>
-            </motion.a>
+              {/* Fondo degradado (opcional, para resaltar el logo) */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-teal-200"></div>
+              
+              {/* Logo */}
+              <img
+                src={logo} // 📁 Ajusta la ruta si está en otra carpeta
+                alt="Logo de Turnate"
+                className="w-3/4 h-3/4 object-contain z-50"
+              />
 
-            {/* Badge de disponibilidad */}
-            {/* <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 text-xs text-teal-700 bg-teal-50 rounded-full font-medium border border-teal-100">
-              <span className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse"></span>
-              Soporte en vivo
-            </div> */}
+              {/* Efecto de brillo al pasar el mouse */}
+              {/* <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-25 group-hover:animate-shine"></span> */}
+            </motion.div>
+
+            {/* Texto opcional debajo del logo */}
+            {/* <p className="text-gray-500 text-xs mt-3">Chateá con nosotros</p> */}
           </motion.div>
         </div>
 
         {/* Separador */}
-        <motion.div
-          variants={itemVariants}
-          className="my-10 border-t border-gray-200"
-        ></motion.div>
+        <motion.div variants={itemVariants} className="my-10 border-t border-gray-200"></motion.div>
 
         {/* Derechos de autor */}
         <motion.div variants={itemVariants} className="text-center">
@@ -162,7 +158,7 @@ export const Footer = () => {
         </motion.div>
       </motion.div>
 
-      {/* Estilos globales (animaciones) */}
+      {/* Animación de brillo */}
       <style jsx>{`
         @keyframes shine {
           0% { transform: translateX(-100%); }
@@ -170,9 +166,6 @@ export const Footer = () => {
         }
         .animate-shine {
           animation: shine 3s infinite;
-        }
-        .group:hover .group-hover\\:scale-110 {
-          transform: scale(1.1);
         }
       `}</style>
     </footer>

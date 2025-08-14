@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 const FAQS = () => {
     const [openFAQ, setOpenFAQ] = useState(null);
 
+    const mensaje = "Hola, estoy interesado en sus servicios y tengo algunas dudas.";
+  const whatsappUrl = `https://wa.me/5493815588504?text=${encodeURIComponent(mensaje)}`;
+
     const toggleFAQ = (index) => {
         setOpenFAQ(openFAQ === index ? null : index);
     };
@@ -52,7 +55,7 @@ const FAQS = () => {
     return (
         <section
             id="preguntas-frecuentes"
-            className="py-20 lg:py-28 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
+            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
             aria-labelledby="faq-title"
         >
             <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
@@ -148,7 +151,7 @@ const FAQS = () => {
                     className="text-center mt-16"
                 >
                     <a
-                        href="#contacto"
+                        href={whatsappUrl}
                         className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold text-lg rounded-2xl shadow-lg hover:shadow-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
                     >
                         ¿Tienes otra pregunta? Contáctanos

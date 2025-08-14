@@ -17,7 +17,7 @@ export const Header = ({ openLogin }) => {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm py-4 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm py-4 transition-all duration-300"
       role="banner"
     >
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between relative max-w-7xl">
@@ -25,12 +25,12 @@ export const Header = ({ openLogin }) => {
         <a
           href="#inicio"
           onClick={closeMobileMenu}
-          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg"
+          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg scale-100 lg:scale-[1.3]"
           aria-label="Ir a la página de inicio"
         >
           <img
             src={logo}
-            alt="Ya tenés turno - Plataforma de reservas médicas"
+            alt="Turnate - Plataforma de reservas médicas"
             className="w-20 h-auto transition-transform duration-300 hover:scale-105"
           />
         </a>
@@ -118,7 +118,7 @@ export const Header = ({ openLogin }) => {
           </div>
 
           {/* Navegación */}
-          <nav className="flex-1 p-6">
+          <nav className="flex-1 p-6 bg-white">
             <ul className="space-y-4">
               {[
                 { to: 'hero-section', label: 'Inicio', offset: -200 },
@@ -143,7 +143,7 @@ export const Header = ({ openLogin }) => {
           </nav>
 
           {/* CTA en el footer */}
-          <div className="p-6 border-t border-gray-200">
+          <div className="p-6 border-t border-gray-200 bg-white h-full">
             <button
               onClick={() => {
                 openLogin(true);
