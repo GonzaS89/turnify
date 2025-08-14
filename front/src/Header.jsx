@@ -93,7 +93,7 @@ export const Header = ({ openLogin }) => {
       {/* Menú Móvil */}
       <div
         id="mobile-menu"
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out ${
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out h-screen flex flex-col  ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         } lg:hidden`}
         onClick={closeMobileMenu}
@@ -107,7 +107,9 @@ export const Header = ({ openLogin }) => {
         >
           {/* Cabecera del menú */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800">Menú</h2>
+            <h2 className="text-xl font-bold text-gray-800">
+              <img src={logo} className='w-20' alt="" />
+            </h2>
             <button
               onClick={closeMobileMenu}
               className="p-2 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors"
@@ -121,10 +123,10 @@ export const Header = ({ openLogin }) => {
           <nav className="flex-1 p-6 bg-white">
             <ul className="space-y-4">
               {[
-                { to: 'hero-section', label: 'Inicio', offset: -200 },
-                { to: 'info', label: 'Info', offset: -100 },
-                { to: 'beneficios', label: 'Beneficios', offset: -100 },
-                { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -100 },
+                { to: 'hero-section', label: 'Inicio', offset: -150, emoji: '🏡' },
+                { to: 'info', label: 'Info', offset: -150, emoji: 'ℹ️' },
+                { to: 'beneficios', label: 'Beneficios', offset: -150, emoji: '✨' },
+                { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150, emoji: '❓' },
               ].map((item) => (
                 <li key={item.to}>
                   <Link
@@ -135,7 +137,7 @@ export const Header = ({ openLogin }) => {
                     onClick={closeMobileMenu}
                     className="block text-gray-700 hover:text-indigo-600 font-medium text-lg py-3 px-4 rounded-xl hover:bg-indigo-50 transition-all duration-200"
                   >
-                    {item.label}
+                    {item.emoji} {item.label} 
                   </Link>
                 </li>
               ))}
@@ -151,7 +153,7 @@ export const Header = ({ openLogin }) => {
               }}
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
             >
-              Acceso para afiliados
+               🔐 Acceso para afiliados
             </button>
           </div>
         </div>

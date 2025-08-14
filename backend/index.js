@@ -223,7 +223,7 @@ app.get("/api/profesionalxidconsultorio/:id", async (req, res) => {
      profesionales AS p ON p.id = pc.profesional_id
      JOIN
      consultorios AS c ON c.id = pc.consultorio_id
-    WHERE pc.consultorio_id = ?
+    WHERE pc.consultorio_id = ? AND pc.estado = 'activo'
   `;
   try {
     const [resultados] = await pool.execute(query, [id]);
@@ -528,7 +528,6 @@ app.post("/api/habilitarturnos", async (req, res) => {
     duracion
   } = req.body;
 
-  
 
   // Validación básica
   if (
@@ -1061,32 +1060,51 @@ app.post("/api/unionprofesionalconsultorio", async (req, res) => {
 
   if (!profesionalID || !consultorioID) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios."
+      message: "Faltan campos obligatorios: profesionalID y consultorioID."
     });
   }
 
   try {
     const [result] = await pool.execute(
-      "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
+      `INSERT INTO profesional_consultorio (profesional_id, consultorio_id, estado) 
+       VALUES (?, ?, 'activo') 
+       ON DUPLICATE KEY UPDATE 
+       estado = IF(estado = 'inactivo', 'activo', estado)`,
       [profesionalID, consultorioID]
     );
 
-    // ✅ Si llega aquí, fue exitoso
-    return res.status(201).json({
-      message: "Profesional asociado correctamente."
+    // Analizamos el resultado:
+    // - Si es inserción: result.affectedRows = 1
+    // - Si actualizó estado (de inactivo a activo): result.affectedRows = 1, result.changedRows = 1
+    // - Si ya estaba activo: result.affectedRows = 1, result.changedRows = 0
+
+    if (result.affectedRows === 1) {
+      if (result.changedRows === 1) {
+        return res.status(200).json({
+          message: "Profesional reactivado correctamente."
+        });
+      } else {
+        return res.status(201).json({
+          message: "Profesional asociado correctamente."
+        });
+      }
+    }
+
+    // Caso raro, pero por seguridad
+    return res.status(500).json({
+      message: "No se pudo procesar la solicitud."
     });
 
   } catch (error) {
-    console.error("Error detallado:", error.code, error.message);
+    console.error("Error al asociar profesional:", error);
 
-    // ✅ Manejar duplicado como 409, no 500
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({
-        message: "Este profesional ya está asociado a este consultorio."
+    // Clave duplicada ya la maneja ON DUPLICATE, pero otros errores:
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(400).json({
+        message: "Profesional o consultorio no existen."
       });
     }
 
-    // ✅ Otros errores sí son 500
     return res.status(500).json({
       message: "Error interno del servidor."
     });
@@ -1094,122 +1112,73 @@ app.post("/api/unionprofesionalconsultorio", async (req, res) => {
 });
 
 
-app.post("/api/crear-y-vincular-profesional", async (req, res) => {
-  const {
-    nombre,
-    apellido,
-    matricula,
-    especialidad,
-    titulo,
-    telefono,
-    consultorioID
-  } = req.body;
+app.post("/api/unionprofesionalconsultorio", async (req, res) => {
+  const { profesionalID, consultorioID } = req.body;
 
-  console.log("Datos recibidos:", req.body);
-
-  // Validación de campos obligatorios
-  if (!nombre || !apellido || !matricula || !especialidad || !consultorioID) {
+  if (!profesionalID || !consultorioID) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o consultorioID.",
+      message: "Faltan campos obligatorios: profesionalID y consultorioID."
     });
   }
 
-  let connection;
-
   try {
-    // Obtener conexión directa para manejar transacción
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
-
-    // 1. Verificar si ya existe un profesional con esa matrícula
-    const [existing] = await connection.execute(
-      "SELECT id FROM profesionales WHERE matricula = ?",
-      [matricula]
+    const [result] = await pool.execute(
+      `INSERT INTO profesional_consultorio (profesional_id, consultorio_id, estado) 
+       VALUES (?, ?, 'activo') 
+       ON DUPLICATE KEY UPDATE 
+       estado = IF(estado = 'inactivo', 'activo', estado)`,
+      [profesionalID, consultorioID]
     );
 
-    let profesionalID;
+    // Analizamos el resultado:
+    // - Si es inserción: result.affectedRows = 1
+    // - Si actualizó estado (de inactivo a activo): result.affectedRows = 1, result.changedRows = 1
+    // - Si ya estaba activo: result.affectedRows = 1, result.changedRows = 0
 
-    if (existing.length > 0) {
-      // Si ya existe, usar el ID existente
-      profesionalID = existing[0].id;
-      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
-    } else {
-      // Si no existe, crear uno nuevo
-      const [insertResult] = await connection.execute(
-        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null]
-      );
-      profesionalID = insertResult.insertId;
-      console.log(`Profesional creado con ID: ${profesionalID}`);
-    }
-
-    // 2. Intentar asociar al consultorio
-    try {
-      await connection.execute(
-        "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
-        [profesionalID, consultorioID]
-      );
-      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`);
-    } catch (error) {
-      // Si ya está vinculado (duplicado), ignoramos el error y continuamos
-      if (error.code === 'ER_DUP_ENTRY') {
-        console.log(`Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${consultorioID}`);
+    if (result.affectedRows === 1) {
+      if (result.changedRows === 1) {
+        return res.status(200).json({
+          message: "Profesional reactivado correctamente."
+        });
       } else {
-        throw error; // Otro error sí debe romper la transacción
+        return res.status(201).json({
+          message: "Profesional asociado correctamente."
+        });
       }
     }
 
-    // 3. Confirmar transacción
-    await connection.commit();
-
-    // Responder con éxito
-    return res.status(201).json({
-      message: existing.length > 0
-        ? "Profesional ya existente y asociado correctamente."
-        : "Profesional creado y asociado correctamente.",
-      profesional: {
-        id: profesionalID,
-        nombre,
-        apellido,
-        especialidad,
-        matricula,
-        titulo,
-        telefono,
-        consultorioID
-      }
+    // Caso raro, pero por seguridad
+    return res.status(500).json({
+      message: "No se pudo procesar la solicitud."
     });
 
   } catch (error) {
-    // Revertir transacción si falló algo
-    if (connection) {
-      await connection.rollback().catch(console.error);
-      connection.release();
-    }
+    console.error("Error al asociar profesional:", error);
 
-    console.error("Error en crear-y-vincular-profesional:", error);
-
-    // Manejo específico de errores
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({
-        message: "Este profesional ya está asociado a este consultorio."
+    // Clave duplicada ya la maneja ON DUPLICATE, pero otros errores:
+    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+      return res.status(400).json({
+        message: "Profesional o consultorio no existen."
       });
     }
 
     return res.status(500).json({
-      message: "Error interno del servidor al crear o vincular el profesional."
+      message: "Error interno del servidor."
     });
   }
 });
 
 // DESVINCULAR PROFESIONAL DE CENTRO MEDICO //
 
-app.delete("/api/desvincularprofesional/:consultorioId/:profesionalId", async(req, res) => {
+app.put("/api/desvincularprofesional/:consultorioId/:profesionalId", async(req, res) => {
   const { consultorioId, profesionalId } = req.params;
 
   try{
     const query = `
-    DELETE FROM profesional_consultorio 
-    WHERE profesional_id = ? AND consultorio_id = ?`;
+  UPDATE profesional_consultorio
+  SET estado = 'inactivo'
+  WHERE profesional_id = ? AND consultorio_id = ?
+`;
 
     const [resultado] = await pool.execute(query,[
       profesionalId, 

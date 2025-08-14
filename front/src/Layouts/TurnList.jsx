@@ -29,6 +29,35 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
 
+  function formatearFechaCorta(fechaStr) {
+    const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
+                   "jul", "ago", "sep", "oct", "nov", "dic"];
+  
+    const [datePart] = fechaStr.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+  
+    const date = new Date(Date.UTC(year, month - 1, day));
+    const diaSemana = date.getUTCDay();
+  
+    return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
+  }
+
+  function formatearFechaLarga(fechaStr) {
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
+                   "jul", "ago", "sep", "oct", "nov", "dic"];
+  
+    const [datePart] = fechaStr.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+  
+    const date = new Date(Date.UTC(year, month - 1, day));
+    const diaSemana = date.getUTCDay();
+  
+    return `${dias[diaSemana]} ${day}`;
+  }
+
+
   const datesListRef = useRef(null);
 
   // Refresco automático cada 5 minutos
@@ -59,6 +88,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     acc[clave].push(turno);
     return acc;
   }, {});
+
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
 
@@ -266,11 +296,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                       }`}
                     >
                       <div className="font-semibold">
-                        {new Date(fecha).toLocaleDateString("es-AR", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                        })}
+                        {
+                          formatearFechaCorta(fecha)
+                        }
                       </div>
                       <div
                         className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
@@ -310,12 +338,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
                   {fechaSeleccionada
-                    ? new Date(fechaSeleccionada).toLocaleDateString("es-AR", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
+                    ? formatearFechaLarga(fechaSeleccionada)
                     : "Seleccioná una fecha"}
                 </h3>
                 {fechaSeleccionada && (

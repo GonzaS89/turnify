@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
-import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -55,6 +55,13 @@ const GenerarTurnosModal = () => {
     setDuracionTurno(value < 5 ? 5 : value);
   };
 
+  const formatearFechaSQL = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
+
+
   const handleEnableTurns = async () => {
     if (!selectedDate) return toast.warn("Selecciona una fecha.");
     if (!startTime) return toast.warn("Selecciona una hora de inicio.");
@@ -74,7 +81,7 @@ const GenerarTurnosModal = () => {
         body: JSON.stringify({
           consultorioId,
           profesionalId,
-          fecha: selectedDate,
+          fecha:  selectedDate,// Asegura que sea solo YYYY-MM-DD
           cantidadTurnos: calculatedTurns,
           horaInicio: startTime,
           duracion: duracionTurno
@@ -92,11 +99,11 @@ const GenerarTurnosModal = () => {
       toast.success(
         <div className="text-sm">
           ✅ <strong>{calculatedTurns} turnos</strong> generados para el{' '}
-          <strong>{new Date(selectedDate).toLocaleDateString('es-AR')}</strong>, de{' '}
+          <strong>{formatearFechaSQL(selectedDate)}</strong>, de{' '}
           <strong>{startTime}</strong> a <strong>{endTime}</strong>, cada{' '}
           <strong>{duracionTurno} min</strong>.
         </div>,
-        { autoClose: 1500 }
+        { autoClose: 1000 }
       );
 
       // Redirigir tras éxito

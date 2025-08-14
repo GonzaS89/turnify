@@ -60,6 +60,7 @@ const AsociarProfesionalAConsultorio = ({
 
       setMensaje("✅ Profesional asociado correctamente al consultorio.");
       toast.success("Vinculación exitosa");
+      
 
       // Recargar después de un breve delay
       setTimeout(() => {
@@ -81,9 +82,7 @@ const AsociarProfesionalAConsultorio = ({
   const handleCreateSuccess = () => {
     if (typeof actualizarProfesionales === "function") {
       actualizarProfesionales();
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      
     }
     toast.success("Nuevo profesional creado y vinculado");
   };

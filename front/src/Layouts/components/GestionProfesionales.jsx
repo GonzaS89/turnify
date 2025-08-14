@@ -104,7 +104,7 @@ const GestionProfesionales = () => {
     setIsDeleting(true);
 
     try {
-      const response = await axios.delete(
+      const response = await axios.put(
         `${API_URL}/api/desvincularprofesional/${consultorioId}/${profesionalId}`
       );
 
