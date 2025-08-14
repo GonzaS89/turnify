@@ -423,7 +423,7 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
 
     
 
-      const linkCancelar = `https://turnate/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
+      const linkCancelar = `https://turnate.site/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
 
       const mensaje = `
 🔔 *¡Nuevo Turno Reservado!* 🔔
