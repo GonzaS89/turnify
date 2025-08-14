@@ -109,14 +109,14 @@ const UserFormModalInterno = ({ onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] p-4 min-h-screen">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] sm:p-4 min-h-screen">
     <div 
-      className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col"
-      style={{ maxHeight: "90dvh" }}
+      className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col h-[100dvh] sm:max-h-[90vh]"
+
     >
         
         {/* Encabezado con gradiente */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 rounded-t-2xl">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 sm:rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FaUser className="text-2xl" />

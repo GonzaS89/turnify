@@ -94,15 +94,15 @@ const ConfirmationModalInterno = ({
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center sm:p-4 z-[200]"
         onClick={() => !isSubmitting && navigate(-1)}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[100dvh] lg:h-auto lg:max-h-[90vh] flex flex-col"
+          className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] lg:h-auto sm:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
                 {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}

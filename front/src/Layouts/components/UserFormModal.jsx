@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
 import { useParams, useNavigate } from 'react-router';
-import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimesCircle, FaExclamationCircle, FaCheck } from 'react-icons/fa';
+import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimes, FaExclamationCircle, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -109,11 +109,11 @@ const UserFormModal = ({ onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[300] xl:p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full h-[100dvh] max-w-lg transform transition-all hover:scale-[1.01]">
+<div className="fixed inset-0 z-[300] flex items-center justify-center bg-black bg-opacity-50 sm:p-4">
+<div className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg h-[100dvh] sm:max-h-[90vh] flex flex-col">
         
         {/* Encabezado con gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FaUser className="text-2xl" />
@@ -127,13 +127,13 @@ const UserFormModal = ({ onSubmit }) => {
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
               aria-label="Cerrar"
             >
-              <FaTimesCircle size={20} />
+              <FaTimes size={20} />
             </button>
           </div>
         </div>
 
         {/* Cuerpo del formulario */}
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} id="user-form" className="space-y-5">
             {/* Nombre */}
             <div>

@@ -3,7 +3,7 @@ import axios from "axios";
 import {
   FaCheckCircle,
   FaExclamationCircle,
-  FaTimesCircle,
+  FaTimes,
 } from "react-icons/fa";
 import useAllCoberturas from "../../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
@@ -100,15 +100,15 @@ const ConfirmationModal = ({
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center sm:p-4 z-[200]"
         onClick={() => !isSubmitting && navigate('/')}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-screen lg:max-w-md max-h-[100dvh] flex flex-col"
+          className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] sm:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
                 {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}
@@ -119,7 +119,7 @@ const ConfirmationModal = ({
                 className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
                 aria-label="Cerrar"
               >
-                <FaTimesCircle size={20} />
+                <FaTimes size={20} />
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
