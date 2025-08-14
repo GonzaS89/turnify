@@ -114,7 +114,7 @@ const GestionCoberturas = () => {
         onClick={() => navigate('/micuenta')}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-screen xl:max-h-[90dvh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-[100dvh] xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}

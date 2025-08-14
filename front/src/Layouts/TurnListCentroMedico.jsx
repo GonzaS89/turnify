@@ -195,7 +195,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
          onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado */}
