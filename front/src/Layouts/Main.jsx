@@ -104,52 +104,54 @@ const Main = ({ openLogin }) => {
 
 
 
-  return (
-    <main className="container mx-auto sm:px-6 lg:px-8 relative">
+ return (
+  <>
+    <main className="container mx-auto sm:px-6 lg:px-8 relative ">
       <Header openLogin={openLogin} openModalProf={openModalProf}/>
       <Hero enviarIds={recibirIds} />
-
+        <hr className="my-16 border-gray-500 border-t-2" />
       <Steps />
-      <hr className="my-16 border-gray-200 border-t-2" />
+      <hr className="my-16 border-gray-500 border-t-2" />
       <Benefits />
-      <hr className="my-16 border-gray-200 border-t-2" />
+      <hr className="my-16 border-gray-500 border-t-2" />
       {/* <Testimonials />
       <hr className="my-16 border-gray-200 border-t-2" /> */}
       <FAQS />
-      <hr className="my-16 border-gray-200 border-t-2" />
-      <Footer />
-    
-
-      {/* Modal de Formulario de Usuario */}
-      {showUserFormModal && (
-        <UserFormModal
-          isOpen={showUserFormModal}
-          onClose={handleCloseUserFormModal}
-          onSubmit={handleUserFormSubmit}
-          coberturas={coberturas} // Asegúrate de pasar las coberturas aquí
-        />
-      )}
-
-      {/* Nuevo Modal de Confirmación */}
-      {showConfirmationModal && (
-        <ConfirmationModal
-          isOpen={showConfirmationModal}
-          onClose={cerrarModalTurnos} // Cierra todos los modales si se cancela desde aquí
-          onConfirm={handleConfirmBooking}
-          onEdit={handleEditBooking}
-          profesional={prof} // Pasamos el profesional para mostrar su nombre
-          consultorio={consultorio} // Pasamos el consultorio para mostrar su información
-          formData={userFormData}
-          coberturasOptions={coberturas} // Pasamos las opciones de cobertura para mostrar el nombre completo
-          selectedTurno={selectedTurno} // Pasamos el turno para mostrarlo en la confirmación
-          ordenTurno={ordenTurno} // Pasamos el índice del turno seleccionado para mostrarlo en la confirmación
-          actualizarTurnos={actualizarTurnos}
-        />
-      )}
-
-
+     
     </main>
-  );
+
+    {/* Footer fuera del contenedor, ocupa todo el ancho */}
+    <div className="w-full">
+      <Footer />
+    </div>
+
+    {/* Modales (fuera del flujo principal) */}
+    {showUserFormModal && (
+      <UserFormModal
+        isOpen={showUserFormModal}
+        onClose={handleCloseUserFormModal}
+        onSubmit={handleUserFormSubmit}
+        coberturas={coberturas}
+      />
+    )}
+
+    {showConfirmationModal && (
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={cerrarModalTurnos}
+        onConfirm={handleConfirmBooking}
+        onEdit={handleEditBooking}
+        profesional={prof}
+        consultorio={consultorio}
+        formData={userFormData}
+        coberturasOptions={coberturas}
+        selectedTurno={selectedTurno}
+        ordenTurno={ordenTurno}
+        actualizarTurnos={actualizarTurnos}
+      />
+    )}
+  </>
+);
 };
 
 export default Main;

@@ -28,92 +28,85 @@ import TurnListCentroMedico from "./Layouts/TurnListCentroMedico";
 
 const App = () => {
   const [openLoginModal, setOpenLoginModal] = useState(false);
-  const [idProfesional, setIdProfesional] = useState(null); // ID del profesional
-  const [consultorio, setConsultorio] = useState(null); // Estado para almacenar el consultorio seleccionado
+  const [idProfesional, setIdProfesional] = useState(null);
+  const [consultorio, setConsultorio] = useState(null);
   const [dataFormulario, setDataFormulario] = useState(null);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null);
   const [ordenTurno, setOrdenTurno] = useState(null);
-  const [pass, setPass] = useState(null)
+  const [pass, setPass] = useState(null);
 
   const { profesional, isLoading, error } = useProfesionalxId(idProfesional);
-
 
   const closeLogin = () => setOpenLoginModal(false);
   const openLogin = (value = true) => setOpenLoginModal(value);
 
   const recibirIds = (idProfesional, consultorio) => {
-    setIdProfesional(idProfesional); // Actualiza el ID del profesional
+    setIdProfesional(idProfesional);
     setConsultorio(consultorio);
   };
 
   const recibirTurnoYOrden = (turno, orden) => {
-    console.log(turnoSeleccionado)
-    setTurnoSeleccionado(turno); // Actualiza el turno seleccionado
-    setOrdenTurno(orden); // Actualiza el índice del turno seleccionado
+    setTurnoSeleccionado(turno);
+    setOrdenTurno(orden);
   };
 
-  const recibirDataFormulario = data => {
-    setDataFormulario(data)
-  }
+  const recibirDataFormulario = (data) => {
+    setDataFormulario(data);
+  };
 
-  const recibirPass = data => {
+  const recibirPass = (data) => {
     setPass(data);
-  }
+  };
 
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-50 to-purple-50">
+      {/* ✅ Este div ya no tiene container */}
+      <div className="flex flex-col min-h-screen bg-gradient-to-r from-green-100 to-cyan-200 rounded-xl shadow relative">
+        
+        {/* Modal de Login */}
+        {openLoginModal && (
+          <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6  z-[200]">
+            <div
+              className="absolute inset-0 bg-black/75"
+              onClick={closeLogin}
+            ></div>
+            <Login closeLogin={closeLogin} />
+          </div>
+        )}
 
-          {/* Modal de Login con glassmorphism */}
-          {openLoginModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-              <div
-                className="absolute inset-0 bg-black/75"
-                onClick={closeLogin}
-              ></div>
-              
-                <Login closeLogin={closeLogin} />
-          
-            </div>
-          )}
+        <ToastContainer position="top-right" autoClose={1000} />
 
-          {/* <ToastContainer position="top-right" autoClose={1000} />  */}
+        {/* Contenido principal: ahora Main controla el container */}
+        <main className="relative flex-grow">
+          <Routes>
+            <Route path="/" element={<Main openLogin={openLogin} />} />
 
-          {/* Contenido principal */}
-          <main className="relative flex-grow">
-            <Routes>
-              <Route path="/" element={<Main openLogin={openLogin} />} />
+            <Route path="/micuenta" element={<UserDashboard enviarPass={recibirPass} />} />
 
-              <Route
-                path="/micuenta"
-                element={<UserDashboard enviarPass = {recibirPass}/>}
-              />
+            <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio handleCrearConsultorio={() => setOpenLoginModal(true)} />} />
+            <Route path="/crearprofesional" element={<CrearProfesional />} />
+            <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
+            <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds} />} />
+            <Route path="/seleccionfecha/:consultorioId/:profesionalId" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden} />} />
+            <Route path="/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModal onSubmit={recibirDataFormulario} />} />
+            <Route path="/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno} consultorio={consultorio} profesional={profesional?.[0]} />} />
+            <Route path="/micuenta/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModalInterno onSubmit={recibirDataFormulario} />} />
+            <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno} consultorio={consultorio} profesional={profesional?.[0]} />} />
+            <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden} />} />
+            <Route path="/micuenta/panelturnos-centromedico/:consultorioId/:profesionalId" element={<TurnListCentroMedico enviarTurnoYOrden={recibirTurnoYOrden} />} />
+            <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />} />
+            <Route path="/codigosdisponibles" element={<PlantillaCodigosActivacion />} />
+            <Route path="/micuenta/datosconsultorio/:consultorioId" element={<ConsultorioSettingsModal password={pass} />} />
+            <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />} />
+            <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />} />
+          </Routes>
+        </main>
 
-              <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio handleCrearConsultorio = {() => setOpenLoginModal(true)}/>} />
-              <Route path="/crearprofesional" element={<CrearProfesional />} />
-              <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
-              <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds}/>}/>
-              <Route path="/seleccionfecha/:consultorioId/:profesionalId" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModal onSubmit={recibirDataFormulario}/>}/>
-              <Route path="/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
-              <Route path="/micuenta/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModalInterno onSubmit={recibirDataFormulario}/>}/>
-              <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno}/>} consultorio={consultorio} profesional={profesional[0]}/>
-              <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/micuenta/panelturnos-centromedico/:consultorioId/:profesionalId" element={<TurnListCentroMedico enviarTurnoYOrden={recibirTurnoYOrden}/>}/>
-              <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />}/>
-              <Route path="/codigosdisponibles" element={<PlantillaCodigosActivacion />}/>
-              <Route path="/micuenta/datosconsultorio/:consultorioId" element={<ConsultorioSettingsModal password={pass}/>}/>
-              <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />}/>
-              <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />}/>
- 
-            </Routes>
-          </main>
-
-          {/* <Footer /> */}
-  
+        {/* Aquí iría el Footer si lo agregas */}
       </div>
     </BrowserRouter>
   );
 };
 
 export default App;
+

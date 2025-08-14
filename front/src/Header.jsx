@@ -36,13 +36,13 @@ export const Header = ({ openLogin }) => {
         </a>
 
         {/* Navegación Desktop */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden lg:flex items-center space-x-8">
           <ul className="flex space-x-8">
             {[
-              { to: 'hero-section', label: 'Inicio', offset: -200 },
-              { to: 'info', label: 'Info', offset: -100 },
-              { to: 'beneficios', label: 'Beneficios', offset: -100 },
-              { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -100 },
+              { to: 'hero-section', label: 'Inicio', offset: -150 },
+              { to: 'info', label: 'Info', offset: -150 },
+              { to: 'beneficios', label: 'Beneficios', offset: -150 },
+              { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150 },
             ].map((item) => (
               <li key={item.to}>
                 <Link
@@ -70,14 +70,14 @@ export const Header = ({ openLogin }) => {
             className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
             aria-label="Abrir formulario de inicio de sesión"
           >
-            Iniciar Sesión
+            Acceso para afiliados
           </button>
         </nav>
 
         {/* Botón de menú móvil */}
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden p-2 rounded-full text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-200"
+          className="lg:hidden p-2 rounded-full text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-200"
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-menu"
           aria-label={isMobileMenuOpen ? "Cerrar menú móvil" : "Abrir menú móvil"}
@@ -95,7 +95,7 @@ export const Header = ({ openLogin }) => {
         id="mobile-menu"
         className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        } md:hidden`}
+        } lg:hidden`}
         onClick={closeMobileMenu}
         aria-hidden={!isMobileMenuOpen}
       >
@@ -151,7 +151,7 @@ export const Header = ({ openLogin }) => {
               }}
               className="w-full py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
             >
-              Iniciar Sesión
+              Acceso para afiliados
             </button>
           </div>
         </div>

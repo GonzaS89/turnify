@@ -114,7 +114,7 @@ const GestionCoberturas = () => {
         onClick={() => navigate('/micuenta')}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-screen xl:max-h-[100dvh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-screen xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -213,7 +213,7 @@ const GestionCoberturas = () => {
                   </div>
 
                   {searchTerm && (
-                    <div className="mt-4 bg-gray-50 rounded-xl border border-gray-200 max-h-60 overflow-y-auto">
+                    <div className="mt-4 bg-gray-50 rounded-xl border border-gray-200 max-h-80 overflow-y-auto">
                       {availableCoberturasToAdd.length > 0 ? (
                         <ul className="divide-y divide-gray-200">
                           {availableCoberturasToAdd.map((cobertura) => (

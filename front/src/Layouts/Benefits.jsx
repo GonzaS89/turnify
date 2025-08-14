@@ -72,7 +72,7 @@ const Benefits = () => {
   return (
     <section
       id="beneficios"
-      className="relative py-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white"
+      className="relative py-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
       aria-labelledby="benefits-title"
     >
       {/* Fondo decorativo con blobs animados */}
@@ -102,15 +102,20 @@ const Benefits = () => {
       >
         {/* Badge con efecto de brillo */}
         <motion.div
-          variants={itemVariants}
-          className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-md border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider rounded-full shadow-md mb-8 mx-auto"
-        >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-          </span>
-          <span>Beneficios de Afiliarte</span>
-        </motion.div>
+  variants={itemVariants}
+  className="flex justify-center items-center w-full mb-8"
+>
+  <div className="inline-flex justify-center items-center gap-3 px-6 py-3 backdrop-blur-md 
+    border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider 
+    rounded-full shadow-md bg-white/70"
+  >
+    <span className="relative flex h-2.5 w-2.5">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+    </span>
+    <span>Beneficios de Afiliarte</span>
+  </div>
+</motion.div>
 
         {/* Título principal */}
         <motion.h2

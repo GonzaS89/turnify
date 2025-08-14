@@ -67,7 +67,8 @@ const Login = ({ closeLogin }) => {
   
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 sm:p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center
+     p-6">
       <div
         className="
         relative
@@ -184,7 +185,7 @@ const Login = ({ closeLogin }) => {
             mb-2
           "
           >
-            Bienvenido a <span className="text-indigo-600 uppercase -tracking-wide font-principal font-extralight">Ya tenes turnos</span>
+            Bienvenido a <span className="text-indigo-600 uppercase -tracking-wide font-principal font-extralight">Turnate</span>
           </h2>
           <p
             className="
@@ -528,7 +529,7 @@ const Login = ({ closeLogin }) => {
             text-gray-500
           "
           >
-            © 2025 Ya tenes turno. Todos los derechos reservados.
+            © 2025 Turnate
           </p>
         </div>
       </div>

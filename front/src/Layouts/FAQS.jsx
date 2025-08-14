@@ -52,7 +52,7 @@ const FAQS = () => {
     return (
         <section
             id="preguntas-frecuentes"
-            className="py-20 lg:py-28 bg-gradient-to-b from-white via-indigo-50 to-white overflow-hidden"
+            className="py-20 lg:py-28 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
             aria-labelledby="faq-title"
         >
             <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">

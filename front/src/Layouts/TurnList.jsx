@@ -199,7 +199,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         onClick={() => navigate("/micuenta")}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
+          className="bg-white xl:rounded-3xl shadow-2xl w-screen h-screen xl:max-w-[1400px] xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado */}

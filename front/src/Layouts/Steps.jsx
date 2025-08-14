@@ -65,10 +65,11 @@ const Steps = () => {
     <section
       id="info"
       ref={ref}
-      className="py-28 relative overflow-hidden bg-white"
+      className="lg:py-28 relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
       aria-labelledby="steps-title"
     >
-      {/* === Fondo decorativo con blobs animados === */}
+      <div clas>
+        {/* === Fondo decorativo con blobs animados === */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/3 -left-20 w-96 h-96 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-full opacity-30 blur-3xl animate-pulse-slow"
@@ -186,6 +187,8 @@ const Steps = () => {
           </motion.div>
         </div>
       </div>
+      </div>
+      
 
       {/* === Estilos custom para animaciones === */}
       <style jsx>{`
