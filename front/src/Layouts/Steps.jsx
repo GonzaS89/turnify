@@ -65,7 +65,7 @@ const Steps = () => {
     <section
       id="info"
       ref={ref}
-      className="py-8 md:py-12 lg:py-28 relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
+      className="py-8 md:py-12 lg:py-28 max-w-7xl mx-auto relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
       aria-labelledby="steps-title"
     >
       <div clas>

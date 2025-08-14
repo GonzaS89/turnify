@@ -77,7 +77,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
             {/* Info del médico */}
             <div className="flex-1">
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-                Bienvenido a tu consultorio
+                Tu consultorio virtual
               </h1>
 
               {medico ? (

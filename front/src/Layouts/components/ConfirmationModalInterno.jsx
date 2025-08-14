@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
 import useAllCoberturas from "../../../customHooks/useAllCoberturas";
@@ -86,10 +86,16 @@ const ConfirmationModalInterno = ({
       setIsSubmitting(false);
     }
   };
+  useEffect(() => {
+    // Bloquea el scroll al montar
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
-  // Previene scroll del fondo
-  document.body.style.overflow = "hidden";
-
+    // Restaura el scroll al desmontar
+    return () => {
+      document.body.style.overflow = prevOverflow || 'auto';
+    };
+  }, []);
   return (
     <>
       {/* Overlay oscuro con blur */}
@@ -131,10 +137,10 @@ const ConfirmationModalInterno = ({
                 <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4 animate-bounce" />
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva Confirmada!</h2>
                 <p className="text-gray-600 text-sm">
-                  Tu turno ha sido reservado exitosamente.
+                  El turno ha sido reservado exitosamente.
                 </p>
                 <p className="text-gray-500 text-sm mt-1">
-                  Recibirás una confirmación por WhatsApp.
+                  El paciente recibirá una confirmación por WhatsApp.
                 </p>
               </div>
             ) : (

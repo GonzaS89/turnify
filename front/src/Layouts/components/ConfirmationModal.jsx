@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   FaCheckCircle,
@@ -93,8 +93,16 @@ const ConfirmationModal = ({
     }
   };
 
-  // Previene scroll del fondo
-  document.body.style.overflow = "hidden";
+  useEffect(() => {
+    // Bloquea el scroll al montar
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // Restaura el scroll al desmontar
+    return () => {
+      document.body.style.overflow = prevOverflow || 'auto';
+    };
+  }, []);
 
   return (
     <>

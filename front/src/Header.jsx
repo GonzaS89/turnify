@@ -17,7 +17,7 @@ export const Header = ({ openLogin }) => {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm py-4 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm py-4 transition-all duration-300"
       role="banner"
     >
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between relative max-w-7xl">

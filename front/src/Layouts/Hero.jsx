@@ -44,7 +44,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
   return (
     <section
       id="hero-section"
-      className="relative w-full overflow-hidden min-h-screen flex items-center"
+      className="relative w-full overflow-hidden min-h-[100vh] flex items-center mt-12"
       aria-labelledby="hero-title"
     >
       {/* Fondo decorativo */}
@@ -67,7 +67,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
       </div>
 
       {/* Contenido */}
-      <div className="relative z-10 w-full px-6 sm:px-8 lg:px-12 py-16 md:py-24">
+      <div className="relative z-10 w-full sm:px-8">
         <div className="container mx-auto">
         <motion.div
   variants={containerVariants}

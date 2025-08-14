@@ -82,6 +82,8 @@ const AsociarProfesionalAConsultorio = ({
   const handleCreateSuccess = () => {
     if (typeof actualizarProfesionales === "function") {
       actualizarProfesionales();
+      refrescarListaProfesionales()
+      
       
     }
     toast.success("Nuevo profesional creado y vinculado");

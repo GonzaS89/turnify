@@ -55,7 +55,7 @@ const FAQS = () => {
     return (
         <section
             id="preguntas-frecuentes"
-            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
+            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl mx-auto"
             aria-labelledby="faq-title"
         >
             <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">

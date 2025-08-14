@@ -79,6 +79,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       setTelefono("");
 
       setTimeout(() => {
+        onClose()
         onCreate?.();
       }, 500);
     } catch (err) {

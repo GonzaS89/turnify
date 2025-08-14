@@ -72,7 +72,7 @@ const Benefits = () => {
   return (
     <section
       id="beneficios"
-      className="relative py-8 md:py-14 lg:y-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px]"
+      className="relative py-8 md:py-14 lg:y-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl mx-auto"
       aria-labelledby="benefits-title"
     >
       {/* Fondo decorativo con blobs animados */}
