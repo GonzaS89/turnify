@@ -5,7 +5,7 @@ import GestionProfesionales from './components/GestionProfesionales';
 import TurnList from './TurnList';
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import CountUp from 'react-countup';
-import { useParams ,useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 
 const PanelCentroMedico = ( { consultorioData: consultorio }) => {
   const currentDate = new Date().toLocaleDateString('es-AR', {
@@ -41,9 +41,9 @@ const PanelCentroMedico = ( { consultorioData: consultorio }) => {
       {/* ===== ENCABEZADO ===== */}
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
-          Bienvenido, {consultorio?.nombre || "Centro Médico"}
+          <span className='capitalize'>{consultorio?.tipo}</span> {consultorio?.nombre || "Centro Médico"}
         </h1>
-        <p className="text-gray-600 text-lg">Panel de Gestión del Centro Médico</p>
+        <p className="text-gray-600 text-lg">Panel de Gestión</p>
         <p className="text-gray-500 text-sm mt-1">
           Hoy es: <span className="font-semibold text-blue-700 capitalize">{currentDate}</span>
         </p>

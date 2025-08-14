@@ -109,7 +109,7 @@ const GestionProfesionales = () => {
       );
 
       if (response.status === 200) {
-        toast.success("✅ Desvinculado con éxito", { autoClose: 1500 });
+        toast.success("✅ Desvinculado con éxito", { autoClose: 500 });
         
       }
 
@@ -330,7 +330,9 @@ const GestionProfesionales = () => {
                           <button className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
                             <FaEdit className="w-4 h-4" />
                           </button>
-                          <button className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
+                          <button 
+                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={()=> handleDesvincularProfesional(profesional.id)}>
                             <FaTrashAlt className="w-4 h-4" />
                           </button>
                         </div>

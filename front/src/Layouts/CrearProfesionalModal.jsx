@@ -70,8 +70,6 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       );
       const data = response.data;
 
-      toast.success("Profesional creado correctamente");
-
       // Reset
       setNombre("");
       setApellido("");
@@ -97,7 +95,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 lg:p-4">
       {/* Modal responsivo */}
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full h-[10dvh] lg:max-h-[90dvh] max-w-4xl flex overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-h-[100dvh] lg:max-h-[90dvh] max-w-4xl flex overflow-hidden"
         style={{ maxHeight: "90dvh" }}
         onClick={(e) => e.stopPropagation()}
       >
