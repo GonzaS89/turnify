@@ -170,7 +170,7 @@ const GestionProfesionales = () => {
         onClick={() => navigate("/micuenta")}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl h-[100dvh] xl:max-w-7xl xl:h-[90vh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-7xl xl:h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
