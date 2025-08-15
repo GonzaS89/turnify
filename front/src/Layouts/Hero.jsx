@@ -44,7 +44,7 @@ const Hero = ({ enviarIds, openModalProf }) => {
   return (
     <section
       id="hero-section"
-      className="relative mx-auto overflow-hidden flex items-center mt-28  md:max-w-4xl xl:max-w-7xl px-8"
+      className="relative mx-auto overflow-hidden flex items-center mt-32 md:max-w-4xl xl:max-w-7xl px-8"
       aria-labelledby="hero-title"
     >
 
