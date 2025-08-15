@@ -65,10 +65,10 @@ const Steps = () => {
     <section
       id="info"
       ref={ref}
-      className="py-8 md:py-12 lg:py-28 max-w-7xl mx-auto relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
+      className="py-8 md:py-12 lg:py-16  lg:max-w-4xl xl:max-w-7xl mx-auto relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
       aria-labelledby="steps-title"
     >
-      <div clas>
+      <div>
         {/* === Fondo decorativo con blobs animados === */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
@@ -104,7 +104,7 @@ const Steps = () => {
           <motion.h2
             id="steps-title"
             variants={itemVariants}
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6"
+            className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 leading-tight mb-6"
           >
             Agenda tu turno en{" "}
             <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-500 bg-clip-text text-transparent">
@@ -114,7 +114,7 @@ const Steps = () => {
 
           <motion.p
             variants={itemVariants}
-            className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto"
+            className="text-lg md:text-base xl:text-2xl text-gray-600 leading-relaxed max-w-2xl mx-auto"
           >
             Rápido, fácil y sin complicaciones. Tu salud merece lo mejor, y tu tiempo también.
           </motion.p>
@@ -150,7 +150,7 @@ const Steps = () => {
               >
                 {/* Número del paso (decorativo) */}
                 <div
-                  className={`absolute -top-6 -left-6 w-12 h-12 rounded-full bg-gradient-to-br ${step.color} text-white font-bold text-lg flex items-center justify-center shadow-lg z-20`}
+                  className={`absolute -top-6 -left-6 w-12 xl:w-16 h-12 xl:h-16 rounded-full bg-gradient-to-br ${step.color} text-white font-bold text-lg xl:text-3xl flex items-center justify-center shadow-lg z-20`}
                 >
                   {index + 1}
                 </div>
@@ -165,17 +165,17 @@ const Steps = () => {
                   whileTap={{ scale: 0.98 }}
                 >
                   {/* Icono */}
-                  <div className="text-6xl mb-6 drop-shadow-sm group-hover:scale-110 transition-transform duration-300">
+                  <div className="text-6xl md:text-3xl xl:text-5xl mb-6 drop-shadow-sm group-hover:scale-110 transition-transform duration-300">
                     {step.icon}
                   </div>
 
                   {/* Título */}
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4 leading-tight">
+                  <h3 className="text-2xl md:text-xl xl:text-2xl font-bold text-gray-800 mb-4 leading-tight">
                     {step.titulo}
                   </h3>
 
                   {/* Descripción */}
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed xl:text-lg">
                     {step.contenido}
                   </p>
 

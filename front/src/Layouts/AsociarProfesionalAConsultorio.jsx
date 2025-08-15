@@ -39,7 +39,7 @@ const AsociarProfesionalAConsultorio = ({
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
-
+  
     if (!selectedProfesional) {
       setMensajeError("Debe seleccionar un profesional.");
       return;
@@ -48,7 +48,7 @@ const AsociarProfesionalAConsultorio = ({
       setMensajeError("No se especificó el consultorio.");
       return;
     }
-
+  
     try {
       const response = await axios.post(
         `${API_URL}/api/unionprofesionalconsultorio`,
@@ -57,24 +57,38 @@ const AsociarProfesionalAConsultorio = ({
           consultorioID: consultorioID,
         }
       );
-
-      setMensaje("✅ Profesional asociado correctamente al consultorio.");
-      toast.success("Vinculación exitosa");
+  
+      // ✅ Usar el mensaje devuelto por el backend
+      const backendMessage = response.data.message;
+  
+      setMensaje(`✅ ${backendMessage}`);
       
-
-      // Recargar después de un breve delay
+      // Personalizar el toast según el caso
+      if (backendMessage.includes("reactivado")) {
+        toast.info("✅ Profesional reactivado");
+      } else if (backendMessage.includes("ya estaba")) {
+        toast.warning("⚠️ Ya está asociado");
+      } else {
+        toast.success("✅ Vinculación exitosa");
+      }
+  
+      // Refrescar lista tras breve espera
       setTimeout(() => {
-        refrescarListaProfesionales()
-        onClose()
-
+        refrescarListaProfesionales();
+        // onClose(); // Opcional: cerrar modal
       }, 500);
     } catch (err) {
+      // Capturar mensaje de error claro
       const errorMsg =
         err.response?.data?.message ||
         err.response?.statusText ||
-        "Error de conexión";
+        "Error de conexión con el servidor";
+  
       setMensajeError(`❌ ${errorMsg}`);
+      
+      // Mostrar toast de error
       toast.error("Error al asociar profesional");
+  
       console.error("Error al asociar profesional:", err);
     }
   };

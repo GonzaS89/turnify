@@ -174,7 +174,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   if (turnos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
+      <div 
+      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
+      >
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           {/* Encabezado con gradiente */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
@@ -270,9 +272,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
             {/* Sidebar de fechas */}
             <div className="w-full md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-              <div className="p-6 border-b border-gray-200">
+              {/* <div className="p-6 border-b border-gray-200">
                 <h4 className="font-bold text-gray-800 text-lg">Fechas</h4>
-              </div>
+              </div> */}
               <div
                 ref={datesListRef}
                 className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-4 py-3 gap-3 custom-scrollbar"

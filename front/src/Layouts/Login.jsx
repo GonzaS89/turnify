@@ -4,7 +4,7 @@ import useAllConsultorios from "../../customHooks/useAllConsultorios";
 import axios from 'axios';
 import { FaUser, FaLock } from 'react-icons/fa';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
-import { FaTimes }  from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa';
 
 const Login = ({ closeLogin }) => {
   const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
@@ -14,6 +14,12 @@ const Login = ({ closeLogin }) => {
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const mensaje =
+    "Hola, quiero crear mi cuenta en Turnate. ¿Pueden ayudarme?";
+  const whatsappLink = `https://wa.me/5493815588504?text=${encodeURIComponent(
+    mensaje
+  )}`;
 
   useEffect(() => {
     // Bloquea el scroll al montar
@@ -29,46 +35,38 @@ const Login = ({ closeLogin }) => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    setLoginError("");
+    setLoginError('');
   }, [username, password]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setLoginError('');
-  
+
     try {
       const response = await axios.post(`${API_URL}/api/login`, {
         usuario: username,
-        contraseña: password
+        contraseña: password,
       });
-  
+
       const { consultorio, token } = response.data;
 
-      console.log(username,password)
-  
-      
-  
       // ✅ Guardar datos necesarios en localStorage
       localStorage.setItem('authToken', token);
       localStorage.setItem('userPassword', password);
-      localStorage.setItem('consultorio', JSON.stringify(consultorio)); // ✅ Agregado
-  
-    
+      localStorage.setItem('consultorio', JSON.stringify(consultorio));
+
       navigate('/micuenta');
-  
-      closeLogin();
+      closeLogin?.();
     } catch (err) {
       setLoginError(err.response?.data?.message || 'Usuario o contraseña incorrectos.');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center
-     p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-6 z-50">
       <div
         className="
         relative
@@ -88,33 +86,6 @@ const Login = ({ closeLogin }) => {
         animate-fade-in-up
       "
       >
-        {/* <div
-          className="
-          absolute
-          -top-24
-          -right-24
-          w-48
-          h-48
-          bg-blue-50
-          rounded-full
-          opacity-50
-     
-        "
-        ></div>
-        <div
-          className="
-          absolute
-          -bottom-24
-          -left-24
-          w-48
-          h-48
-          bg-indigo-50
-          rounded-full
-          opacity-50
-   
-        "
-        ></div> */}
-
         {/* Botón de cerrar */}
         <button
           onClick={closeLogin}
@@ -185,7 +156,7 @@ const Login = ({ closeLogin }) => {
             mb-2
           "
           >
-            Bienvenido a <span className="text-indigo-600 uppercase -tracking-wide font-principal font-extralight">Turnate</span>
+            Bienvenido a <span className="text-indigo-600 uppercase font-principal font-extralight">Turnate</span>
           </h2>
           <p
             className="
@@ -200,196 +171,158 @@ const Login = ({ closeLogin }) => {
         {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-5">
           {/* Campo de usuario */}
-          {/* Campo de usuario */}
-<div>
-  <label
-    htmlFor="username"
-    className="
-      block
-      text-sm
-      font-medium
-      text-gray-700
-      mb-2
-    "
-  >
-    Usuario
-  </label>
-  <div
-    className="
-      relative
-      rounded-lg
-      shadow-sm
-    "
-  >
-    <div
-      className="
-        absolute
-        inset-y-0
-        left-0
-        pl-3
-        flex
-        items-center
-        pointer-events-none
-        text-gray-400
-      "
-    >
-      <FaUser className="h-5 w-5" />
-    </div>
-    <input
-      id="username"
-      type="text"
-      value={username}
-      onChange={(e) => setUsername(e.target.value)}
-      className="
-        block
-        w-full
-        pl-10
-        pr-3
-        py-3
-        border
-        border-gray-200
-        rounded-lg
-        focus:outline-none
-        focus:ring-2
-        focus:ring-indigo-500
-        focus:border-indigo-500
-        placeholder-gray-400
-        text-gray-800
-        transition-all
-        duration-200
-      "
-      placeholder="Ingresa tu usuario"
-      required
-      disabled={isSubmitting}
-    />
-  </div>
-</div>
+          <div>
+            <label
+              htmlFor="username"
+              className="
+                block
+                text-sm
+                font-medium
+                text-gray-700
+                mb-2
+              "
+            >
+              Usuario
+            </label>
+            <div className="relative rounded-lg shadow-sm">
+              <div
+                className="
+                  absolute
+                  inset-y-0
+                  left-0
+                  pl-3
+                  flex
+                  items-center
+                  pointer-events-none
+                  text-gray-400
+                "
+              >
+                <FaUser className="h-5 w-5" />
+              </div>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="
+                  block
+                  w-full
+                  pl-10
+                  pr-3
+                  py-3
+                  border
+                  border-gray-200
+                  rounded-lg
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-indigo-500
+                  focus:border-indigo-500
+                  placeholder-gray-400
+                  text-gray-800
+                  transition-all
+                  duration-200
+                "
+                placeholder="Ingresa tu usuario"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
 
-{/* Campo de contraseña */}
-<div>
-  <label
-    htmlFor="password"
-    className="
-      block
-      text-sm
-      font-medium
-      text-gray-700
-      mb-2
-    "
-  >
-    Contraseña
-  </label>
-  <div
-    className="
-      relative
-      rounded-lg
-      shadow-sm
-    "
-  >
-    <div
-      className="
-        absolute
-        inset-y-0
-        left-0
-        pl-3
-        flex
-        items-center
-        pointer-events-none
-        text-gray-400
-      "
-    >
-      <FaLock className="h-5 w-5" />
-    </div>
+          {/* Campo de contraseña */}
+          <div>
+            <label
+              htmlFor="password"
+              className="
+                block
+                text-sm
+                font-medium
+                text-gray-700
+                mb-2
+              "
+            >
+              Contraseña
+            </label>
+            <div className="relative rounded-lg shadow-sm">
+              <div
+                className="
+                  absolute
+                  inset-y-0
+                  left-0
+                  pl-3
+                  flex
+                  items-center
+                  pointer-events-none
+                  text-gray-400
+                "
+              >
+                <FaLock className="h-5 w-5" />
+              </div>
 
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      className="
-        block
-        w-full
-        pl-10
-        pr-10
-        py-3
-        border
-        border-gray-200
-        rounded-lg
-        focus:outline-none
-        focus:ring-2
-        focus:ring-indigo-500
-        focus:border-indigo-500
-        placeholder-gray-400
-        text-gray-800
-        transition-all
-        duration-200
-      "
-      placeholder="Ingresa tu contraseña"
-      required
-      disabled={isSubmitting}
-    />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="
+                  block
+                  w-full
+                  pl-10
+                  pr-10
+                  py-3
+                  border
+                  border-gray-200
+                  rounded-lg
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-indigo-500
+                  focus:border-indigo-500
+                  placeholder-gray-400
+                  text-gray-800
+                  transition-all
+                  duration-200
+                "
+                placeholder="Ingresa tu contraseña"
+                required
+                disabled={isSubmitting}
+              />
 
-    {/* Botón para mostrar/ocultar contraseña */}
-    <button
-      type="button"
-      onClick={() => setShowPassword(prev => !prev)}
-      className="
-        absolute
-        inset-y-0
-        right-0
-        pr-3
-        flex
-        items-center
-        text-gray-400
-        hover:text-gray-600
-        focus:outline-none
-        transition-colors
-        duration-200
-      "
-      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-    >
-      {showPassword ? (
-        <HiEye className="h-5 w-5" />
-      ) : (
-        <HiEyeOff className="h-5 w-5" />
-      )}
-    </button>
-  </div>
-</div>
+              {/* Botón para mostrar/ocultar contraseña */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="
+                  absolute
+                  inset-y-0
+                  right-0
+                  pr-3
+                  flex
+                  items-center
+                  text-gray-400
+                  hover:text-gray-600
+                  focus:outline-none
+                  transition-colors
+                  duration-200
+                "
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <HiEye className="h-5 w-5" />
+                ) : (
+                  <HiEyeOff className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
 
           {/* Mensajes de estado */}
           {(isLoading || fetchError || loginError) && (
-            <div
-              className="
-              p-3
-              rounded-lg
-              text-sm
-              flex
-              items-center
-              gap-2
-            "
-            >
+            <div className="p-3 rounded-lg text-sm flex items-center gap-2">
               {isLoading && (
                 <>
-                  <svg
-                    className="animate-spin h-4 w-4 text-blue-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                  <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span className="text-blue-600">Cargando datos...</span>
                 </>
@@ -397,41 +330,17 @@ const Login = ({ closeLogin }) => {
 
               {fetchError && (
                 <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-red-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-red-500">
-                    Error: {fetchError.message}
-                  </span>
+                  <span className="text-red-500">Error: {fetchError.message}</span>
                 </>
               )}
 
               {loginError && (
                 <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-red-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="text-red-500">{loginError}</span>
                 </>
@@ -468,25 +377,9 @@ const Login = ({ closeLogin }) => {
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 <span>Ingresando...</span>
               </div>
@@ -494,41 +387,31 @@ const Login = ({ closeLogin }) => {
               "Iniciar Sesión"
             )}
           </button>
+
+          {/* Botón de registro */}
+          <div className="text-center mt-4">
+            <a
+              href={whatsappLink}
+              onClick={() => navigate('/registro')}
+              className="
+                text-sm
+                text-indigo-600
+                font-medium
+                hover:text-indigo-800
+                transition-colors
+                duration-200
+                underline
+                hover:no-underline
+              "
+            >
+              ¿No tenés cuenta? Crea tu cuenta aquí
+            </a>
+          </div>
         </form>
 
-        {/* Enlace de recuperación */}
-        {/* <div className="mt-6 text-center">
-          <a 
-            href="#" 
-            className="
-              text-sm
-              text-indigo-600
-              hover:text-indigo-800
-              font-medium
-              transition-colors
-              duration-200
-            "
-          >
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div> */}
-
         {/* Footer */}
-        <div
-          className="
-          mt-8
-          pt-6
-          border-t
-          border-gray-100
-          text-center
-        "
-        >
-          <p
-            className="
-            text-xs
-            text-gray-500
-          "
-          >
+        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-500">
             © 2025 Turnate
           </p>
         </div>

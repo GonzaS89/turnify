@@ -106,7 +106,7 @@ const Main = ({ openLogin }) => {
 
  return (
   <>
-    <main className="container mx-auto sm:px-6 lg:px-8 relative">
+    <main className="container relative mx-auto">
       <Header openLogin={openLogin} openModalProf={openModalProf}/>
       <Hero enviarIds={recibirIds} />
         <hr className="my-16 border-gray-500 border-t-2" />

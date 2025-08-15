@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {FaTimes, FaPlus} from 'react-icons/fa'
 
 const FAQS = () => {
     const [openFAQ, setOpenFAQ] = useState(null);
@@ -55,7 +56,7 @@ const FAQS = () => {
     return (
         <section
             id="preguntas-frecuentes"
-            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl mx-auto"
+            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] lg:max-w-4xl xl:max-w-7xl mx-auto"
             aria-labelledby="faq-title"
         >
             <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
@@ -69,11 +70,11 @@ const FAQS = () => {
                 >
                     <h2
                         id="faq-title"
-                        className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-5"
+                        className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 tracking-tight mb-5"
                     >
                         Preguntas <span className="text-indigo-600">Frecuentes</span>
                     </h2>
-                    <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed opacity-90">
+                    <p className="text-lg lg:text-base xl:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed opacity-90">
                         Aquí respondemos a las dudas más comunes. Si no encuentras lo que buscas, no dudes en contactarnos.
                     </p>
                 </motion.div>
@@ -104,16 +105,16 @@ const FAQS = () => {
                             }}
                         >
                             {/* Pregunta */}
-                            <div className="flex justify-between items-center p-6 sm:p-8 cursor-pointer group">
-                                <h3 className="font-semibold text-xl sm:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
+                            <div className="flex justify-between items-center p-6 md:p-5 sm:p-8 xl:p-12  cursor-pointer group">
+                                <h3 className="font-semibold text-xl sm:text-2xl md:text-xl xl:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
                                     {item.q}
                                 </h3>
                                 <motion.span
-                                    className="text-3xl font-light text-indigo-600 bg-indigo-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 ml-6"
+                                    className="text-3xl md:text-base lg:text-lg xl:text-2xl font-light text-indigo-600 bg-indigo-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 ml-6"
                                     variants={iconRotate}
                                     animate={openFAQ === index ? 'open' : 'closed'}
                                 >
-                                    +
+                                    <FaPlus />
                                 </motion.span>
                             </div>
 
@@ -131,7 +132,7 @@ const FAQS = () => {
                                         aria-labelledby={`faq-question-${index}`}
                                     >
                                         <div className="border-t border-gray-200 pt-6">
-                                            <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+                                            <p className="text-gray-700 leading-relaxed text-base sm:text-lg md:text-base xl:text-xl">
                                                 {item.a}
                                             </p>
                                         </div>

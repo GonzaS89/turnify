@@ -21,17 +21,17 @@ const Benefit = ({ icono, titulo, contenido }) => {
       transition={{ duration: 0.4 }}
     >
       {/* Icono con fondo animado */}
-      <div className="inline-flex justify-center items-center w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 rounded-2xl group-hover:from-indigo-100 group-hover:to-indigo-200 group-hover:scale-110 transition-transform duration-300">
-        {React.cloneElement(icono, { className: "w-8 h-8" })}
+      <div className="inline-flex justify-center items-center w-16 lg:w-12 h-16 lg:h-12 xl:w-20 xl:h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 rounded-2xl group-hover:from-indigo-100 group-hover:to-indigo-200 group-hover:scale-110 transition-transform duration-300">
+        {React.cloneElement(icono, { className: "w-8 h-8 xl:w-12 xl:h-12" })}
       </div>
 
       {/* Título */}
-      <h3 className="text-xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-indigo-700 transition-colors">
+      <h3 className="text-xl md:text-lg xl:text-xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-indigo-700 transition-colors">
         {titulo}
       </h3>
 
       {/* Descripción */}
-      <p className="text-gray-600 leading-relaxed flex-grow">
+      <p className="text-gray-600 leading-relaxed flex-grow md:text-sm xl:text-lg">
         {contenido}
       </p>
     </motion.div>
@@ -72,7 +72,7 @@ const Benefits = () => {
   return (
     <section
       id="beneficios"
-      className="relative py-8 md:py-14 lg:y-28 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl mx-auto"
+      className="relative py-8 md:py-14 lg:y-16 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl lg:max-w-4xl xl:max-w-7xl mx-auto"
       aria-labelledby="benefits-title"
     >
       {/* Fondo decorativo con blobs animados */}
@@ -121,7 +121,7 @@ const Benefits = () => {
         <motion.h2
           id="benefits-title"
           variants={itemVariants}
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight"
+          className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight"
         >
           Optimiza tu gestión y expande tu{" "}
           <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
@@ -132,7 +132,7 @@ const Benefits = () => {
         {/* Subtítulo */}
         <motion.p
           variants={itemVariants}
-          className="text-lg text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
+          className="text-lg md:text-base xl:text-2xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
         >
           Para médicos y centros de salud, nuestra plataforma es la herramienta
           clave para{" "}

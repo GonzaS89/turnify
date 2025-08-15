@@ -67,16 +67,17 @@ const App = () => {
     setPass(data);
   };
 
+
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen 
-                     bg-gradient-to-r from-green-100 to-cyan-200 
+                     bg-gradient-to-r from-cyan-200 to-violet-200
                      dark:from-gray-900 dark:to-gray-800
                      rounded-xl shadow relative
                      transition-colors duration-700 ease-in-out">
         
         {/* Botón de modo oscuro usando contexto */}
-        <button
+        {/* <button
           onClick={toggleDarkMode}
           className="fixed top-4 right-4 z-50 p-3 rounded-full
                      bg-yellow-100 dark:bg-gray-800
@@ -87,8 +88,10 @@ const App = () => {
           aria-label={darkMode ? "Activar modo claro" : "Activar modo oscuro"}
         >
           {darkMode ? <FaSun className="h-6 w-6" /> : <FaMoon className="h-6 w-6" />}
-        </button>
-
+        </button> */}
+        <div className="fixed h-screen flex">
+          <img src="" alt="" />
+        </div>
         {/* Modal de Login */}
         {openLoginModal && (
           <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-[200]">

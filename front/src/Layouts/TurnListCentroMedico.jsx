@@ -140,7 +140,10 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   if (turnos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
+      <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]"
+      onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+      >
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           {/* Encabezado con gradiente */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">

@@ -1055,58 +1055,74 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
 
 // // CREAR UNION PROFESIONA Y CONSULTORIO //
 
+// Ruta: POST /api/unionprofesionalconsultorio
 app.post("/api/unionprofesionalconsultorio", async (req, res) => {
   const { profesionalID, consultorioID } = req.body;
 
+  // Validación de campos
   if (!profesionalID || !consultorioID) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios: profesionalID y consultorioID."
+      message: "Faltan campos obligatorios: profesionalID y consultorioID.",
     });
   }
 
   try {
+    // Intentar insertar o actualizar si ya existe
     const [result] = await pool.execute(
-      `INSERT INTO profesional_consultorio (profesional_id, consultorio_id, estado) 
-       VALUES (?, ?, 'activo') 
-       ON DUPLICATE KEY UPDATE 
-       estado = IF(estado = 'inactivo', 'activo', estado)`,
+      `
+      INSERT INTO profesional_consultorio (profesional_id, consultorio_id, estado) 
+      VALUES (?, ?, 'activo') 
+      ON DUPLICATE KEY UPDATE 
+        estado = IF(estado = 'inactivo', 'activo', estado)
+      `,
       [profesionalID, consultorioID]
     );
 
-    // Analizamos el resultado:
-    // - Si es inserción: result.affectedRows = 1
-    // - Si actualizó estado (de inactivo a activo): result.affectedRows = 1, result.changedRows = 1
-    // - Si ya estaba activo: result.affectedRows = 1, result.changedRows = 0
-
-    if (result.affectedRows === 1) {
-      if (result.changedRows === 1) {
-        return res.status(200).json({
-          message: "Profesional reactivado correctamente."
-        });
-      } else {
-        return res.status(201).json({
-          message: "Profesional asociado correctamente."
-        });
-      }
-    }
-
-    // Caso raro, pero por seguridad
-    return res.status(500).json({
-      message: "No se pudo procesar la solicitud."
-    });
-
-  } catch (error) {
-    console.error("Error al asociar profesional:", error);
-
-    // Clave duplicada ya la maneja ON DUPLICATE, pero otros errores:
-    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
-      return res.status(400).json({
-        message: "Profesional o consultorio no existen."
+    // Analizar el resultado
+    if (result.affectedRows === 0) {
+      // Caso extremo: no se insertó ni actualizó
+      return res.status(500).json({
+        message: "No se realizó ningún cambio. Verifique los datos.",
       });
     }
 
+    if (result.changedRows === 1) {
+      // Se cambió el estado (de inactivo a activo)
+      return res.status(200).json({
+        message: "Profesional reactivado correctamente.",
+      });
+    } else if (result.affectedRows === 1 && result.changedRows === 0) {
+      // Ya existía y ya estaba activo
+      return res.status(200).json({
+        message: "El profesional ya estaba asociado y activo.",
+      });
+    } else {
+      // Nuevo registro insertado
+      return res.status(201).json({
+        message: "Profesional asociado correctamente.",
+      });
+    }
+  } catch (error) {
+    console.error("Error al asociar profesional:", error);
+
+    // Error de clave foránea: profesional o consultorio no existen
+    if (error.code === "ER_NO_REFERENCED_ROW_2") {
+      return res.status(400).json({
+        message: "Error: El profesional o el consultorio no existen.",
+      });
+    }
+
+    // Error por falta de clave única (común si no está definida)
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(500).json({
+        message:
+          "Error interno: Registro duplicado. Asegúrese de tener una clave única en (profesional_id, consultorio_id).",
+      });
+    }
+
+    // Otros errores (ej: conexión DB)
     return res.status(500).json({
-      message: "Error interno del servidor."
+      message: "Error interno del servidor. Intente más tarde.",
     });
   }
 });

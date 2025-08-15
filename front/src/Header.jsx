@@ -17,7 +17,7 @@ export const Header = ({ openLogin }) => {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm py-4 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm py-4 transition-all duration-300 backdrop-blur-sm"
       role="banner"
     >
       <div className="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between relative max-w-7xl">
@@ -36,7 +36,7 @@ export const Header = ({ openLogin }) => {
         </a>
 
         {/* Navegación Desktop */}
-        <nav className="hidden lg:flex items-center space-x-8">
+        <nav className="hidden md:flex items-center space-x-8">
           <ul className="flex space-x-8">
             {[
               { to: 'hero-section', label: 'Inicio', offset: -150 },
@@ -77,7 +77,7 @@ export const Header = ({ openLogin }) => {
         {/* Botón de menú móvil */}
         <button
           onClick={toggleMobileMenu}
-          className="lg:hidden p-2 rounded-full text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-200"
+          className="md:hidden p-2 rounded-full text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-200"
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-menu"
           aria-label={isMobileMenuOpen ? "Cerrar menú móvil" : "Abrir menú móvil"}
@@ -95,7 +95,7 @@ export const Header = ({ openLogin }) => {
         id="mobile-menu"
         className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out h-screen flex flex-col  ${
           isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        } lg:hidden`}
+        } md:hidden`}
         onClick={closeMobileMenu}
         aria-hidden={!isMobileMenuOpen}
       >

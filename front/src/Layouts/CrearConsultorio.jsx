@@ -7,7 +7,7 @@ import { FaEye, FaEyeSlash, FaBuilding, FaHome, FaMapMarkerAlt, FaPhone, FaUser,
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const CrearConsultorio = ( { handleCrearConsultorio }) => {
+const CrearConsultorio = ({ handleCrearConsultorio }) => {
   const { codigo: codigoValidacion } = useParams();
   const navigate = useNavigate();
 
@@ -62,6 +62,11 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
       return;
     }
 
+    if (telefono.length !== 10) {
+      setError('El teléfono debe tener 10 dígitos.');
+      return;
+    }
+
     if (tipo === 'particular' && seña && (!importe || !banco || !cbu)) {
       setError('Si requiere seña, complete importe, banco y CBU/alias.');
       return;
@@ -94,7 +99,7 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
 
       setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
       toast.success('✅ ¡Consultorio creado! Redirigiendo...');
-      
+
       setTimeout(() => {
         handleCrearConsultorio();
         navigate('/')
@@ -188,96 +193,95 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
             </div>
 
             {/* Validación visual de contraseñas */}
-<div className="space-y-4">
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña *</label>
-    <div className="relative">
-      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-        <FaLock size={16} />
-      </span>
-      <input
-        type={mostrarContraseña ? 'text' : 'password'}
-        value={contraseña}
-        onChange={(e) => setContraseña(e.target.value)}
-        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
-        placeholder="••••••••"
-      />
-      <button
-        type="button"
-        onClick={() => setMostrarContraseña(!mostrarContraseña)}
-        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
-      >
-        {mostrarContraseña ? <FaEyeSlash /> : <FaEye />}
-      </button>
-    </div>
-  </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <FaLock size={16} />
+                  </span>
+                  <input
+                    type={mostrarContraseña ? 'text' : 'password'}
+                    value={contraseña}
+                    onChange={(e) => setContraseña(e.target.value)}
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarContraseña(!mostrarContraseña)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
+                  >
+                    {mostrarContraseña ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
 
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">Repetir Contraseña *</label>
-    <div className="relative">
-      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-        <FaLock size={16} />
-      </span>
-      <input
-        type={mostrarRepetir ? 'text' : 'password'}
-        value={repetirContraseña}
-        onChange={(e) => setRepetirContraseña(e.target.value)}
-        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-        placeholder="••••••••"
-      />
-      <button
-        type="button"
-        onClick={() => setMostrarRepetir(!mostrarRepetir)}
-        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
-      >
-        {mostrarRepetir ? <FaEyeSlash /> : <FaEye />}
-      </button>
-    </div>
-  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Repetir Contraseña *</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <FaLock size={16} />
+                  </span>
+                  <input
+                    type={mostrarRepetir ? 'text' : 'password'}
+                    value={repetirContraseña}
+                    onChange={(e) => setRepetirContraseña(e.target.value)}
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarRepetir(!mostrarRepetir)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
+                  >
+                    {mostrarRepetir ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
 
-  {/* Indicador de validación en tiempo real */}
-  <div className="mt-3">
-    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-      <div
-        className={`h-2 rounded-full transition-all duration-300 ${
-          contraseña.length === 0
-            ? 'w-0'
-            : contraseña.length < 6
-            ? 'w-1/4 bg-red-500'
-            : repetirContraseña === ''
-            ? 'w-1/2 bg-yellow-500'
-            : contraseña === repetirContraseña
-            ? 'w-full bg-green-500'
-            : 'w-full bg-red-600'
-        }`}
-      ></div>
-    </div>
+              {/* Indicador de validación en tiempo real */}
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${contraseña.length === 0
+                        ? 'w-0'
+                        : contraseña.length < 6
+                          ? 'w-1/4 bg-red-500'
+                          : repetirContraseña === ''
+                            ? 'w-1/2 bg-yellow-500'
+                            : contraseña === repetirContraseña
+                              ? 'w-full bg-green-500'
+                              : 'w-full bg-red-600'
+                      }`}
+                  ></div>
+                </div>
 
-    <div className="text-xs space-y-1">
-      {contraseña.length === 0 ? (
-        <p className="text-gray-400 flex items-center gap-1">
-          <FaInfoCircle /> Ingresa una contraseña
-        </p>
-      ) : contraseña.length < 6 ? (
-        <p className="text-red-600 flex items-center gap-1">
-          <FaExclamationCircle /> Mínimo 6 caracteres
-        </p>
-      ) : repetirContraseña === '' ? (
-        <p className="text-yellow-600 flex items-center gap-1">
-          <FaInfoCircle /> Confirma la contraseña
-        </p>
-      ) : contraseña === repetirContraseña ? (
-        <p className="text-green-600 flex items-center gap-1">
-          <FaCheckCircle /> ¡Contraseñas coinciden!
-        </p>
-      ) : (
-        <p className="text-red-600 flex items-center gap-1">
-          <FaExclamationCircle /> Las contraseñas no coinciden
-        </p>
-      )}
-    </div>
-  </div>
-</div>
+                <div className="text-xs space-y-1">
+                  {contraseña.length === 0 ? (
+                    <p className="text-gray-400 flex items-center gap-1">
+                      <FaInfoCircle /> Ingresa una contraseña
+                    </p>
+                  ) : contraseña.length < 6 ? (
+                    <p className="text-red-600 flex items-center gap-1">
+                      <FaExclamationCircle /> Mínimo 6 caracteres
+                    </p>
+                  ) : repetirContraseña === '' ? (
+                    <p className="text-yellow-600 flex items-center gap-1">
+                      <FaInfoCircle /> Confirma la contraseña
+                    </p>
+                  ) : contraseña === repetirContraseña ? (
+                    <p className="text-green-600 flex items-center gap-1">
+                      <FaCheckCircle /> ¡Contraseñas coinciden!
+                    </p>
+                  ) : (
+                    <p className="text-red-600 flex items-center gap-1">
+                      <FaExclamationCircle /> Las contraseñas no coinciden
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Sección: Datos del Establecimiento */}
@@ -297,11 +301,10 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
                       onChange={(e) => setTipo(e.target.value)}
                       className="sr-only"
                     />
-                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                      tipo === 'Particular'
+                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${tipo === 'Particular'
                         ? 'bg-indigo-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}>
+                      }`}>
                       <FaHome className="inline mr-1" /> Particular
                     </span>
                   </label>
@@ -313,11 +316,10 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
                       onChange={(e) => setTipo(e.target.value)}
                       className="sr-only"
                     />
-                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                      tipo === 'centro médico'
+                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${tipo === 'centro médico'
                         ? 'bg-purple-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}>
+                      }`}>
                       <FaBuilding className="inline mr-1" /> Centro Médico
                     </span>
                   </label>
@@ -354,7 +356,7 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono celular</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaPhone />
@@ -363,8 +365,11 @@ const CrearConsultorio = ( { handleCrearConsultorio }) => {
                     type="tel"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
+                    inputMode="numeric"
+                    maxLength="10"
+                    pattern="[0-9]{10}"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    placeholder="11 1234-5678"
+                    placeholder="3816917619"
                   />
                 </div>
               </div>
