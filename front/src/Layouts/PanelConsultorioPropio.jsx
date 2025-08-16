@@ -1,5 +1,5 @@
 // src/components/PanelConsultorioPropio.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   FaCalendarAlt,
@@ -17,7 +17,7 @@ import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalC
 import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 import ModalListaTurnos from '../Layouts/components/ModalListaTurnos'
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
+const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }) => {
   const navigate = useNavigate();
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
@@ -33,6 +33,11 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     consultorioID
   );
 
+  useEffect(() => {
+    profesional[0] === undefined ? setShowModalAsociarProfesional(true) : setShowModalAsociarProfesional(false)
+    enviarMedicoID(medicoID)
+  },[profesional,medicoID])
+
 
 
   // Turnos reservados para hoy
@@ -47,7 +52,6 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
         new Date(turno.fecha).toISOString().split('T')[0] === todayFormatted && turno.estado === estado
     ).length;
   };
-
 
 
   // Fecha formateada
@@ -68,7 +72,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-6 px-4 sm:px-6">
+    <div className="min-h-screen py-6 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
 
         {/* ===== ENCABEZADO ===== */}
@@ -132,9 +136,9 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
             onClick={() => navigate(`/micuenta/panelturnos/${consultorioID}/${medicoID}`)}
             footer={
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-white">{isLoadingTurnos ? '...' : turnsToday()}</span>
-                <span className="text-sm text-emerald-100 font-medium flex items-center gap-1">
-                  hoy <FaChevronRight size={12} />
+                <span className="text-2xl font-bold text-white">{isLoadingTurnos ? 'Sin turnos' : turnsToday()}</span>
+                <span className="text-sm text-emerald- font-medium flex items-center gap-1">
+                  ver <FaChevronRight size={12} />
                 </span>
               </div>
             }
@@ -211,6 +215,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio }) => {
           <AsociarProfesionalAConsultorio
             consultorioID={consultorioID}
             onClose={() => setShowModalAsociarProfesional(false)}
+            profesionalVinculado = {medicoID != undefined}
           />
         )}
 

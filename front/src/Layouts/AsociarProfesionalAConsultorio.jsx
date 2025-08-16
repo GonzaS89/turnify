@@ -2,6 +2,7 @@ import { useState } from "react";
 import CrearProfesionalModal from "./CrearProfesionalModal";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
 import axios from "axios";
+import { ToastContainer } from "react-toastify";
 import {
   FaUserMd,
   FaLink,
@@ -18,7 +19,8 @@ const AsociarProfesionalAConsultorio = ({
   onClose,
   consultorioID,
   idsProfesionalesVinculados,
-  refrescarListaProfesionales
+  refrescarListaProfesionales,
+  profesionalVinculado
 }) => {
   const {
     profesionales,
@@ -76,7 +78,7 @@ const AsociarProfesionalAConsultorio = ({
       setTimeout(() => {
         refrescarListaProfesionales();
         // onClose(); // Opcional: cerrar modal
-      }, 500);
+      }, 1500);
     } catch (err) {
       // Capturar mensaje de error claro
       const errorMsg =
@@ -108,7 +110,7 @@ const AsociarProfesionalAConsultorio = ({
       {/* Fondo oscuro con blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in"
-        onClick={onClose}
+        onClick={profesionalVinculado ? onClose : null}
       >
         <div
           className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
@@ -121,13 +123,16 @@ const AsociarProfesionalAConsultorio = ({
                 <FaLink className="text-2xl" />
                 <h2 className="text-2xl font-bold">Vincular Profesional</h2>
               </div>
-              <button
+              {profesionalVinculado && (
+                 <button
                 onClick={onClose}
                 className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
               >
                 <FaTimes size={20} />
               </button>
+              )}
+             
             </div>
           </div>
 
@@ -232,6 +237,8 @@ const AsociarProfesionalAConsultorio = ({
           </div>
         </div>
       </div>
+
+      <ToastContainer position="bottom-right" autoClose={1000} />
 
       {/* Modal de creación (reutilizado con estilo consistente) */}
       {showCreateModal && (

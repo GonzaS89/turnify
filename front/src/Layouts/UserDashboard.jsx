@@ -1,5 +1,5 @@
 // src/components/MiCuenta.jsx (UserDashboard.jsx)
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSignOutAlt, FaHome, FaExclamationCircle } from 'react-icons/fa';
 import useConsultorioById from '../../customHooks/useConsultorioxId';
@@ -53,11 +53,17 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
     }
   };
 
+  const [medicoID, setMedicoID] = useState(null);
+
+  const recibirMedicoID = data => {
+    setMedicoID(data)
+  }
+
   // === Pantalla de carga ===
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-blue-100">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-blue-100">
           <RingLoader color="#4F46E5" size={60} />
           <p className="text-gray-700 text-lg mt-6 font-medium">Cargando tu información...</p>
           <p className="text-gray-500 text-sm mt-2">Estamos preparando tu panel de control.</p>
@@ -93,8 +99,8 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   // === Estado vacío (sin consultorio) ===
   if (!consultorio && !storedConsultorio) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-gray-200">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-gray-200">
           <FaExclamationCircle className="text-orange-500 mx-auto mb-4" size={48} />
           <h2 className="text-2xl font-bold text-gray-800 mb-3">Sin acceso</h2>
           <p className="text-gray-600 mb-4">No se encontró información de tu consultorio. Por favor, inicia sesión nuevamente.</p>
@@ -113,7 +119,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   const consultorioToUse = consultorio || storedConsultorio;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header con gradiente */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-b-2xl shadow-md">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -136,11 +142,13 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
           <PanelConsultorioPropio
             consultorioData={consultorioToUse}
             enviarTurnoYOrden={enviarTurnoYOrden}
+            enviarMedicoID={recibirMedicoID}
           />
         ) : (
           <PanelCentroMedico
             consultorioData={consultorioToUse}
             password={password}
+            profesionalVinculado={medicoID}
           />
         )}
       </main>

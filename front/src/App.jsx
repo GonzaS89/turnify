@@ -44,6 +44,7 @@ const App = () => {
   const [ordenTurno, setOrdenTurno] = useState(null);
   const [pass, setPass] = useState(null);
 
+
   const { profesional, isLoading, error } = useProfesionalxId(idProfesional);
 
   const closeLogin = () => setOpenLoginModal(false);
@@ -66,6 +67,8 @@ const App = () => {
   const recibirPass = (data) => {
     setPass(data);
   };
+
+
 
 
   return (
@@ -96,9 +99,7 @@ const App = () => {
         >
           {darkMode ? <FaSun className="h-6 w-6" /> : <FaMoon className="h-6 w-6" />}
         </button> */}
-        <div className="fixed h-screen flex">
-          <img src="" alt="" />
-        </div>
+        
         {/* Modal de Login */}
         {openLoginModal && (
           <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 z-[200]">
@@ -110,7 +111,20 @@ const App = () => {
           </div>
         )}
 
-        <ToastContainer position="top-right" autoClose={1000} />
+          <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
+
 
         <main className="relative flex-grow">
           <Routes>

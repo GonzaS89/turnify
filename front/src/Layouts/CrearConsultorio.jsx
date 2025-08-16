@@ -97,7 +97,6 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
       const response = await axios.put(`${API_URL}/api/crearconsultorio/${codigoValidacion}`, nuevoConsultorio);
       const data = response.data;
 
-      setMensaje(`✅ ${data.nombre || 'Consultorio'} fue creado con éxito.`);
       toast.success('✅ ¡Consultorio creado! Redirigiendo...');
 
       setTimeout(() => {
@@ -492,7 +491,7 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
       </div>
 
       {/* Toastify */}
-      <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="bottom-right" autoClose={1000} hideProgressBar={false} />
     </div>
   );
 };

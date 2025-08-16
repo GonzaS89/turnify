@@ -105,12 +105,12 @@ const FAQS = () => {
                             }}
                         >
                             {/* Pregunta */}
-                            <div className="flex justify-between items-center p-6 md:p-5 sm:p-8 xl:p-12  cursor-pointer group">
-                                <h3 className="font-semibold text-xl sm:text-2xl md:text-xl xl:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
+                            <div className="flex justify-between items-center p-6 md:p-5 sm:p-8 xl:p-8  cursor-pointer group">
+                                <h3 className="font-semibold text-lg sm:text-2xl md:text-xl xl:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
                                     {item.q}
                                 </h3>
                                 <motion.span
-                                    className="text-3xl md:text-base lg:text-lg xl:text-2xl font-light text-indigo-600 bg-indigo-50 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 ml-6"
+                                    className="text-lg md:text-base lg:text-lg xl:text-2xl font-light text-indigo-600 bg-indigo-50 rounded-full w-8 h-8 md:w-10 lg:h-10 flex items-center justify-center flex-shrink-0 ml-6"
                                     variants={iconRotate}
                                     animate={openFAQ === index ? 'open' : 'closed'}
                                 >

@@ -24,6 +24,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
   const [telefono, setTelefono] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+  const [creando, setCreando] = useState(false)
 
   const {
     especialidades,
@@ -37,6 +38,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
+    setCreando(true)
 
     // Validaciones
     if (!nombre.trim()) return setMensajeError("El nombre es obligatorio.");
@@ -78,10 +80,12 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       setTitulo("");
       setTelefono("");
 
+      toast.success('✅ ¡Profesional creado y vinculado! Redirigiendo...')
+
       setTimeout(() => {
         onClose()
         onCreate?.();
-      }, 500);
+      }, 1500);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
@@ -89,6 +93,8 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         "Error desconocido";
       setMensajeError(`❌ ${errorMsg}`);
       toast.error("Error al crear el profesional");
+    }finally{
+      setCreando(false)
     }
   };
 
@@ -122,6 +128,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
               <FaUserMd className="text-2xl" />
               <h2 className="text-2xl font-bold">Crear Profesional</h2>
             </div>
+            
             <button
               onClick={onClose}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
@@ -258,7 +265,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                       const value = e.target.value.replace(/\D/g, "");
                       setTelefono(value);
                     }}
-                    placeholder="1123456789"
+                    placeholder="3816969546"
                     maxLength="10"
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
                       ${
@@ -288,7 +295,17 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                     disabled={telefono.replace(/\D/g, "").length !== 10}
                   >
-                    Crear Profesional
+                    {creando ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Creando...</span>
+              </div>
+            ) : (
+              "Crea profesional"
+            )}
                   </button>
                 </div>
               </form>

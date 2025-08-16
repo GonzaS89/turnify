@@ -235,26 +235,7 @@ const Benefits = () => {
         </motion.div>
       </motion.div>
 
-      {/* Estilos globales adicionales (puedes ponerlos en tu CSS global o en un archivo aparte) */}
-      <style jsx>{`
-        @keyframes shine {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shine {
-          animation: shine 3s infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse 6s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(1.05); }
-        }
-        .group:hover .group-hover\\:scale-110 {
-          transform: scale(1.1);
-        }
-      `}</style>
+   
     </section>
   );
 };

@@ -88,6 +88,16 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <Link 
+                  to="hero-section" 
+                  smooth 
+                  offset={-150}
+                  className="text-gray-600 hover:text-indigo-600 text-sm transition-colors cursor-pointer"
+                >
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <Link 
                   to="info" 
                   smooth 
                   offset={-150}
@@ -158,16 +168,7 @@ export const Footer = () => {
         </motion.div>
       </motion.div>
 
-      {/* Animación de brillo */}
-      <style jsx>{`
-        @keyframes shine {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shine {
-          animation: shine 3s infinite;
-        }
-      `}</style>
+ 
     </footer>
   );
 };

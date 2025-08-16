@@ -13,9 +13,10 @@ import {
 import { useParams, useNavigate } from "react-router";
 import AsociarProfesionalAConsultorio from "../AsociarProfesionalAConsultorio";
 import { toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import axios from "axios";
 
-const GestionProfesionales = () => {
+const GestionProfesionales = (profesionalVinculado) => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const { consultorioId } = useParams();
@@ -108,12 +109,11 @@ const GestionProfesionales = () => {
         `${API_URL}/api/desvincularprofesional/${consultorioId}/${profesionalId}`
       );
 
-      if (response.status === 200) {
-        toast.success("✅ Desvinculado con éxito", { autoClose: 500 });
-        
-      }
+          refrescarListaProfesionales()
 
-      refrescarListaProfesionales()
+      toast.success("✅ Desvinculado con éxito");
+
+     
     } catch {
       toast.error("❌ Error al desvincular profesional");
     } finally {
@@ -141,7 +141,7 @@ const GestionProfesionales = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md p-8 text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando profesionales...</p>
@@ -462,6 +462,7 @@ const GestionProfesionales = () => {
               onClose={() => setShowModalAsociarProfesional(false)}
               idsProfesionalesVinculados = {idsProfesionalesVinculados}
               refrescarListaProfesionales={refrescarListaProfesionales}
+              profesionalVinculado={profesionalVinculado}
             />
           )}
         </div>

@@ -188,29 +188,8 @@ const Steps = () => {
         </div>
       </div>
       </div>
-      
-
-      {/* === Estilos custom para animaciones === */}
-      <style jsx>{`
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.5;
-            transform: scale(1.05);
-          }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 6s ease-in-out infinite;
-        }
-
-        .group:hover .group-hover\\:scale-110 {
-          transform: scale(1.1);
-        }
-      `}</style>
+    
+   
     </section>
   );
 };

@@ -105,7 +105,7 @@ const TurnoInterno = ({
         estado === "disponible" && (
           <button
             onClick={() => tapButtonAsignar(turno, idx)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+            className="flex items-center justify-center w-full sm:w-48 xl: gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105"
           >
             <FaPlus size={16} /> Asignar turno
           </button>
