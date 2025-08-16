@@ -27,6 +27,7 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
         { autoClose: 1000 }
       );
 
+
       if (response.status === 200) {
         
 
@@ -34,6 +35,8 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
         setTimeout(() => {
           actualizarTurnos();
           onClose();
+          setIsDeleting(false);
+
         }, 1500);
       } else {
         toast.error('❌ Error al eliminar el turno');
@@ -43,10 +46,7 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
       toast.error(
         `❌ ${error.response?.data?.message || 'Error al eliminar el turno'}`
       );
-    } finally {
-      setIsDeleting(false);
-     
-    }
+    } 
   };
 
   return (

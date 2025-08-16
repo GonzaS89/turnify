@@ -36,6 +36,7 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
         actualizarTurnos();
         resetearFecha();
         onClose();
+        setIsDeleting(false);
       }, 1500);
 
     } catch (error) {
@@ -43,9 +44,7 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
       toast.error(
         `❌ ${error.response?.data?.message || 'No se pudieron eliminar los turnos'}`
       );
-    } finally {
-      setIsDeleting(false);
-    }
+    } 
   };
 
   return (
