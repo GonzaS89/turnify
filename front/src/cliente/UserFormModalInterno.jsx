@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
+import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
 import { useParams, useNavigate } from 'react-router';
 import { FaUser, FaIdCard, FaPhone, FaShieldAlt, FaTimes, FaExclamationCircle, FaCheck } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const UserFormModal = ({ onSubmit }) => {
+const UserFormModalInterno = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -23,6 +23,7 @@ const UserFormModal = ({ onSubmit }) => {
   const [options, setOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [errorOptions, setErrorOptions] = useState(null);
+  const [isConfirm, setIsConfirm] = useState(false);
 
   // Cargar coberturas y resetear formulario
   useEffect(() => {
@@ -76,6 +77,7 @@ const UserFormModal = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsConfirm(true)
 
     if (formData.nombre.trim().length < 2) {
       toast.error('El nombre es demasiado corto.');
@@ -104,22 +106,26 @@ const UserFormModal = ({ onSubmit }) => {
 
     onSubmit(formData);
     setTimeout(() => {
-      navigate(`/confirmacionturno/${consultorioId}/${profesionalId}`);
-    }, 800);
+      navigate(`/micuenta/confirmacionturno/${consultorioId}/${profesionalId}`);
+      setIsConfirm(false);
+    }, 500);
   };
 
   return (
-<div className="fixed inset-0 z-[300] flex items-center justify-center bg-black bg-opacity-50 sm:p-4">
-<div className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg h-[100dvh] sm:max-h-[90vh] flex flex-col">
-        
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] sm:p-4 min-h-screen">
+      <div
+        className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col h-[100dvh] sm:max-h-[90vh]"
+
+      >
+
         {/* Encabezado con gradiente */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 sm:rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FaUser className="text-2xl" />
               <div>
                 <h2 className="text-2xl font-bold">Confirma tus Datos</h2>
-                <p className="text-blue-100 text-sm opacity-90">Completa para confirmar tu turno</p>
+                <p className="text-indigo-100 text-sm opacity-90">Completa para asignar el turno</p>
               </div>
             </div>
             <button
@@ -133,7 +139,7 @@ const UserFormModal = ({ onSubmit }) => {
         </div>
 
         {/* Cuerpo del formulario */}
-        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
           <form onSubmit={handleSubmit} id="user-form" className="space-y-5">
             {/* Nombre */}
             <div>
@@ -210,7 +216,7 @@ const UserFormModal = ({ onSubmit }) => {
                   inputMode="numeric"
                   maxLength="10"
                   pattern="[0-9]{10}"
-                  placeholder="Ej: 1112345678"
+                  placeholder="Ej: 3813696475"
                   className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white transition"
                   required
                 />
@@ -248,7 +254,7 @@ const UserFormModal = ({ onSubmit }) => {
                     required
                   >
                     <option value="" disabled>Seleccionar cobertura</option>
-                    <option value="particular">Particular</option>
+                    <option value="Particular">Particular</option>
                     {options.map((opt) => (
                       <option key={opt.id} value={opt.id}>
                         {opt.siglas} - {opt.nombre}
@@ -281,12 +287,24 @@ const UserFormModal = ({ onSubmit }) => {
             form="user-form"
             className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <FaCheck className="inline mr-2" /> Confirmar datos
+            {isConfirm ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                Enviando datos ...
+              </div>
+            ) : (
+              <span className="flex items-center justify-center">
+                <FaCheck className="inline mr-2" /> Confirmar datos
+              </span>
+            )}
           </button>
         </div>
       </div>
+
+      {/* Toastify (asegúrate de tenerlo en App.jsx) */}
+      {/* <ToastContainer position="top-right" autoClose={3000} /> */}
     </div>
   );
 };
 
-export default UserFormModal;
+export default UserFormModalInterno;

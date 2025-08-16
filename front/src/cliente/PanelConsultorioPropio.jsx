@@ -1,6 +1,9 @@
 // src/components/PanelConsultorioPropio.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+
+// CARGA DE ICONOS
+
 import {
   FaCalendarAlt,
   FaCog,
@@ -12,10 +15,16 @@ import {
   FaClock,
   FaCheckCircle,
 } from 'react-icons/fa';
+
+// CARGA DE HOOKS
+
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
 import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalConsultorioTurnos';
-import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
-import ModalListaTurnos from '../Layouts/components/ModalListaTurnos'
+
+// CARGA DE LAYOUTS
+
+import AsociarProfesionalAConsultorio from '../cliente/AsociarProfesionalAConsultorio';
+import ModalListaTurnos from '../cliente/ModalListaTurnos'
 
 const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }) => {
   const navigate = useNavigate();
@@ -36,7 +45,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
   useEffect(() => {
     profesional[0] === undefined ? setShowModalAsociarProfesional(true) : setShowModalAsociarProfesional(false)
     enviarMedicoID(medicoID)
-  },[profesional,medicoID])
+  }, [profesional, medicoID])
 
 
 
@@ -215,12 +224,12 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
           <AsociarProfesionalAConsultorio
             consultorioID={consultorioID}
             onClose={() => setShowModalAsociarProfesional(false)}
-            profesionalVinculado = {medicoID != undefined}
+            profesionalVinculado={medicoID != undefined}
           />
         )}
 
-         {/* Modal de listado de turnos */}
-         {showModalListaTurnos && (
+        {/* Modal de listado de turnos */}
+        {showModalListaTurnos && (
           <ModalListaTurnos
             turnos={turnos}
             onClose={() => setShowModalListaTurnos(false)}
@@ -254,11 +263,10 @@ const ActionCard = ({ title, description, icon: Icon, gradient, onClick, footer 
 const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
   <div
     onClick={clickable ? onClick : undefined}
-    className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${
-      clickable
+    className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${clickable
         ? 'cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md'
         : 'hover:bg-gray-100'
-    }`}
+      }`}
   >
     <Icon className={`w-5 h-5 ${color} mb-2`} />
     <span className="text-2xl font-bold text-gray-800">{value}</span>
@@ -290,6 +298,6 @@ const ErrorCard = ({ title, message }) => (
   </div>
 );
 
-       
+
 
 export default PanelConsultorioPropio;

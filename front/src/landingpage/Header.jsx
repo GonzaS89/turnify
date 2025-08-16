@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IoMdMenu } from 'react-icons/io';
 import { IoClose } from 'react-icons/io5';
-import logo from './assets/logo.png';
+import logo from '/logo.png';
 import { Link } from 'react-scroll';
 
 export const Header = ({ openLogin }) => {

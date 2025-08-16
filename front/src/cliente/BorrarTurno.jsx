@@ -11,29 +11,30 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
   document.body.style.overflow = 'hidden';
 
   const handleBorrarTurno = async () => {
+    setIsDeleting(true);
     if (!idTurno) {
       toast.error('❌ ID de turno no válido');
       return;
     }
 
-    setIsDeleting(true);
-
     try {
       const response = await axios.delete(`${API_URL}/api/borrarTurno/${idTurno}`);
 
+      toast.info(
+        <div className="flex items-center gap-2 text-sm">
+          <FaTrashAlt /> Borrando turno
+        </div>,
+        { autoClose: 1000 }
+      );
+
       if (response.status === 200) {
-        toast.success(
-          <div className="flex items-center gap-2 text-sm">
-            <FaCheckCircle /> Turno eliminado correctamente
-          </div>,
-          { autoClose: 1500 }
-        );
+        
 
         // Actualizar lista y cerrar
         setTimeout(() => {
           actualizarTurnos();
           onClose();
-        }, 600);
+        }, 1500);
       } else {
         toast.error('❌ Error al eliminar el turno');
       }
@@ -44,6 +45,7 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
       );
     } finally {
       setIsDeleting(false);
+     
     }
   };
 

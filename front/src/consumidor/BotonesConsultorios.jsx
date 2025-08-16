@@ -1,4 +1,4 @@
-import useProfessionalConsultorios from '../../../customHooks/useProfessionalConsultorios';
+import useProfessionalConsultorios from '../../customHooks/useProfessionalConsultorios';
 import Turnosdisponibles from './Turnosdisponibles';
 import { useNavigate } from 'react-router';
 import { useMemo } from 'react';

@@ -1,11 +1,18 @@
 // src/components/PanelCentroMedico.jsx
 import { useState } from 'react';
 import { FaUserMd, FaShieldAlt, FaCalendarPlus } from 'react-icons/fa';
-import GestionProfesionales from './components/GestionProfesionales';
-import TurnListCentroMedico from './TurnListCentroMedico';
+
+// CARGA DE LAYOUTS
+
+import GestionProfesionales from '../cliente/GestionProfesionales';
+import TurnListCentroMedico from '../cliente/TurnListCentroMedico';
+import CardGestionProfesionales from '../cliente/cards/CardGestionProfesionales';
+import CardGestionCoberturas from '../cliente/cards/CardGestionCoberturas';
+
+// CARGA DE HOOKS
+
 import useProfesionalxIdConsultorio from '../../customHooks/useProfesionalxIdConsultorio';
-import CardGestionProfesionales from './cards/CardGestionProfesionales';
-import CardGestionCoberturas from './cards/CardGestionCoberturas';
+
 
 
 const PanelCentroMedico = ( { consultorioData: consultorio, profesionalVinculado }) => {

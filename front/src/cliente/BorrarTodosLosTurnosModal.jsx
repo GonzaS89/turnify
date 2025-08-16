@@ -24,11 +24,11 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
       });
 
       // Éxito
-      toast.success(
+      toast.info(
         <div className="flex items-center gap-2 text-sm">
-          <FaCheckCircle /> Todos los turnos eliminados
+          <FaTrashAlt /> Borrando todos los turnos
         </div>,
-        { autoClose: 1500 }
+        { autoClose: 1000 }
       );
 
       // Actualizar estados tras éxito
@@ -36,7 +36,7 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
         actualizarTurnos();
         resetearFecha();
         onClose();
-      }, 600);
+      }, 1500);
 
     } catch (error) {
       console.error('Error al borrar todos los turnos:', error);
@@ -50,6 +50,8 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
 
   return (
     <>
+
+     
       {/* Overlay oscuro con blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"

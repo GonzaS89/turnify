@@ -1,16 +1,22 @@
 import { useState, useEffect } from "react";
+
+// CARGA DE SECCIONES
+
 import Hero from "./Hero";
 import Steps from "./Steps";
 import Benefits from "./Benefits";
 import FAQS from "./FAQS";
 // import Testimonials from "./Testimonials";
-import { Header } from "../Header";
-import UserFormModal from "./components/UserFormModal";
-import {Footer} from '../Footer'
-import ConfirmationModal from "./components/ConfirmationModal";
+import { Header } from "./Header";
 
-import TurnSelectModal from "./components/TurnSelectModal";
-// Importamos los custom hooks necesarios   
+import {Footer} from './Footer'
+
+// CARGA DE LAYOUTS
+
+import ConfirmationModal from "../consumidor/ConfirmationModal";
+import UserFormModal from "../consumidor/UserFormModal";
+
+// CARGA DE HOOK
 
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 

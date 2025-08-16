@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaBuilding, FaUserShield, FaTimes, FaEye, FaEyeSlash, FaCircleNotch, FaExclamationTriangle } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router';
-import useConsultorioxId from '../../../customHooks/useConsultorioxId';
+import useConsultorioxId from '../../customHooks/useConsultorioxId';
 
 const ConsultorioSettingsModal = ({ password }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);

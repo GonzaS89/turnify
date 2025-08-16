@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Testimonial from './components/Testimonial'; // Asegúrate de importar tu componente de testimonio
+import Testimonial from '../consumidor/components/Testimonial'; // Asegúrate de importar tu componente de testimonio
 
 const testimonials = [
   {

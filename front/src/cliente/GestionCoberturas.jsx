@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import useCoberturaxIdConsultorio from '../../../customHooks/useCoberturaxIdConsultorio';
-import useAllCoberturas from '../../../customHooks/useAllCoberturas';
+import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
+import useAllCoberturas from '../../customHooks/useAllCoberturas';
 import { FaSearch, FaPlusCircle, FaCheckCircle, FaTimesCircle, FaTimes } from "react-icons/fa";
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';

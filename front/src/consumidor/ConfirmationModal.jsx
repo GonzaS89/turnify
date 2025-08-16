@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
-import useAllCoberturas from "../../../customHooks/useAllCoberturas";
+import {
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaTimes,
+} from "react-icons/fa";
+import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
-import useProfesionalxId from "../../../customHooks/useProfesionalxId";
-import useConsultorioxId from "../../../customHooks/useConsultorioxId";
+import useProfesionalxId from "../../customHooks/useProfesionalxId";
+import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
-const ConfirmationModalInterno = ({
+const ConfirmationModal = ({
   formData,
   selectedTurno,
-  ordenTurno,
-  actualizarTurnos,
+  ordenTurno
 }) => {
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
@@ -31,9 +34,11 @@ const ConfirmationModalInterno = ({
     (cobertura) => cobertura.id == formData?.selectedOption
   );
 
+  console.log(formData.selectedOption)
+
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Formatear fecha y hora
+  // Formatear fecha
   const formatearFechaSQL = (fecha) => {
     if (!fecha) return "N/A";
     const date = new Date(fecha);
@@ -45,6 +50,7 @@ const ConfirmationModalInterno = ({
     });
   };
 
+  // Formatear hora
   const formatearHora = (hora) => {
     if (!hora) return "N/A";
     const [h, m] = hora.split(":");
@@ -76,8 +82,8 @@ const ConfirmationModalInterno = ({
       setIsSuccess(true);
 
       setTimeout(() => {
-        navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
-      }, 500);
+        navigate('/');
+      }, 2000);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error al conectar con el servidor.";
@@ -86,6 +92,7 @@ const ConfirmationModalInterno = ({
       setIsSubmitting(false);
     }
   };
+
   useEffect(() => {
     // Bloquea el scroll al montar
     const prevOverflow = document.body.style.overflow;
@@ -96,15 +103,16 @@ const ConfirmationModalInterno = ({
       document.body.style.overflow = prevOverflow || 'auto';
     };
   }, []);
+
   return (
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center sm:p-4 z-[200]"
-        onClick={() => !isSubmitting && navigate(-1)}
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center sm:p-4 z-[200]"
+        onClick={() => !isSubmitting && navigate('/')}
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] lg:h-auto sm:max-h-[90vh] flex flex-col"
+          className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] sm:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
@@ -137,10 +145,10 @@ const ConfirmationModalInterno = ({
                 <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4 animate-bounce" />
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva Confirmada!</h2>
                 <p className="text-gray-600 text-sm">
-                  El turno ha sido reservado exitosamente.
+                  Tu turno ha sido reservado exitosamente.
                 </p>
                 <p className="text-gray-500 text-sm mt-1">
-                  El paciente recibirá una confirmación por WhatsApp.
+                  Recibirás una confirmación por WhatsApp.
                 </p>
               </div>
             ) : (
@@ -253,8 +261,17 @@ const ConfirmationModalInterno = ({
                   )}
                 </button>
               </>
-            ) 
-            }
+            // ) : (
+            //   <button
+            //     type="button"
+            //     onClick={() =>
+            //       navigate('/')
+            //     }
+            //     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
+            //   >
+            //     Volver al Panel
+            //   </button>
+            )}
           </div>
         </div>
       </div>
@@ -262,4 +279,4 @@ const ConfirmationModalInterno = ({
   );
 };
 
-export default ConfirmationModalInterno;
+export default ConfirmationModal;

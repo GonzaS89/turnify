@@ -6,26 +6,42 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 
-// Componentes
-import UserDashboard from "./Layouts/UserDashboard";
-import Login from "./Layouts/Login";
-import Main from "./Layouts/Main";
-import CrearConsultorio from "./Layouts/CrearConsultorio";
-import CrearProfesional from "./Layouts/CrearProfesionalModal";
-import CancelarTurno from "./Layouts/CancelarTurno";
-import SearchModal from "./Layouts/components/SearchModal";
-import TurnSelectModal from "./Layouts/components/TurnSelectModal";
-import UserFormModal from "./Layouts/components/UserFormModal";
-import ConfirmationModal from "./Layouts/components/ConfirmationModal";
-import ConfirmationModalInterno from "./Layouts/components/ConfirmationModalInterno";
-import UserFormModalInterno from "./Layouts/components/UserFormModalInterno";
-import TurnList from "./Layouts/TurnList";
-import GenerarTurnosModal from "./Layouts/components/GenerarTurnosModal";
+// MONTAR LAYOUTS 
+
+//CONSUMIDOR
+
+import SearchModal from "./consumidor/SearchModal";
+import TurnSelectModal from "./consumidor/TurnSelectModal";
+import UserFormModal from "./consumidor/UserFormModal";
+import ConfirmationModal from "./consumidor/ConfirmationModal";
+import CancelarTurno from "./consumidor/CancelarTurno";
+
+// CLIENTE 
+
+import UserDashboard from "./cliente/UserDashboard";
+import GestionProfesionales from "./cliente/GestionProfesionales";
+import CrearConsultorio from "./cliente/CrearConsultorio";
+import CrearProfesional from "./cliente/CrearProfesionalModal";
+import ConfirmationModalInterno from "./cliente/ConfirmationModalInterno";
+import UserFormModalInterno from "./cliente/UserFormModalInterno";
+import TurnList from "./cliente/TurnList";
+import GenerarTurnosModal from "./cliente/GenerarTurnosModal";
+import ConsultorioSettingsModal from "./cliente/ConsultorioSettingsModal";
+import GestionCoberturas from "./cliente/GestionCoberturas";
+import TurnListCentroMedico from "./cliente/TurnListCentroMedico";
+
+// LANDING PAGE
+
+import Login from "./landingpage/Login";
+import Main from "./landingpage/Main";
+
+// GESTION INTERNA
+
+
 import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
-import ConsultorioSettingsModal from "./Layouts/components/ConsultorioSettingsModal";
-import GestionCoberturas from "./Layouts/components/GestionCoberturas";
-import GestionProfesionales from "./Layouts/components/GestionProfesionales";
-import TurnListCentroMedico from "./Layouts/TurnListCentroMedico";
+
+
+
 
 // React Icons
 import { FaSun, FaMoon } from 'react-icons/fa';
@@ -73,6 +89,16 @@ const App = () => {
 
   return (
     <BrowserRouter>
+
+    <ToastContainer 
+    
+    hideProgressBar={false}
+    newestOnTop={false}
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    />
       <div className="flex flex-col min-h-screen 
                      bg-gradient-to-r from-cyan-200 to-violet-200
                      dark:from-gray-900 dark:to-gray-800

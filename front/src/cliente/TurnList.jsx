@@ -1,5 +1,10 @@
 import axios from "axios";
 import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router";
+import { toast } from "react-toastify";
+
+// CARGA DE ICONOS
+
 import {
   FaInfoCircle,
   FaCalendarAlt,
@@ -8,17 +13,23 @@ import {
   FaTrashAlt,
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
-import { useParams, useNavigate } from "react-router";
+
+// CARGA DE HOOKS
+
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
-import BorrarTurno from "./components/BorrarTurno";
-import BorrarTodosLosTurnosModal from "./components/BorrarTodosLosTurnosModal";
-import TurnoInterno from "./components/TurnoInterno";
 import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
-const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
+// CARGA DE LAYOUTS
+
+import BorrarTurno from "./BorrarTurno";
+import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
+import TurnoInterno from "./TurnoInterno";
+
+
+const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
@@ -28,6 +39,36 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
+  const [liberandoTurno, setLiberandoTurno] = useState(false);
+
+  function formatearFechaCorta(fechaStr) {
+    const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
+                   "jul", "ago", "sep", "oct", "nov", "dic"];
+  
+    const [datePart] = fechaStr.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+  
+    const date = new Date(Date.UTC(year, month - 1, day));
+    const diaSemana = date.getUTCDay();
+  
+    return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
+  }
+
+  function formatearFechaLarga(fechaStr) {
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
+                   "jul", "ago", "sep", "oct", "nov", "dic"];
+  
+    const [datePart] = fechaStr.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+  
+    const date = new Date(Date.UTC(year, month - 1, day));
+    const diaSemana = date.getUTCDay();
+  
+    return `${dias[diaSemana]} ${day}`;
+  }
+
 
   const datesListRef = useRef(null);
 
@@ -60,6 +101,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
+
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
 
   // Scroll automático al centro en mobile
@@ -80,6 +122,10 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
   };
+
+  
+
+ 
 
   const handleAgregarTurnoClick = () => {
     navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
@@ -106,8 +152,17 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const handleLiberarTurno = async (idTurno) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`);
-      handleActualizarTurnos();
-    } catch (error) {
+      toast.info("Liberando turno ...", {autoClose: 1000});
+
+      setTimeout(() => {
+        handleActualizarTurnos();
+      }, 1500);
+      
+    
+    } 
+    
+    
+    catch (error) {
       console.error("Error al liberar turno:", error);
     }
   };
@@ -130,7 +185,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all ">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando tu agenda...</p>
         </div>
@@ -141,8 +196,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   if (turnos.length === 0) {
     return (
       <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]"
-      onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
       >
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           {/* Encabezado con gradiente */}
@@ -151,7 +205,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <FaCalendarAlt /> Tu Agenda
             </h2>
             <button
-              onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+              onClick={() => navigate("/micuenta")}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
               aria-label="Cerrar"
             >
@@ -171,12 +225,12 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAgregarTurnoClick}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
               >
                 <FaPlus /> Habilitar Turnos
               </button>
               <button
-                   onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+                onClick={() => navigate("/micuenta")}
                 className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition"
               >
                 Volver a Mi Cuenta
@@ -194,16 +248,16 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
-         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
+        onClick={() => navigate("/micuenta")}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
+          className="bg-white xl:rounded-3xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl flex items-center justify-between">
-            <h2 className="text-xl lg:text-2xl font-bold flex items-center gap-3">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
               <FaCalendarAlt /> {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${nombreMedico}`}
             </h2>
             <div className="flex items-center gap-2">
@@ -226,7 +280,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   </button>
 
   <button
-         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
+    onClick={() => navigate("/micuenta")}
     className="text-white hover:bg-white/20 rounded-full p-1 transition"
     aria-label="Cerrar"
   >
@@ -239,9 +293,9 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
             {/* Sidebar de fechas */}
             <div className="w-full md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-              <div className="p-6 border-b border-gray-200">
+              {/* <div className="p-6 border-b border-gray-200">
                 <h4 className="font-bold text-gray-800 text-lg">Fechas</h4>
-              </div>
+              </div> */}
               <div
                 ref={datesListRef}
                 className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-4 py-3 gap-3 custom-scrollbar"
@@ -265,11 +319,9 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                       }`}
                     >
                       <div className="font-semibold">
-                        {new Date(fecha).toLocaleDateString("es-AR", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                        })}
+                        {
+                          formatearFechaCorta(fecha)
+                        }
                       </div>
                       <div
                         className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
@@ -309,12 +361,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
                   {fechaSeleccionada
-                    ? new Date(fechaSeleccionada).toLocaleDateString("es-AR", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
+                    ? formatearFechaLarga(fechaSeleccionada)
                     : "Seleccioná una fecha"}
                 </h3>
                 {fechaSeleccionada && (
@@ -379,4 +426,4 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   );
 };
 
-export default TurnListCentroMedico;
+export default TurnList;

@@ -109,7 +109,7 @@ const GenerarTurnosModal = () => {
       // Redirigir tras éxito
       setTimeout(() => {
         navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
-      }, 2000);
+      }, 1500);
 
     } catch (err) {
       toast.error(`❌ Error: ${err.message}`);

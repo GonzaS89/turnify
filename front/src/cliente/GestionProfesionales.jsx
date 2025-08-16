@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import useProfesionalxIdConsultorio from "../../../customHooks/useProfesionalxIdConsultorio";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router";
+
+// CARGA DE ICONOS
+
 import {
   FaRegEye,
   FaEdit,
@@ -10,11 +15,14 @@ import {
   FaSortAmountUp,
   FaTimes
 } from "react-icons/fa";
-import { useParams, useNavigate } from "react-router";
-import AsociarProfesionalAConsultorio from "../AsociarProfesionalAConsultorio";
-import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
-import axios from "axios";
+
+// CARGA DE HOOKS
+
+import useProfesionalxIdConsultorio from "../../customHooks/useProfesionalxIdConsultorio";
+
+// CARGA DE LAYOUTS
+
+import AsociarProfesionalAConsultorio from "./AsociarProfesionalAConsultorio";
 
 const GestionProfesionales = (profesionalVinculado) => {
   const API_URL = import.meta.env.VITE_API_URL;

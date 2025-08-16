@@ -1,4 +1,4 @@
-import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
+import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 
 const Turnosdisponibles = ({ idProfesional, idConsultorio }) => {
   const { turnos, isLoading, error } = useProfessionalConsultorioTurnos(idProfesional, idConsultorio);

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
-import useProfessionalConsultorioTurnos from "../../../customHooks/useProfessionalConsultorioTurnos";
-import useProfesionalxId from "../../../customHooks/useProfesionalxId";
-import useConsultorioxId from "../../../customHooks/useConsultorioxId";
+import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
+import useProfesionalxId from "../../customHooks/useProfesionalxId";
+import useConsultorioxId from "../../customHooks/useConsultorioxId";
 import Turno from "./Turno";
 import { useParams, useNavigate } from "react-router-dom";
 import {

@@ -1,7 +1,7 @@
 import { FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaPhone, FaInstagram } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { Link } from "react-scroll";
-import logo from './assets/logo.png'
+import logo from '/logo.png'
 
 // 📁 Asegúrate de que el logo esté en: public/assets/logo.png
 // O en: src/assets/logo.png (dependiendo de tu estructura)

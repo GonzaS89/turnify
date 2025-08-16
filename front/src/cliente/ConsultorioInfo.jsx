@@ -1,5 +1,5 @@
 // src/components/ConsultorioInfo.jsx
-import useProfessionalConsultorios from '../../../customHooks/useProfessionalConsultorios'; // Asegúrate que la ruta sea correcta
+import useProfessionalConsultorios from '../../customHooks/useProfessionalConsultorios'; // Asegúrate que la ruta sea correcta
 
 const ConsultorioInfo = ({ professionalId, enviarIds }) => {
     const { consultorios, isLoading, error } = useProfessionalConsultorios(professionalId);

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { FaUserDoctor } from "react-icons/fa6";
 import { BiFilterAlt, BiSearch } from "react-icons/bi";
 import BotonesConsultorios from "./BotonesConsultorios";
-import useAllProfesionals from "../../../customHooks/useAllProfesionals";
+import useAllProfesionals from "../../customHooks/useAllProfesionals";
 import { useNavigate } from "react-router";
 
 const SearchModal = ({ enviarIds }) => {
