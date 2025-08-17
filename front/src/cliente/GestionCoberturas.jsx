@@ -117,7 +117,7 @@ const GestionCoberturas = () => {
         refetch();
         setIsAdding(false);
         setShowModalAccion(false);
-        setSearchTerm("");
+        
       }, 1500);
     } catch (err) {
       console.error("Error al añadir cobertura:", err);

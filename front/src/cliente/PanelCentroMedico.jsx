@@ -28,6 +28,8 @@ const PanelCentroMedico = ( { consultorioData: consultorio, profesionalVinculado
   const { profesional: profesionales, isLoading, error } = useProfesionalxIdConsultorio(consultorioId);
   const numProfesionales = profesionales?.length || 0;
 
+  console.log(numProfesionales)
+
   const [showGestionMedicos, setShowGestionMedicos] = useState(false);
   const [showModalTurnos, setShowModalTurnos] = useState(false);
   const [profesionalID, setProfesionalID] = useState(null);

@@ -92,7 +92,6 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID, consultorio }
         onClose();
         onCreate?.();
         setCreando(false);
-        consultorio?.tipo === 'Particular' && navigate('/micuenta');
       }, 1500);
     } catch (err) {
       const errorMsg =

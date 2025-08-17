@@ -1,7 +1,7 @@
 import CountUp from "react-countup";
 import { useNavigate } from "react-router";
 
-const CardGestionProfesionales = ({ seccion, icon: Icon, titulo, subtitulo, numprofesionales, texto }) => {
+const CardGestionProfesionales = ({ seccion, icon: Icon, titulo, subtitulo, numProfesionales, texto }) => {
 
   const navigate = useNavigate()
 
@@ -19,7 +19,7 @@ const CardGestionProfesionales = ({ seccion, icon: Icon, titulo, subtitulo, nump
               <p className="text-gray-600 text-sm mb-3">{subtitulo}</p>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-purple-600">
-                  <CountUp end={numprofesionales} duration={1.5} />
+                  <CountUp end={numProfesionales} duration={1.5} />
                 </span>
                 <span className="text-xs text-gray-500">{texto}</span>
               </div>
