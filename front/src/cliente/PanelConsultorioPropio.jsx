@@ -31,8 +31,10 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
 
+  const [refreshProfesionales, setRefreshProfesionales] = useState(null);
+
   const consultorioID = consultorio?.id;
-  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID);
+  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID, refreshProfesionales);
 
   const medico = profesional?.[0] || null;
   const medicoID = medico?.id;
@@ -41,6 +43,11 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
     medicoID,
     consultorioID
   );
+
+  const refrescarListaProfesionales = () => {
+    setRefreshProfesionales((prev) => prev + 1);
+  };
+
 
   useEffect(() => {
     profesional[0] === undefined ? setShowModalAsociarProfesional(true) : setShowModalAsociarProfesional(false)
@@ -223,7 +230,9 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
         {showModalAsociarProfesional && (
           <AsociarProfesionalAConsultorio
             consultorioID={consultorioID}
+            consultorio = {consultorio}
             onClose={() => setShowModalAsociarProfesional(false)}
+            refrescarListaProfesionales={refrescarListaProfesionales}
             profesionalVinculado={medicoID != undefined}
           />
         )}

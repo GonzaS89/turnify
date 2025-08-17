@@ -47,12 +47,15 @@ const Login = ({ closeLogin }) => {
       localStorage.setItem('userPassword', password);
       localStorage.setItem('consultorio', JSON.stringify(consultorio));
 
-      navigate('/micuenta');
-      closeLogin?.();
+      setTimeout(() => {
+        setIsSubmitting(false);
+        navigate('/micuenta');
+        closeLogin?.();
+      }, 1500);
+      
     } catch (err) {
       setLoginError(err.response?.data?.message || 'Usuario o contraseña incorrectos.');
-    } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   };
 

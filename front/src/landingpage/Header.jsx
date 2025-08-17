@@ -25,7 +25,7 @@ export const Header = ({ openLogin }) => {
         <a
           href="#inicio"
           onClick={closeMobileMenu}
-          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg scale-100 lg:scale-[1.3]"
+          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg lg:scale-[1.3]"
           aria-label="Ir a la página de inicio"
         >
           <img
@@ -108,7 +108,7 @@ export const Header = ({ openLogin }) => {
           {/* Cabecera del menú */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-800">
-              <img src={logo} className='w-20' alt="" />
+              <img src={logo} className='w-20 h-auto transition-transform duration-300 hover:scale-105' alt="" />
             </h2>
             <button
               onClick={closeMobileMenu}

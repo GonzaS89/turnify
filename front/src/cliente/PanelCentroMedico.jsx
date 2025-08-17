@@ -46,10 +46,10 @@ const PanelCentroMedico = ( { consultorioData: consultorio, profesionalVinculado
       
       {/* ===== ENCABEZADO ===== */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
           <span className='capitalize'>{consultorio?.tipo}</span> {consultorio?.nombre || "Centro Médico"}
         </h1>
-        <p className="text-gray-600 text-lg">Panel de Gestión</p>
+        <p className="text-gray-600 text- lg:text-lg">Panel de Gestión</p>
         <p className="text-gray-500 text-sm mt-1">
           Hoy es: <span className="font-semibold text-blue-700 capitalize">{currentDate}</span>
         </p>

@@ -1,7 +1,7 @@
 // src/components/MiCuenta.jsx (UserDashboard.jsx)
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaHome, FaExclamationCircle } from 'react-icons/fa';
+import { FaSpinner, FaPowerOff ,FaHome, FaExclamationCircle } from 'react-icons/fa';
 import useConsultorioById from '../../customHooks/useConsultorioxId';
 import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
@@ -17,6 +17,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
 
   const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
   const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
+  const [cerrandoSesion, setCerrandoSesion] = useState(false)
 
   const password = localStorage.getItem('userPassword') || '';
 
@@ -40,16 +41,23 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
 
   // Manejo de cierre de sesión
   const handleLogout = () => {
+    
     try {
-      localStorage.removeItem('consultorio');
+      setCerrandoSesion(true)
+      setTimeout(() => {
+        // setCerrandoSesion(false)
+        navigate('/');
+        setCerrandoSesion(false)
+        localStorage.removeItem('consultorio');
       localStorage.removeItem('userPassword');
       if (onLogout && typeof onLogout === 'function') {
         onLogout();
       }
+      }, 1500);
     } catch (err) {
       console.error('Error al cerrar sesión:', err);
     } finally {
-      navigate('/');
+      
     }
   };
 
@@ -121,18 +129,27 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   return (
     <div className="min-h-screen">
       {/* Header con gradiente */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-b-2xl shadow-md">
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-b-2xl shadow-md flex flex-col items-center">
+        <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-5 py-2 lg:py-2.5 bg-red-700/90 hover:bg-red-700/50 rounded-xl text-white font-semibold transition backdrop-blur-sm border border-white/3 min-max-w-40 md:max-w-48 mb-4 text-sm"
+            aria-label="Cerrar sesión"
+          >
+             {cerrandoSesion ? (
+              <span className='inline-flex gap-2 items-center'>
+                <FaSpinner className="animate-spin" size={16} /> Cerrando sesión...
+              </span>
+             ): (
+              <span className='inline-flex gap-2 items-center'>
+                <FaPowerOff className="mr-2" size={16} /> Cerrar sesión
+              </span>
+             )}
+          </button>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">
             ¡Bienvenido, {consultorioToUse?.usuario || 'Usuario'}!
           </h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-5 py-2.5 bg-red-700/90 hover:bg-red-700/50 rounded-xl text-white font-semibold transition backdrop-blur-sm border border-white/30"
-            aria-label="Cerrar sesión"
-          >
-            <FaSignOutAlt /> Cerrar Sesión
-          </button>
+          
         </div>
       </header>
 

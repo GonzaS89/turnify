@@ -14,8 +14,12 @@ import {
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
 
-const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
+const CrearProfesionalModal = ({ onClose, onCreate, consultorioID, consultorio }) => {
+
+  const navigate = useNavigate()
+
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [especialidad, setEspecialidad] = useState("");
@@ -25,6 +29,8 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
   const [creando, setCreando] = useState(false);
+
+  console.log(consultorio)
 
   const {
     especialidades,
@@ -86,6 +92,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         onClose();
         onCreate?.();
         setCreando(false);
+        consultorio?.tipo === 'Particular' && navigate('/micuenta');
       }, 1500);
     } catch (err) {
       const errorMsg =
@@ -105,7 +112,6 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       {/* Modal responsivo */}
       <div
         className="bg-white rounded-2xl shadow-2xl w-full max-h-[100dvh] lg:max-h-[90dvh] max-w-4xl flex overflow-hidden"
-        style={{ maxHeight: "90dvh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Imagen decorativa (solo en pantallas grandes) */}
@@ -245,11 +251,13 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     <FaIdCard className="text-green-500" /> Matrícula *
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     value={matricula}
                     onChange={(e) => setMatricula(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
                     placeholder="12345"
+                    maxLength="5
+                    "
                   />
                 </div>
 

@@ -49,7 +49,7 @@ const GestionProfesionales = (profesionalVinculado) => {
   const [viewMode, setViewMode] = useState("table");
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] =
     useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingIds, setDeletingIds] = useState(new Set());
 
   useEffect(() => {
     if (profesionales) {
@@ -107,21 +107,32 @@ const GestionProfesionales = (profesionalVinculado) => {
       return;
     }
 
-    setIsDeleting(true);
+    // Añadir el ID al conjunto de eliminación
+    setDeletingIds((prev) => new Set([...prev, profesionalId]));
 
     try {
       const response = await axios.put(
         `${API_URL}/api/desvincularprofesional/${consultorioId}/${profesionalId}`
       );
 
-      toast.success("✅ Desvinculado con éxito");
+      
 
+      // Esperar un momento y luego refrescar
       setTimeout(() => {
         refrescarListaProfesionales();
-        setIsDeleting(false);
+        setDeletingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(profesionalId);
+          return next;
+        });
       }, 1500);
-    } catch {
+    } catch (error) {
       toast.error("❌ Error al desvincular profesional");
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(profesionalId);
+        return next;
+      });
     }
   };
 
@@ -339,12 +350,10 @@ const GestionProfesionales = (profesionalVinculado) => {
                               handleDesvincularProfesional(profesional.id)
                             }
                           >
-                           {" "}
-                            {isDeleting ? (
+                            {deletingIds.has(profesional.id) ? (
                               <span>
                                 <FaSpinner className="animate-spin w-4 h-4" />
                               </span>
-                              
                             ) : (
                               <FaTrashAlt className="w-4 h-4" />
                             )}
@@ -436,18 +445,15 @@ const GestionProfesionales = (profesionalVinculado) => {
                         </td>
                         <td className="py-3 px-4">
                           <button
-                            className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors"
-                            aria-label="Eliminar"
+                            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                             onClick={() =>
                               handleDesvincularProfesional(profesional.id)
                             }
                           >
-                            {" "}
-                            {isDeleting ? (
+                            {deletingIds.has(profesional.id) ? (
                               <span>
                                 <FaSpinner className="animate-spin w-4 h-4" />
                               </span>
-                              
                             ) : (
                               <FaTrashAlt className="w-4 h-4" />
                             )}

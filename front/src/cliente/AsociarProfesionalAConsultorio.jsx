@@ -20,7 +20,8 @@ const AsociarProfesionalAConsultorio = ({
   consultorioID,
   idsProfesionalesVinculados,
   refrescarListaProfesionales,
-  profesionalVinculado
+  profesionalVinculado,
+  consultorio,
 }) => {
   const {
     profesionales,
@@ -32,18 +33,20 @@ const AsociarProfesionalAConsultorio = ({
   const [selectedProfesional, setSelectedProfesional] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
-  const [vinculando, setVinculando] = useState(false)
+  const [vinculando, setVinculando] = useState(false);
+
+  const navigate = useNavigate();
+
+  console.log(consultorio);
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  const navigate = useNavigate()
 
   const handleSelect = async (e) => {
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
-    setVinculando(true)
-  
+    setVinculando(true);
+
     if (!selectedProfesional) {
       setMensajeError("Debe seleccionar un profesional.");
       return;
@@ -52,7 +55,7 @@ const AsociarProfesionalAConsultorio = ({
       setMensajeError("No se especificó el consultorio.");
       return;
     }
-  
+
     try {
       const response = await axios.post(
         `${API_URL}/api/unionprofesionalconsultorio`,
@@ -61,50 +64,57 @@ const AsociarProfesionalAConsultorio = ({
           consultorioID: consultorioID,
         }
       );
-  
+
       // ✅ Usar el mensaje devuelto por el backend
-      const backendMessage = response.data.message;
-  
-      setMensaje(`✅ ${backendMessage}`);
-      
+
       // Personalizar el toast según el caso
-      if (backendMessage.includes("reactivado")) {
-        toast.info("✅ Revinculando profesional");
-      } 
-      else {
-        toast.success("✅ Profesional vinculado con éxito");
-      }
-  
+
+      toast.info("✅ Revinculando profesional");
+
       // Refrescar lista tras breve espera
       setTimeout(() => {
+        setVinculando(false);
         refrescarListaProfesionales();
-        setVinculando(false)
-        // onClose(); // Opcional: cerrar modal
+        // Cierra el modal primero
+        if (consultorio?.tipo === "Particular") {
+          
+          onClose();
+        }
       }, 1500);
+      
+
+      
     } catch (err) {
       // Capturar mensaje de error claro
       const errorMsg =
         err.response?.data?.message ||
         err.response?.statusText ||
         "Error de conexión con el servidor";
-  
+
       setMensajeError(`❌ ${errorMsg}`);
-      
+
       // Mostrar toast de error
       toast.error("Error al asociar profesional");
-  
+
       console.error("Error al asociar profesional:", err);
     }
   };
 
   const handleCreateSuccess = () => {
+    // Primero: actualizar lista si la función existe
     if (typeof actualizarProfesionales === "function") {
       actualizarProfesionales();
-      refrescarListaProfesionales()
-      
-      
     }
-    toast.success("Nuevo profesional creado y vinculado");
+
+    // Segundo: redirigir o refrescar según el tipo de consultorio
+    if (consultorio?.tipo === "Particular") {
+      onClose();
+    }
+
+    refrescarListaProfesionales();
+
+    // Tercero: mostrar toast
+    toast.success("✅ Nuevo profesional creado y vinculado");
   };
 
   return (
@@ -126,15 +136,14 @@ const AsociarProfesionalAConsultorio = ({
                 <h2 className="text-2xl font-bold">Vincular Profesional</h2>
               </div>
               {profesionalVinculado && (
-                 <button
-                onClick={onClose}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button>
+                <button
+                  onClick={onClose}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                  aria-label="Cerrar"
+                >
+                  <FaTimes size={20} />
+                </button>
               )}
-             
             </div>
           </div>
 
@@ -206,7 +215,8 @@ const AsociarProfesionalAConsultorio = ({
                         disabled={idsProfesionalesVinculados?.includes(prof.id)}
                         className="font-semibold"
                       >
-                        {prof.nombre} {prof.apellido} • {prof.especialidad} • MP: {prof.matricula}
+                        {prof.nombre} {prof.apellido} • {prof.especialidad} •
+                        MP: {prof.matricula}
                         {idsProfesionalesVinculados?.includes(prof.id)
                           ? " (Ya vinculado)"
                           : ""}
@@ -229,16 +239,20 @@ const AsociarProfesionalAConsultorio = ({
                     type="button"
                     onClick={handleSelect}
                     disabled={!selectedProfesional || !!mensaje}
-                    className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none"
+                    className={`"flex-1 py-3 px-4  disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none" ${
+                      vinculando
+                        ? "bg-gray-300"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600  hover:from-blue-700 hover:to-indigo-700"
+                    }`}
                   >
                     {vinculando ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
-                      Vinculando ...
-                    </div>
-                  ) : (
-                    "Vincular"
-                  )}
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                        Vinculando ...
+                      </div>
+                    ) : (
+                      "Vincular"
+                    )}
                   </button>
                 </div>
               </div>
@@ -252,9 +266,10 @@ const AsociarProfesionalAConsultorio = ({
       {/* Modal de creación (reutilizado con estilo consistente) */}
       {showCreateModal && (
         <CrearProfesionalModal
-          onClose={()=> setShowCreateModal(false)}
+          onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateSuccess}
           consultorioID={consultorioID}
+          consultorio={consultorio}
         />
       )}
     </>

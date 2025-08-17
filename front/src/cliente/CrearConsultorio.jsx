@@ -1,79 +1,108 @@
-import { useState, useEffect } from 'react';
-import useAllProvincias from '../../customHooks/useAllProvincias';
-import useLocalidadesxIdProvincia from '../../customHooks/useLocalidadesxIdProvincia';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FaEye, FaEyeSlash, FaBuilding, FaHome, FaMapMarkerAlt, FaPhone, FaUser, FaLock, FaInfoCircle, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from "react";
+import useAllProvincias from "../../customHooks/useAllProvincias";
+import useLocalidadesxIdProvincia from "../../customHooks/useLocalidadesxIdProvincia";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaBuilding,
+  FaHome,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaUser,
+  FaLock,
+  FaInfoCircle,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaSpinner,
+} from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CrearConsultorio = ({ handleCrearConsultorio }) => {
   const { codigo: codigoValidacion } = useParams();
   const navigate = useNavigate();
 
   // Estados del formulario
-  const [direccion, setDireccion] = useState('');
-  const [localidad, setLocalidad] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [tipo, setTipo] = useState('');
-  const [banco, setBanco] = useState('');
-  const [cbu, setCbu] = useState('');
-  const [alias, setAlias] = useState('');
-  const [titular, setTitular] = useState('');
+  const [direccion, setDireccion] = useState("");
+  const [localidad, setLocalidad] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [tipo, setTipo] = useState("Particular");
+  const [banco, setBanco] = useState("");
+  const [cbu, setCbu] = useState("");
+  const [alias, setAlias] = useState("");
+  const [titular, setTitular] = useState("");
   const [seña, setSeña] = useState(false);
-  const [importe, setImporte] = useState('');
-  const [usuario, setUsuario] = useState('');
-  const [contraseña, setContraseña] = useState('');
-  const [repetirContraseña, setRepetirContraseña] = useState('');
+  const [importe, setImporte] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [repetirContraseña, setRepetirContraseña] = useState("");
   const [mostrarContraseña, setMostrarContraseña] = useState(false);
   const [mostrarRepetir, setMostrarRepetir] = useState(false);
-  const [idProvinciaSelected, setIdProvinciaSelected] = useState('');
-  const [mensaje, setMensaje] = useState('');
-  const [error, setError] = useState('');
+  const [idProvinciaSelected, setIdProvinciaSelected] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [error, setError] = useState("");
+  const [creando, setCreando] = useState(false);
 
-  const { provincias, loading: loadingProvincias, error: errorProvincias } = useAllProvincias();
-  const { localidades, loading: loadingLocalidades, error: errorLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
+  const {
+    provincias,
+    loading: loadingProvincias,
+    error: errorProvincias,
+  } = useAllProvincias();
+  const {
+    localidades,
+    loading: loadingLocalidades,
+    error: errorLocalidades,
+  } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Desactivar seña si es centro médico
   useEffect(() => {
-    if (tipo === 'centro médico') {
+    if (tipo === "centro médico") {
       setSeña(false);
     }
   }, [tipo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setCreando(true);
 
-    if (!direccion || !localidad || !usuario || !contraseña || !repetirContraseña) {
-      setError('Todos los campos marcados con * son obligatorios.');
+    if (
+      !direccion ||
+      !localidad ||
+      !usuario ||
+      !contraseña ||
+      !repetirContraseña
+    ) {
+      setError("Todos los campos marcados con * son obligatorios.");
       return;
     }
 
     if (contraseña !== repetirContraseña) {
-      setError('Las contraseñas no coinciden.');
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
     if (contraseña.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+      setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     if (telefono.length !== 10) {
-      setError('El teléfono debe tener 10 dígitos.');
+      setError("El teléfono debe tener 10 dígitos.");
       return;
     }
 
-    if (tipo === 'particular' && seña && (!importe || !banco || !cbu)) {
-      setError('Si requiere seña, complete importe, banco y CBU/alias.');
+    if (tipo === "particular" && seña && (!importe || !banco || !cbu)) {
+      setError("Si requiere seña, complete importe, banco y CBU/alias.");
       return;
     }
 
-    setError('');
-    setMensaje('');
+    setError("");
+    setMensaje("");
 
     try {
       const nuevoConsultorio = {
@@ -91,42 +120,51 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
         cbu: seña ? cbu : null,
         alias: seña ? alias : null,
         titular: seña ? titular : null,
-        codigo: codigoValidacion
+        codigo: codigoValidacion,
       };
 
-      const response = await axios.put(`${API_URL}/api/crearconsultorio/${codigoValidacion}`, nuevoConsultorio);
+      const response = await axios.put(
+        `${API_URL}/api/crearconsultorio/${codigoValidacion}`,
+        nuevoConsultorio
+      );
       const data = response.data;
 
-      toast.success('✅ ¡Consultorio creado! Redirigiendo...');
+      toast.success("✅ ¡Consultorio creado! Redirigiendo...");
+
+      
 
       setTimeout(() => {
         handleCrearConsultorio();
-        navigate('/')
+        navigate("/");
+        setCreando(false);
       }, 1500);
 
       // Resetear formulario
-      setDireccion('');
-      setLocalidad('');
-      setTelefono('');
-      setNombre('');
-      setTipo('');
-      setUsuario('');
-      setContraseña('');
-      setRepetirContraseña('');
+      setDireccion("");
+      setLocalidad("");
+      setTelefono("");
+      setNombre("");
+      setTipo("");
+      setUsuario("");
+      setContraseña("");
+      setRepetirContraseña("");
       setSeña(false);
-      setImporte('');
-      setBanco('');
-      setCbu('');
-      setAlias('');
-      setTitular('');
-      setIdProvinciaSelected('');
+      setImporte("");
+      setBanco("");
+      setCbu("");
+      setAlias("");
+      setTitular("");
+      setIdProvinciaSelected("");
       setMostrarContraseña(false);
       setMostrarRepetir(false);
-
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.response?.statusText || 'Error de conexión';
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Error de conexión";
       setError(`❌ ${errorMessage}`);
-      toast.error('Error al crear el consultorio');
+      toast.error("Error al crear el consultorio");
+      setCreando(false);
     }
   };
 
@@ -138,7 +176,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
             Crear Establecimiento
           </h1>
-          <p className="mt-2 text-lg text-gray-600">Completa los datos para activar tu consultorio o centro médico</p>
+          <p className="mt-2 text-lg text-gray-600">
+            Completa los datos para activar tu consultorio o centro médico
+          </p>
         </div>
 
         {/* Mensajes */}
@@ -157,7 +197,10 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
         )}
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-xl p-8 space-y-8"
+        >
           {/* Sección: Credenciales */}
           <section>
             <h2 className="text-xl font-semibold text-gray-800 mb-5 flex items-center gap-2">
@@ -165,7 +208,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Usuario *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Usuario *
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaUser size={16} />
@@ -181,7 +226,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Código de Activación</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Código de Activación
+                </label>
                 <input
                   type="text"
                   value={codigoValidacion}
@@ -194,13 +241,15 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
             {/* Validación visual de contraseñas */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contraseña *
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaLock size={16} />
                   </span>
                   <input
-                    type={mostrarContraseña ? 'text' : 'password'}
+                    type={mostrarContraseña ? "text" : "password"}
                     value={contraseña}
                     onChange={(e) => setContraseña(e.target.value)}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
@@ -217,13 +266,15 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Repetir Contraseña *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Repetir Contraseña *
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaLock size={16} />
                   </span>
                   <input
-                    type={mostrarRepetir ? 'text' : 'password'}
+                    type={mostrarRepetir ? "text" : "password"}
                     value={repetirContraseña}
                     onChange={(e) => setRepetirContraseña(e.target.value)}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
@@ -243,16 +294,17 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               <div className="mt-3">
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                   <div
-                    className={`h-2 rounded-full transition-all duration-300 ${contraseña.length === 0
-                        ? 'w-0'
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      contraseña.length === 0
+                        ? "w-0"
                         : contraseña.length < 6
-                          ? 'w-1/4 bg-red-500'
-                          : repetirContraseña === ''
-                            ? 'w-1/2 bg-yellow-500'
-                            : contraseña === repetirContraseña
-                              ? 'w-full bg-green-500'
-                              : 'w-full bg-red-600'
-                      }`}
+                        ? "w-1/4 bg-red-500"
+                        : repetirContraseña === ""
+                        ? "w-1/2 bg-yellow-500"
+                        : contraseña === repetirContraseña
+                        ? "w-full bg-green-500"
+                        : "w-full bg-red-600"
+                    }`}
                   ></div>
                 </div>
 
@@ -265,7 +317,7 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                     <p className="text-red-600 flex items-center gap-1">
                       <FaExclamationCircle /> Mínimo 6 caracteres
                     </p>
-                  ) : repetirContraseña === '' ? (
+                  ) : repetirContraseña === "" ? (
                     <p className="text-yellow-600 flex items-center gap-1">
                       <FaInfoCircle /> Confirma la contraseña
                     </p>
@@ -286,24 +338,31 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
           {/* Sección: Datos del Establecimiento */}
           <section>
             <h2 className="text-xl font-semibold text-gray-800 mb-5 flex items-center gap-2">
-              <FaBuilding className="text-indigo-500" /> Datos del Establecimiento
+              <FaBuilding className="text-indigo-500" /> Datos del
+              Establecimiento
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo *
+                </label>
                 <div className="flex gap-3">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
                       value="Particular"
-                      checked={tipo === 'Particular'}
+                      checked={tipo === "Particular"}
                       onChange={(e) => setTipo(e.target.value)}
                       className="sr-only"
+                      
                     />
-                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${tipo === 'Particular'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}>
+                    <span
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                        tipo === "Particular"
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
                       <FaHome className="inline mr-1" /> Particular
                     </span>
                   </label>
@@ -311,14 +370,17 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                     <input
                       type="radio"
                       value="centro médico"
-                      checked={tipo === 'centro médico'}
+                      checked={tipo === "centro médico"}
                       onChange={(e) => setTipo(e.target.value)}
                       className="sr-only"
                     />
-                    <span className={`px-4 py-2 rounded-full text-sm font-medium transition ${tipo === 'centro médico'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}>
+                    <span
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                        tipo === "centro médico"
+                          ? "bg-purple-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
                       <FaBuilding className="inline mr-1" /> Centro Médico
                     </span>
                   </label>
@@ -326,7 +388,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre (opcional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre (opcional)
+                </label>
                 <input
                   type="text"
                   value={nombre}
@@ -339,7 +403,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Dirección *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dirección *
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaMapMarkerAlt />
@@ -355,7 +421,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono celular</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teléfono celular
+                </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                     <FaPhone />
@@ -363,7 +431,13 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                   <input
                     type="tel"
                     value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Solo permite dígitos (0-9)
+                      if (/^\d*$/.test(value)) {
+                        setTelefono(value);
+                      }
+                    }}
                     inputMode="numeric"
                     maxLength="10"
                     pattern="[0-9]{10}"
@@ -376,23 +450,33 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Provincia *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Provincia *
+                </label>
                 <select
                   value={idProvinciaSelected}
                   onChange={(e) => setIdProvinciaSelected(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                 >
-                  <option value="" disabled>Seleccionar provincia</option>
+                  <option value="" disabled>
+                    Seleccionar provincia
+                  </option>
                   {loadingProvincias && <option disabled>Cargando...</option>}
                   {errorProvincias && <option disabled>Error</option>}
-                  {!loadingProvincias && !errorProvincias && provincias.map((p) => (
-                    <option key={p.id} value={p.id}>{p.nombre}</option>
-                  ))}
+                  {!loadingProvincias &&
+                    !errorProvincias &&
+                    provincias.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Localidad *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Localidad *
+                </label>
                 <select
                   value={localidad}
                   onChange={(e) => setLocalidad(e.target.value)}
@@ -402,16 +486,20 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                   <option value="">Seleccionar localidad</option>
                   {loadingLocalidades && <option disabled>Cargando...</option>}
                   {errorLocalidades && <option disabled>Error</option>}
-                  {!loadingLocalidades && !errorLocalidades && localidades.map((l) => (
-                    <option key={l.id} value={l.id}>{l.nombre}</option>
-                  ))}
+                  {!loadingLocalidades &&
+                    !errorLocalidades &&
+                    localidades.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.nombre}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>
           </section>
 
           {/* Sección: Seña (condicional) */}
-          {tipo === 'particular' && (
+          {tipo === "particular" && (
             <section>
               <div className="flex items-center mb-5">
                 <input
@@ -421,7 +509,10 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                   onChange={(e) => setSeña(e.target.checked)}
                   className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
                 />
-                <label htmlFor="seña" className="ml-3 text-lg font-medium text-gray-800">
+                <label
+                  htmlFor="seña"
+                  className="ml-3 text-lg font-medium text-gray-800"
+                >
                   ¿Requiere seña para reservar?
                 </label>
               </div>
@@ -433,7 +524,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Importe *</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Importe *
+                      </label>
                       <input
                         type="number"
                         value={importe}
@@ -443,7 +536,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Banco *</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Banco *
+                      </label>
                       <input
                         type="text"
                         value={banco}
@@ -453,7 +548,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">CBU o Alias *</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        CBU o Alias *
+                      </label>
                       <input
                         type="text"
                         value={cbu}
@@ -463,7 +560,9 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Titular</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Titular
+                      </label>
                       <input
                         type="text"
                         value={titular}
@@ -484,14 +583,26 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
               type="submit"
               className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-105 transition duration-200"
             >
-              🚀 Crear Establecimiento
+              {creando ? (
+                <span className="inline-flex gap-2 items-center">
+                  <FaSpinner size={16} className="animate-spin" /> Creando ...
+                </span>
+              ) : (
+                <span className="inline-flex gap-2 items-center">
+                  🚀 Crear Establecimiento
+                </span>
+              )}
             </button>
           </div>
         </form>
       </div>
 
       {/* Toastify */}
-      <ToastContainer position="bottom-right" autoClose={1000} hideProgressBar={false} />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={1000}
+        hideProgressBar={false}
+      />
     </div>
   );
 };

@@ -105,7 +105,7 @@ const GestionCoberturas = () => {
         `${API_URL}/api/agregarCoberturaAlConsultorio/${coberturaId}/${consultorioId}`
       );
 
-      setSearchTerm("");
+      
       toast.success(
         <div className="flex items-center gap-2 text-sm">
           <FaCheckCircle /> Añadiendo {siglas} ...
@@ -117,6 +117,7 @@ const GestionCoberturas = () => {
         refetch();
         setIsAdding(false);
         setShowModalAccion(false);
+        setSearchTerm("");
       }, 1500);
     } catch (err) {
       console.error("Error al añadir cobertura:", err);

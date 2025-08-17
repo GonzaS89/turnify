@@ -28,7 +28,6 @@ import BorrarTurno from "./BorrarTurno";
 import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
 import TurnoInterno from "./TurnoInterno";
 
-
 const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
   const { consultorioId } = useParams();
@@ -38,37 +37,70 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
-  const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
-  const [liberandoTurno, setLiberandoTurno] = useState(false);
+  const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] =
+    useState(false);
+  const [liberandoIds, setLiberandoIds] = useState(new Set());
+  const [finalizandoIds, setFinalizandoIds] = useState(new Set());
 
   function formatearFechaCorta(fechaStr) {
     const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
-    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
-                   "jul", "ago", "sep", "oct", "nov", "dic"];
-  
+    const meses = [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ];
+
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-  
+
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
-  
+
     return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
   }
 
   function formatearFechaLarga(fechaStr) {
-    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const meses = ["ene", "feb", "mar", "abr", "may", "jun",
-                   "jul", "ago", "sep", "oct", "nov", "dic"];
-  
+    const dias = [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ];
+    const meses = [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ];
+
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-  
+
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
-  
+
     return `${dias[diaSemana]} ${day}`;
   }
-
 
   const datesListRef = useRef(null);
 
@@ -83,16 +115,23 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   const handleActualizarTurnos = () => setRefreshTrigger((prev) => prev + 1);
 
-  const { turnos, isLoading } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
+  const { turnos, isLoading } = useProfessionalConsultorioTurnos(
+    profesionalId,
+    consultorioId,
+    refreshTrigger
+  );
   const { coberturas } = useAllCoberturas();
   const { profesional } = useProfesionalxId(profesionalId);
   const { consultorio } = useConsultorioxId(consultorioId);
-  const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
+  const { coberturas: coberturasConsultorio } =
+    useCoberturaxIdConsultorio(consultorioId);
   const [liberando, setLiberando] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
 
   const medico = profesional?.[0];
-  const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
+  const nombreMedico = `${medico?.nombre || ""} ${
+    medico?.apellido || ""
+  }`.trim();
 
   // Agrupar turnos por fecha
   const turnosAgrupados = turnos.reduce((acc, turno) => {
@@ -103,17 +142,23 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
-
-  const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
+  const fechasOrdenadas = Object.keys(turnosAgrupados).sort(
+    (a, b) => new Date(b) - new Date(a)
+  );
 
   // Scroll automático al centro en mobile
   useEffect(() => {
     if (fechaSeleccionada && datesListRef.current && window.innerWidth < 768) {
       requestAnimationFrame(() => {
-        const button = datesListRef.current.querySelector(`[data-date="${fechaSeleccionada}"]`);
+        const button = datesListRef.current.querySelector(
+          `[data-date="${fechaSeleccionada}"]`
+        );
         if (button) {
           const container = datesListRef.current;
-          const offset = button.offsetLeft - container.offsetWidth / 2 + button.offsetWidth / 2;
+          const offset =
+            button.offsetLeft -
+            container.offsetWidth / 2 +
+            button.offsetWidth / 2;
           container.scrollTo({ left: offset, behavior: "smooth" });
         }
       });
@@ -125,11 +170,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     enviarTurnoYOrden(turno, idx + 1);
   };
 
-  
   const recibirConfirmacionLiberacion = () => {
-    setLiberando(true)
-  }
- 
+    setLiberando(true);
+  };
 
   const handleAgregarTurnoClick = () => {
     navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
@@ -145,34 +188,47 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   };
 
   const handleModificarEstadoTurno = async (idTurno) => {
-    setFinalizando(true)
+    setFinalizandoIds((prev) => new Set([...prev, idTurno]));
+
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`
+      );
       setTimeout(() => {
         handleActualizarTurnos();
-        setFinalizando(false)
+        setFinalizandoIds((prev) => {
+        const next = new Set(prev);
+        next.delete(idTurno);
+        return next;
+      });
       }, 1500);
       
     } catch (error) {
       console.error("Error al modificar estado del turno:", error);
-    }
+    } 
   };
 
   const handleLiberarTurno = async (idTurno) => {
-    try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`);
-      toast.info("Liberando turno ...", {autoClose: 1000});
+    setLiberandoIds((prev) => new Set([...prev, idTurno]));
 
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`
+      );
+      toast.success("Turno liberado");
       setTimeout(() => {
         handleActualizarTurnos();
+        setLiberandoIds((prev) => {
+        const next = new Set(prev);
+        next.delete(idTurno);
+        return next;
+      });
       }, 1500);
       
-    
-    } 
-    
-    
-    catch (error) {
+    } catch (error) {
       console.error("Error al liberar turno:", error);
+    } finally {
+      
     }
   };
 
@@ -204,9 +260,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   if (turnos.length === 0) {
     return (
-      <div 
-      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
-      >
+      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
           {/* Encabezado con gradiente */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
@@ -229,8 +283,12 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                 <FaCalendarAlt className="text-blue-500 w-10 h-10" />
               </div>
             </div>
-            <p className="text-gray-700 text-lg font-medium">No tenés turnos agendados.</p>
-            <p className="text-gray-500 text-sm">Habilitá tu agenda para recibir pacientes.</p>
+            <p className="text-gray-700 text-lg font-medium">
+              No tenés turnos agendados.
+            </p>
+            <p className="text-gray-500 text-sm">
+              Habilitá tu agenda para recibir pacientes.
+            </p>
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAgregarTurnoClick}
@@ -267,35 +325,38 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           {/* Encabezado */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <FaCalendarAlt /> {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${nombreMedico}`}
+              <FaCalendarAlt />{" "}
+              {tipoConsultorio === "propio"
+                ? "Tu Agenda"
+                : `Agenda de ${nombreMedico}`}
             </h2>
             <div className="flex items-center gap-2">
-  <button
-    onClick={handleActualizarTurnos}
-    className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-2xl text-sm transition"
-    aria-label="Actualizar"
-  >
-    <TbRefresh size={16} />
-    <span className="hidden sm:inline"> Actualizar</span>
-  </button>
+              <button
+                onClick={handleActualizarTurnos}
+                className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-2xl text-sm transition"
+                aria-label="Actualizar"
+              >
+                <TbRefresh size={16} />
+                <span className="hidden sm:inline"> Actualizar</span>
+              </button>
 
-  <button
-    onClick={handleAgregarTurnoClick}
-    className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition"
-    aria-label="Agregar"
-  >
-    <FaPlus size={14} />
-    <span className="hidden sm:inline"> Agregar</span>
-  </button>
+              <button
+                onClick={handleAgregarTurnoClick}
+                className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition"
+                aria-label="Agregar"
+              >
+                <FaPlus size={14} />
+                <span className="hidden sm:inline"> Agregar</span>
+              </button>
 
-  <button
-    onClick={() => navigate("/micuenta")}
-    className="text-white hover:bg-white/20 rounded-full p-1 transition"
-    aria-label="Cerrar"
-  >
-    <FaTimes size={20} />
-  </button>
-</div>
+              <button
+                onClick={() => navigate("/micuenta")}
+                className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                aria-label="Cerrar"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Contenido principal */}
@@ -311,8 +372,12 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               >
                 {fechasOrdenadas.map((fecha) => {
                   const turnos = turnosAgrupados[fecha];
-                  const ocupados = turnos.filter((t) => t.estado === "reservado").length;
-                  const finalizados = turnos.filter((t) => t.estado === "finalizado").length;
+                  const ocupados = turnos.filter(
+                    (t) => t.estado === "reservado"
+                  ).length;
+                  const finalizados = turnos.filter(
+                    (t) => t.estado === "finalizado"
+                  ).length;
                   const disponibles = turnos.length - ocupados - finalizados;
                   const isSelected = fecha === fechaSeleccionada;
 
@@ -328,9 +393,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                       }`}
                     >
                       <div className="font-semibold">
-                        {
-                          formatearFechaCorta(fecha)
-                        }
+                        {formatearFechaCorta(fecha)}
                       </div>
                       <div
                         className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
@@ -386,12 +449,16 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               {!fechaSeleccionada ? (
                 <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                   <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">Seleccioná una fecha para ver los turnos.</p>
+                  <p className="text-gray-600 text-lg">
+                    Seleccioná una fecha para ver los turnos.
+                  </p>
                 </div>
               ) : turnosDeLaFecha.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                   <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
+                  <p className="text-gray-500 mb-5">
+                    No hay turnos para este día.
+                  </p>
                   <button
                     onClick={handleAgregarTurnoClick}
                     className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
@@ -404,7 +471,27 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   {turnosDeLaFecha
                     .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
                     .map((turno, idx) => (
-                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida} confirmarLiberacion={recibirConfirmacionLiberacion} liberando={liberando} finalizando={finalizando}/>
+                      <TurnoInterno
+                        key={turno.id}
+                        turno={turno}
+                        id={turno.id}
+                        idx={idx}
+                        estado={turno.estado}
+                        hora={turno.hora}
+                        paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
+                        DNI={turno.DNI}
+                        cobertura={turno.cobertura}
+                        duracion={turno.duracion}
+                        telefono={turno.telefono}
+                        tapButtonAsignar={tapButtonAsignar}
+                        handleBorrarTurno={handleBorrarTurno}
+                        handleModificarEstadoTurno={handleModificarEstadoTurno}
+                        handleLiberarTurno={handleLiberarTurno}
+                        coberturaElegida={coberturaElegida}
+                        confirmarLiberacion={recibirConfirmacionLiberacion}
+                        liberando={liberandoIds.has(turno.id)}
+                        finalizando={finalizandoIds.has(turno.id)}
+                      />
                     ))}
                 </div>
               )}
