@@ -89,7 +89,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             {/* Info del médico */}
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-center">
                 Tu consultorio virtual
               </h1>
 
@@ -126,7 +126,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
                 <FaClock className="text-white/80 mr-2" size={16} />
                 <p className="text-sm opacity-90 font-medium">Hoy es</p>
               </div>
-              <p className="font-bold text-lg leading-tight capitalize tracking-wide">
+              <p className="font-bold text-sm lg:text-lg leading-tight capitalize tracking-wide">
                 {todayFormatted}
               </p>
             </div>

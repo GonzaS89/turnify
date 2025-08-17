@@ -5,7 +5,7 @@ import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 const ConfirmationModalInterno = ({
   formData,
@@ -36,21 +36,38 @@ const ConfirmationModalInterno = ({
 
   // Formatear fecha y hora
   const formatearFechaSQL = (fecha) => {
-    if (!fecha) return "N/A";
-    const date = new Date(fecha);
-    return date.toLocaleDateString("es-AR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
+  if (!fecha) return "N/A";
+  const date = new Date(fecha);
+  let fechaFormateada = date.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  // Capitalizar la primera letra
+  return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+};
 
   const formatearHora = (hora) => {
     if (!hora) return "N/A";
     const [h, m] = hora.split(":");
     return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
+
+  const definirTitulo = (value) => {
+  switch (value) {
+    case 'doctor':
+      return 'Dr.';
+    case 'doctora':
+      return 'Dra.';
+    case 'licenciado':
+    case 'licenciada':
+      return 'Lic.'; 
+    default:
+      return ''; 
+  }
+};
 
   // Reservar turno
   const reservarTurno = async () => {
@@ -75,7 +92,7 @@ const ConfirmationModalInterno = ({
       );
 
       setIsSuccess(true);
-      toast.success("Turno reservado", {autoClose: 1000})
+      toast.success("Turno reservado")
 
       setTimeout(() => {
         navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
@@ -101,27 +118,27 @@ const ConfirmationModalInterno = ({
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center sm:p-4 z-[200]"
-        onClick={() => !isSubmitting && navigate(-1)}
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
+        
       >
         <div
           className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] lg:h-auto sm:max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-bold">
                 {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}
               </h3>
-              <button
+              {/* <button
                 onClick={() => !isSubmitting && navigate(-1)}
                 disabled={isSubmitting}
                 className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
                 aria-label="Cerrar"
               >
                 <FaTimes size={20} />
-              </button>
+              </button> */}
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
               {isSuccess
@@ -166,7 +183,7 @@ const ConfirmationModalInterno = ({
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Profesional:</span>{" "}
-                        {profesional?.nombre} {profesional?.apellido}
+                       {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Especialidad:</span>{" "}
@@ -250,7 +267,7 @@ const ConfirmationModalInterno = ({
                       Confirmando...
                     </div>
                   ) : (
-                    "Confirmar Reserva"
+                    "Confirmar"
                   )}
                 </button>
               </>
@@ -259,6 +276,7 @@ const ConfirmationModalInterno = ({
           </div>
         </div>
       </div>
+      <ToastContainer position="bottom-right" autoClose={1000} />
     </>
   );
 };

@@ -88,6 +88,8 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const { profesional } = useProfesionalxId(profesionalId);
   const { consultorio } = useConsultorioxId(consultorioId);
   const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
+  const [liberando, setLiberando] = useState(false);
+  const [finalizando, setFinalizando] = useState(false);
 
   const medico = profesional?.[0];
   const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
@@ -124,7 +126,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   };
 
   
-
+  const recibirConfirmacionLiberacion = () => {
+    setLiberando(true)
+  }
  
 
   const handleAgregarTurnoClick = () => {
@@ -141,9 +145,14 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   };
 
   const handleModificarEstadoTurno = async (idTurno) => {
+    setFinalizando(true)
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
-      handleActualizarTurnos();
+      setTimeout(() => {
+        handleActualizarTurnos();
+        setFinalizando(false)
+      }, 1500);
+      
     } catch (error) {
       console.error("Error al modificar estado del turno:", error);
     }
@@ -395,7 +404,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   {turnosDeLaFecha
                     .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
                     .map((turno, idx) => (
-                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida}/>
+                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida} confirmarLiberacion={recibirConfirmacionLiberacion} liberando={liberando} finalizando={finalizando}/>
                     ))}
                 </div>
               )}

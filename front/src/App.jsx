@@ -52,9 +52,7 @@ import { useTheme } from "./ThemeContext"; // Ajusta la ruta según tu estructur
 const App = () => {
   const { darkMode, toggleDarkMode } = useTheme(); // ✅ Usamos el contexto
 
-   useEffect(() => {
-    toast.info("App cargada", { autoClose: 1000 });
-  }, []);
+   
 
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [idProfesional, setIdProfesional] = useState(null);

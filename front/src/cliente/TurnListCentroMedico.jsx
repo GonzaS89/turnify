@@ -11,14 +11,13 @@ import {
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import { useParams, useNavigate } from "react-router";
+import {toast, ToastContainer} from 'react-toastify';
 
 // CARGA HOOK
 
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
-import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
-import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
 // CARGA DE LAYOUTS
 
@@ -38,6 +37,8 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
+  const [liberando, setLiberando] = useState(false);
+   const [finalizando, setFinalizando] = useState(false);
 
   const datesListRef = useRef(null);
 
@@ -50,13 +51,15 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const recibirConfirmacionLiberacion = () => {
+    setLiberando(true)
+  }
+ 
   const handleActualizarTurnos = () => setRefreshTrigger((prev) => prev + 1);
 
   const { turnos, isLoading } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
   const { coberturas } = useAllCoberturas();
   const { profesional } = useProfesionalxId(profesionalId);
-  const { consultorio } = useConsultorioxId(consultorioId);
-  const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
 
   const medico = profesional?.[0];
   const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
@@ -104,9 +107,13 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     setShowModalBorrarTodosLosTurnos(true);
   };
 
-  const handleModificarEstadoTurno = async (idTurno) => {
+   const handleModificarEstadoTurno = async (idTurno) => {
+    setFinalizando(true)
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
+      setTimeout(() => {
+        setFinalizando(false)
+      }, 1500);
       handleActualizarTurnos();
     } catch (error) {
       console.error("Error al modificar estado del turno:", error);
@@ -114,9 +121,16 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   };
 
   const handleLiberarTurno = async (idTurno) => {
+
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`);
-      handleActualizarTurnos();
+      
+      toast.success("Turno liberado")
+
+      setTimeout(() => {
+        handleActualizarTurnos();
+        setLiberando(false)
+      }, 1500);
     } catch (error) {
       console.error("Error al liberar turno:", error);
     }
@@ -204,11 +218,11 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4"
          onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
       >
         <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[100dvh] flex flex-col"
+          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado */}
@@ -358,7 +372,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   {turnosDeLaFecha
                     .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
                     .map((turno, idx) => (
-                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida}/>
+                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida} confirmarLiberacion={recibirConfirmacionLiberacion} liberando={liberando}/>
                     ))}
                 </div>
               )}
@@ -385,6 +399,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
+      <ToastContainer autoClose={1000} position="bottom-right" />
     </>
   );
 };

@@ -215,8 +215,6 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     <option value="doctora">Doctora</option>
                     <option value="licenciado">Licenciado</option>
                     <option value="licenciada">Licenciada</option>
-                    <option value="bioquímico">Bioquímico</option>
-                    <option value="bioquímica">Bioquímica</option>
                   </select>
                 </div>
 

@@ -112,14 +112,14 @@ const UserFormModalInterno = ({ onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] sm:p-4 min-h-screen">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] p-4 min-h-screen">
       <div
-        className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col h-[100dvh] sm:max-h-[80vh]"
+        className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col max-h-[100dvh] sm:max-h-[80vh]"
 
       >
 
         {/* Encabezado con gradiente */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 sm:rounded-t-2xl">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FaUser className="text-2xl" />
@@ -285,16 +285,16 @@ const UserFormModalInterno = ({ onSubmit }) => {
           <button
             type="submit"
             form="user-form"
-            className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
+            className={`text-white flex-1 py-3 px-4 disabled:opacity-70 disabled:cursor-not-allowed rounded-xl ${isConfirm ? 'bg-gray-300' : 'bg-gradient-to-r from-blue-600 to-indigo-600   hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105'}`}
           >
             {isConfirm ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
-                Enviando datos ...
+                Enviando ...
               </div>
             ) : (
               <span className="flex items-center justify-center">
-                <FaCheck className="inline mr-2" /> Confirmar datos
+                <FaCheck className="inline mr-2" /> Confirmar
               </span>
             )}
           </button>

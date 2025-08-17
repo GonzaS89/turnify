@@ -1,5 +1,4 @@
 import { FaCheckCircle, FaUser, FaTrashAlt, FaIdCard, FaTimesCircle, FaShieldAlt, FaPlus, FaPhone, FaUnlock, FaSpinner } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
 import { useState } from "react";
 
 const TurnoInterno = ({
@@ -18,24 +17,25 @@ const TurnoInterno = ({
   handleModificarEstadoTurno,
   handleLiberarTurno,
   coberturaElegida,
+  confirmarLiberacion,
+  liberando,
+  finalizando
 }) => {
 
-  const [liberando, setLiberando] = useState(false);
+
+
+  const liberarTurno = id => {
+    handleLiberarTurno(id); 
+    confirmarLiberacion()
+  }
+
+
 
   const formatearHora = (hora) => {
     if (!hora) return "";
     const [h, m] = hora.split(":");
     return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
-
-  const liberarTurno = id => {
-    handleLiberarTurno(id);
-    setLiberando(true);
-
-    setTimeout(() => {
-      setLiberando(false)
-    }, 1000);
-  }
 
 
   const calcularHoraFin = (horaInicio, duracionMinutos) => {
@@ -91,7 +91,7 @@ const TurnoInterno = ({
           {estado === "disponible" && (
             <button
               onClick={() => handleBorrarTurno(id)}
-              className="text-red-500 hover:text-red-700 hover:bg-red-100 p-1.5 rounded-lg transition-colors duration-150"
+              className="text-white hover:text-red-100 bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition-colors duration-150"
               aria-label="Eliminar turno"
             >
               <FaTrashAlt size={16} />
@@ -107,7 +107,17 @@ const TurnoInterno = ({
             onClick={() => handleModificarEstadoTurno(id)}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow transform hover:scale-105"
           >
-            <FaCheckCircle size={16} /> Marcar como finalizado
+            {finalizando ? (
+              <span className="inline-flex gap-2">
+                <FaSpinner size={16} className="animate-spin" />
+                Finalizando ...
+              </span>
+            ): (
+              <span className="inline-flex gap-2">
+                <FaCheckCircle size={16}/>
+                Finalizar
+              </span>
+            )}
           </button>
           <button
             onClick={() => liberarTurno(id)}
