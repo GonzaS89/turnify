@@ -1,4 +1,6 @@
-import { FaCheckCircle, FaUser, FaTrashAlt, FaIdCard, FaTimesCircle, FaShieldAlt, FaPlus, FaPhone } from "react-icons/fa";
+import { FaCheckCircle, FaUser, FaTrashAlt, FaIdCard, FaTimesCircle, FaShieldAlt, FaPlus, FaPhone, FaUnlock, FaSpinner } from "react-icons/fa";
+import { ToastContainer, toast } from "react-toastify";
+import { useState } from "react";
 
 const TurnoInterno = ({
   turno,
@@ -17,11 +19,24 @@ const TurnoInterno = ({
   handleLiberarTurno,
   coberturaElegida,
 }) => {
+
+  const [liberando, setLiberando] = useState(false);
+
   const formatearHora = (hora) => {
     if (!hora) return "";
     const [h, m] = hora.split(":");
     return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
+
+  const liberarTurno = id => {
+    handleLiberarTurno(id);
+    setLiberando(true);
+
+    setTimeout(() => {
+      setLiberando(false)
+    }, 1000);
+  }
+
 
   const calcularHoraFin = (horaInicio, duracionMinutos) => {
     if (!horaInicio || !duracionMinutos) return "";
@@ -95,10 +110,20 @@ const TurnoInterno = ({
             <FaCheckCircle size={16} /> Marcar como finalizado
           </button>
           <button
-            onClick={() => handleLiberarTurno(id)}
+            onClick={() => liberarTurno(id)}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow transform hover:scale-105"
           >
-            <FaTimesCircle size={16} /> Liberar
+            {liberando ? (
+            <span className="inline-flex gap-2">
+                <FaSpinner size={16} className="animate-spin"/> Liberando ...
+            </span>
+            ):( 
+             
+             <span className="inline-flex gap-2">
+                <FaUnlock size={16} /> Liberar
+             </span>
+      )}
+            
           </button>
         </div>
       ) : (

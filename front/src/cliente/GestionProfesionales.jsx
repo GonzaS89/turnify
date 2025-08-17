@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router";
 
@@ -13,7 +14,8 @@ import {
   FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
-  FaTimes
+  FaTimes,
+  FaSpinner,
 } from "react-icons/fa";
 
 // CARGA DE HOOKS
@@ -36,8 +38,6 @@ const GestionProfesionales = (profesionalVinculado) => {
     []
   );
 
-
-
   const {
     profesional: profesionales,
     isLoading,
@@ -51,14 +51,11 @@ const GestionProfesionales = (profesionalVinculado) => {
     useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     if (profesionales) {
       setIdsProfesionalesVinculados(profesionales.map((p) => p.id));
     }
   }, [profesionales]);
-
-  // Previene scroll del fondo
-  document.body.style.overflow = "hidden";
 
   // Detectar tamaño de pantalla
   useEffect(() => {
@@ -72,7 +69,7 @@ const GestionProfesionales = (profesionalVinculado) => {
 
   const refrescarListaProfesionales = () => {
     setRefreshProfesionales((prev) => prev + 1);
-  }
+  };
 
   const especialidades = [
     ...new Set(profesionales?.map((p) => p.especialidad) || []),
@@ -117,15 +114,14 @@ const GestionProfesionales = (profesionalVinculado) => {
         `${API_URL}/api/desvincularprofesional/${consultorioId}/${profesionalId}`
       );
 
-          refrescarListaProfesionales()
-
       toast.success("✅ Desvinculado con éxito");
 
-     
+      setTimeout(() => {
+        refrescarListaProfesionales();
+        setIsDeleting(false);
+      }, 1500);
     } catch {
       toast.error("❌ Error al desvincular profesional");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -174,7 +170,7 @@ const GestionProfesionales = (profesionalVinculado) => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4"
         onClick={() => navigate("/micuenta")}
       >
         <div
@@ -196,7 +192,6 @@ const GestionProfesionales = (profesionalVinculado) => {
                 aria-label="Cerrar"
               >
                 <FaTimes size={20} />
-               
               </button>
             </div>
             <p className="text-blue-100 mt-2 text-sm opacity-90">
@@ -335,13 +330,24 @@ const GestionProfesionales = (profesionalVinculado) => {
                           <FaRegEye className="w-4 h-4" /> Ver turnos
                         </button>
                         <div className="flex gap-2">
-                          <button className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
+                          {/* <button className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors">
                             <FaEdit className="w-4 h-4" />
-                          </button>
-                          <button 
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
-                          onClick={()=> handleDesvincularProfesional(profesional.id)}>
-                            <FaTrashAlt className="w-4 h-4" />
+                          </button> */}
+                          <button
+                            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={() =>
+                              handleDesvincularProfesional(profesional.id)
+                            }
+                          >
+                           {" "}
+                            {isDeleting ? (
+                              <span>
+                                <FaSpinner className="animate-spin w-4 h-4" />
+                              </span>
+                              
+                            ) : (
+                              <FaTrashAlt className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </div>
@@ -426,21 +432,27 @@ const GestionProfesionales = (profesionalVinculado) => {
                             >
                               <FaEdit className="w-4 h-4" />
                             </button> */}
-                           
-                           
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                            <button
-                              className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors"
-                              aria-label="Eliminar"
-                              onClick={() =>
-                                handleDesvincularProfesional(profesional.id)
-                              }
-                            >
+                          <button
+                            className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-colors"
+                            aria-label="Eliminar"
+                            onClick={() =>
+                              handleDesvincularProfesional(profesional.id)
+                            }
+                          >
+                            {" "}
+                            {isDeleting ? (
+                              <span>
+                                <FaSpinner className="animate-spin w-4 h-4" />
+                              </span>
+                              
+                            ) : (
                               <FaTrashAlt className="w-4 h-4" />
-                            </button>
-                            </td>
+                            )}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -468,11 +480,12 @@ const GestionProfesionales = (profesionalVinculado) => {
             <AsociarProfesionalAConsultorio
               consultorioID={consultorioId}
               onClose={() => setShowModalAsociarProfesional(false)}
-              idsProfesionalesVinculados = {idsProfesionalesVinculados}
+              idsProfesionalesVinculados={idsProfesionalesVinculados}
               refrescarListaProfesionales={refrescarListaProfesionales}
               profesionalVinculado={profesionalVinculado}
             />
           )}
+          <ToastContainer position="bottom-right" autoClose={1000} />
         </div>
       </div>
     </>

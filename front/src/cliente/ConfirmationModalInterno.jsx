@@ -79,14 +79,13 @@ const ConfirmationModalInterno = ({
 
       setTimeout(() => {
         navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
-      }, 1500);
+        setIsSubmitting(false);
+      }, 1500 );
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error al conectar con el servidor.";
       setSubmitError(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
   useEffect(() => {
     // Bloquea el scroll al montar

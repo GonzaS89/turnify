@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { FaTrashAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClose, actualizarTurnos, resetearFecha }) => {
@@ -24,11 +24,10 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
       });
 
       // Éxito
-      toast.info(
+      toast.warning(
         <div className="flex items-center gap-2 text-sm">
           <FaTrashAlt /> Borrando todos los turnos
-        </div>,
-        { autoClose: 1000 }
+        </div>
       );
 
       // Actualizar estados tras éxito
@@ -122,6 +121,7 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
             </button>
           </div>
         </div>
+        <ToastContainer position='bottom-right' autoClose={1000}/>
       </div>
     </>
   );

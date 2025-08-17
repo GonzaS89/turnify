@@ -83,26 +83,16 @@ const ConfirmationModal = ({
 
       setTimeout(() => {
         navigate('/');
+        setIsSubmitting(false);
       }, 2000);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error al conectar con el servidor.";
       setSubmitError(errorMessage);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    // Bloquea el scroll al montar
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    // Restaura el scroll al desmontar
-    return () => {
-      document.body.style.overflow = prevOverflow || 'auto';
-    };
-  }, []);
+  
 
   return (
     <>

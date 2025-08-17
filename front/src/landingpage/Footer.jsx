@@ -69,6 +69,12 @@ export const Footer = () => {
                   WhatsApp
                 </a>
               </li>
+              <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600 hover:text-indigo-600 transition-colors">
+                <FaInstagram className="text-pink-500" size={18} />
+                <a href="https://www.instagram.com/turnateweb/" target="_blank" rel="noopener noreferrer" className="text-sm">
+                  Instagram
+                </a>
+              </li>
               {/* <li className="flex items-center justify-center md:justify-start gap-3 text-gray-600 hover:text-indigo-600 transition-colors">
                 <FaInstagram className="text-purple-500" size={18} />
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-sm">

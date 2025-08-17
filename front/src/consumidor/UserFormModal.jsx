@@ -23,6 +23,7 @@ const UserFormModal = ({ onSubmit }) => {
   const [options, setOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [errorOptions, setErrorOptions] = useState(null);
+   const [isConfirm, setIsConfirm] = useState(false);
 
   // Cargar coberturas y resetear formulario
   useEffect(() => {
@@ -76,6 +77,7 @@ const UserFormModal = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsConfirm(true)
 
     if (formData.nombre.trim().length < 2) {
       toast.error('El nombre es demasiado corto.');
@@ -105,12 +107,13 @@ const UserFormModal = ({ onSubmit }) => {
     onSubmit(formData);
     setTimeout(() => {
       navigate(`/confirmacionturno/${consultorioId}/${profesionalId}`);
-    }, 800);
+      setIsConfirm(false)
+    }, 1000);
   };
 
   return (
 <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black bg-opacity-50 sm:p-4">
-<div className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg h-[100dvh] sm:max-h-[90vh] flex flex-col">
+<div className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg h-[100dvh] sm:max-h-[80vh] flex flex-col">
         
         {/* Encabezado con gradiente */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:rounded-t-2xl">
@@ -281,7 +284,16 @@ const UserFormModal = ({ onSubmit }) => {
             form="user-form"
             className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <FaCheck className="inline mr-2" /> Confirmar datos
+            {isConfirm ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                Enviando datos ...
+              </div>
+            ) : (
+              <span className="flex items-center justify-center">
+                <FaCheck className="inline mr-2" /> Confirmar datos
+              </span>
+            )}
           </button>
         </div>
       </div>

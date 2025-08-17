@@ -32,6 +32,7 @@ const AsociarProfesionalAConsultorio = ({
   const [selectedProfesional, setSelectedProfesional] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+  const [vinculando, setVinculando] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -41,6 +42,7 @@ const AsociarProfesionalAConsultorio = ({
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
+    setVinculando(true)
   
     if (!selectedProfesional) {
       setMensajeError("Debe seleccionar un profesional.");
@@ -67,16 +69,16 @@ const AsociarProfesionalAConsultorio = ({
       
       // Personalizar el toast según el caso
       if (backendMessage.includes("reactivado")) {
-        toast.info("✅ Profesional reactivado");
-      } else if (backendMessage.includes("ya estaba")) {
-        toast.warning("⚠️ Ya está asociado");
-      } else {
-        toast.success("✅ Vinculación exitosa");
+        toast.info("✅ Revinculando profesional");
+      } 
+      else {
+        toast.success("✅ Profesional vinculado con éxito");
       }
   
       // Refrescar lista tras breve espera
       setTimeout(() => {
         refrescarListaProfesionales();
+        setVinculando(false)
         // onClose(); // Opcional: cerrar modal
       }, 1500);
     } catch (err) {
@@ -229,7 +231,14 @@ const AsociarProfesionalAConsultorio = ({
                     disabled={!selectedProfesional || !!mensaje}
                     className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none"
                   >
-                    Vincular
+                    {vinculando ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                      Vinculando ...
+                    </div>
+                  ) : (
+                    "Vincular"
+                  )}
                   </button>
                 </div>
               </div>

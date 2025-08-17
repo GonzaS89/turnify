@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { FaTrashAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
@@ -20,11 +20,10 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
     try {
       const response = await axios.delete(`${API_URL}/api/borrarTurno/${idTurno}`);
 
-      toast.info(
+      toast.warning(
         <div className="flex items-center gap-2 text-sm">
           <FaTrashAlt /> Borrando turno
-        </div>,
-        { autoClose: 1000 }
+        </div>
       );
 
 
@@ -122,6 +121,7 @@ const BorrarTurno = ({ idTurno, onClose, actualizarTurnos }) => {
             </button>
           </div>
         </div>
+        <ToastContainer position='bottom-right' autoClose={1000}/>
       </div>
     </>
   );

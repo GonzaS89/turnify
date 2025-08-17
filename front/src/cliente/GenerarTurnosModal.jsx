@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -292,6 +292,7 @@ const GenerarTurnosModal = () => {
             </button>
           </div>
         </div>
+        <ToastContainer />
       </div>
     </>
   );

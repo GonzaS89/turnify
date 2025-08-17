@@ -12,13 +12,7 @@ const ConsultorioSettingsModal = ({ password }) => {
   const consultorio = consul?.[0]; // Accede al primer elemento seguro
 
   // Bloquear scroll al montar
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow || 'auto';
-    };
-  }, []);
+
 
   return (
     <>

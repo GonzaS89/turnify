@@ -108,13 +108,13 @@ const UserFormModalInterno = ({ onSubmit }) => {
     setTimeout(() => {
       navigate(`/micuenta/confirmacionturno/${consultorioId}/${profesionalId}`);
       setIsConfirm(false);
-    }, 500);
+    }, 1000);
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[300] sm:p-4 min-h-screen">
       <div
-        className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col h-[100dvh] sm:max-h-[90vh]"
+        className="bg-white sm:rounded-2xl shadow-2xl w-screen sm:max-w-lg flex flex-col h-[100dvh] sm:max-h-[80vh]"
 
       >
 

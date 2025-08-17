@@ -1,8 +1,8 @@
 // src/App.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import useProfesionalxId from "../customHooks/useProfesionalxId";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -51,6 +51,10 @@ import { useTheme } from "./ThemeContext"; // Ajusta la ruta según tu estructur
 
 const App = () => {
   const { darkMode, toggleDarkMode } = useTheme(); // ✅ Usamos el contexto
+
+   useEffect(() => {
+    toast.info("App cargada", { autoClose: 1000 });
+  }, []);
 
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [idProfesional, setIdProfesional] = useState(null);

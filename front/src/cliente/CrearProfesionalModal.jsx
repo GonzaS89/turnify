@@ -24,7 +24,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
   const [telefono, setTelefono] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
-  const [creando, setCreando] = useState(false)
+  const [creando, setCreando] = useState(false);
 
   const {
     especialidades,
@@ -38,7 +38,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
     e.preventDefault();
     setMensajeError(null);
     setMensaje(null);
-    setCreando(true)
+    setCreando(true);
 
     // Validaciones
     if (!nombre.trim()) return setMensajeError("El nombre es obligatorio.");
@@ -63,7 +63,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         titulo: titulo || "",
         matricula: matricula.trim(),
         telefono: telefonoLimpio,
-        consultorioID
+        consultorioID,
       };
 
       const response = await axios.post(
@@ -80,11 +80,12 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       setTitulo("");
       setTelefono("");
 
-      toast.success('✅ ¡Profesional creado y vinculado! Redirigiendo...')
+      toast.success("✅ ¡Profesional creado con éxito");
 
       setTimeout(() => {
-        onClose()
+        onClose();
         onCreate?.();
+        setCreando(false);
       }, 1500);
     } catch (err) {
       const errorMsg =
@@ -93,15 +94,13 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         "Error desconocido";
       setMensajeError(`❌ ${errorMsg}`);
       toast.error("Error al crear el profesional");
-    }finally{
-      setCreando(false)
     }
   };
 
   return (
-    <div 
-    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
-    onClick={onClose}
+    <div
+      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
     >
       {/* Modal responsivo */}
       <div
@@ -128,7 +127,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
               <FaUserMd className="text-2xl" />
               <h2 className="text-2xl font-bold">Crear Profesional</h2>
             </div>
-            
+
             <button
               onClick={onClose}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
@@ -166,7 +165,9 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
             {loading ? (
               <div className="py-10 text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
-                <p className="text-gray-500 text-sm">Cargando especialidades...</p>
+                <p className="text-gray-500 text-sm">
+                  Cargando especialidades...
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -222,7 +223,8 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                 {/* Especialidad */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaStethoscope className="text-purple-500" /> Especialidad Médica *
+                    <FaStethoscope className="text-purple-500" /> Especialidad
+                    Médica *
                   </label>
                   <select
                     value={especialidad}
@@ -256,7 +258,8 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                 {/* Teléfono */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaPhone className="text-green-500" /> Teléfono (10 dígitos) *
+                    <FaPhone className="text-green-500" /> Teléfono (10 dígitos)
+                    *
                   </label>
                   <input
                     type="tel"
@@ -296,16 +299,13 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     disabled={telefono.replace(/\D/g, "").length !== 10}
                   >
                     {creando ? (
-              <div className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Creando...</span>
-              </div>
-            ) : (
-              "Crea profesional"
-            )}
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                        <span>Creando ...</span>
+                      </div>
+                    ) : (
+                      "Crea profesional"
+                    )}
                   </button>
                 </div>
               </form>
@@ -314,7 +314,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         </div>
       </div>
 
-      <ToastContainer position="bottom-right" autoClose={500} />
+      <ToastContainer position="bottom-right" autoClose={1000} />
     </div>
   );
 };
