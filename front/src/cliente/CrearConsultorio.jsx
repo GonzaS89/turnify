@@ -96,7 +96,7 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
       return;
     }
 
-    if (tipo === "particular" && seña && (!importe || !banco || !cbu)) {
+    if (tipo === "Particular" && seña && (!importe || !banco || !cbu)) {
       setError("Si requiere seña, complete importe, banco y CBU/alias.");
       return;
     }
@@ -499,7 +499,7 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
           </section>
 
           {/* Sección: Seña (condicional) */}
-          {tipo === "particular" && (
+          {tipo === "Particular" && (
             <section>
               <div className="flex items-center mb-5">
                 <input
