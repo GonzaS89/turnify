@@ -1,46 +1,52 @@
-import { useState, useEffect } from 'react';
-import useCoberturaxIdConsultorio from '../../customHooks/useCoberturaxIdConsultorio';
-import useAllCoberturas from '../../customHooks/useAllCoberturas';
-import { FaSearch, FaPlusCircle, FaCheckCircle, FaTimesCircle, FaTimes } from "react-icons/fa";
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
+import useAllCoberturas from "../../customHooks/useAllCoberturas";
+import {
+  FaSearch,
+  FaPlusCircle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaTimes,
+} from "react-icons/fa";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const GestionCoberturas = () => {
   const { consultorioId } = useParams();
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isRemoving, setIsRemoving] = useState(null);
   const [isAdding, setIsAdding] = useState(null);
+  const [showModalAccion, setShowModalAccion] = useState(false);
 
   // Nuevo: estado para el modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [coberturaToDelete, setCoberturaToDelete] = useState(null);
 
-  const { coberturas: activeCoberturas, isLoading, error, refetch } = useCoberturaxIdConsultorio(consultorioId);
-  const { coberturas: allCoberturas, isLoading: isLoadingAll } = useAllCoberturas();
+  const {
+    coberturas: activeCoberturas,
+    isLoading,
+    error,
+    refetch,
+  } = useCoberturaxIdConsultorio(consultorioId);
+  const { coberturas: allCoberturas, isLoading: isLoadingAll } =
+    useAllCoberturas();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    // Bloquea el scroll al montar
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+  const activeCoverageIds = new Set(activeCoberturas?.map((c) => c.id) || []);
+  const filteredAllCoberturas =
+    allCoberturas?.filter(
+      (cobertura) =>
+        cobertura.siglas.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cobertura.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
-    // Restaura el scroll al desmontar
-    return () => {
-      document.body.style.overflow = prevOverflow || 'auto';
-    };
-  }, []);
-
-  const activeCoverageIds = new Set(activeCoberturas?.map(c => c.id) || []);
-  const filteredAllCoberturas = allCoberturas?.filter(cobertura =>
-    cobertura.siglas.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cobertura.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
-  const availableCoberturasToAdd = filteredAllCoberturas.filter(c => !activeCoverageIds.has(c.id));
+  const availableCoberturasToAdd = filteredAllCoberturas.filter(
+    (c) => !activeCoverageIds.has(c.id)
+  );
   const isLoadingState = isLoading || isLoadingAll;
 
   // --- Abrir modal de confirmación ---
@@ -57,23 +63,30 @@ const GestionCoberturas = () => {
     setIsRemoving(id);
 
     try {
-      await axios.delete(`${API_URL}/api/borrarCoberturaDeConsulotorio/${id}/${consultorioId}`);
-      refetch();
-      toast.success(
+      await axios.delete(
+        `${API_URL}/api/borrarCoberturaDeConsulotorio/${id}/${consultorioId}`
+      );
+
+      toast.warn(
         <div className="flex items-center gap-2 text-sm">
           <FaCheckCircle /> Cobertura {siglas} eliminada
         </div>,
-        { autoClose: 1500 }
+        { autoClose: 1000 }
       );
+
+      setTimeout(() => {
+        refetch();
+        setIsRemoving(false);
+        setShowConfirmModal(false);
+        setCoberturaToDelete(null);
+      }, 1500);
     } catch (err) {
-      console.error('Error al eliminar cobertura:', err);
+      console.error("Error al eliminar cobertura:", err);
       toast.error(
-        `❌ ${err.response?.data?.message || 'No se pudo eliminar la cobertura'}`
+        `❌ ${
+          err.response?.data?.message || "No se pudo eliminar la cobertura"
+        }`
       );
-    } finally {
-      setIsRemoving(false);
-      setShowConfirmModal(false);
-      setCoberturaToDelete(null);
     }
   };
 
@@ -86,32 +99,79 @@ const GestionCoberturas = () => {
   // --- Añadir cobertura ---
   const handleAddCobertura = async (coberturaId, siglas) => {
     setIsAdding(coberturaId);
+    setShowModalAccion(true);
     try {
-      await axios.post(`${API_URL}/api/agregarCoberturaAlConsultorio/${coberturaId}/${consultorioId}`);
-      refetch();
-      setSearchTerm('');
+      await axios.post(
+        `${API_URL}/api/agregarCoberturaAlConsultorio/${coberturaId}/${consultorioId}`
+      );
+
+      setSearchTerm("");
       toast.success(
         <div className="flex items-center gap-2 text-sm">
-          <FaCheckCircle /> Cobertura {siglas} añadida
+          <FaCheckCircle /> Añadiendo {siglas} ...
         </div>,
-        { autoClose: 1500 }
+        { autoClose: 1000 }
       );
+
+      setTimeout(() => {
+        refetch();
+        setIsAdding(false);
+        setShowModalAccion(false);
+      }, 1500);
     } catch (err) {
-      console.error('Error al añadir cobertura:', err);
+      console.error("Error al añadir cobertura:", err);
       toast.error(
-        `❌ ${err.response?.data?.message || 'No se pudo añadir la cobertura'}`
+        `❌ ${err.response?.data?.message || "No se pudo añadir la cobertura"}`
       );
-    } finally {
-      setIsAdding(false);
     }
   };
 
   return (
     <>
       {/* Overlay oscuro con blur */}
+
+      {showModalAccion && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 sm:p-6 lg:p-8 z-[200]">
+          {/* Overlay con opacidad y transición */}
+
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto transform transition-all duration-300 scale-100 hover:scale-105">
+            {/* Contenedor del modal con esquinas redondeadas y sombra profunda */}
+
+            {/* Encabezado con separador sutil */}
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h1 className="text-2xl font-semibold text-gray-800 text-center">
+                Añadiendo cobertura
+              </h1>
+            </div>
+
+            {/* Cuerpo del modal */}
+            <div className="p-6 text-center">
+              <div className="flex justify-center mb-4">
+                {/* Icono de carga o ilustración opcional */}
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Estamos procesando tu solicitud. Por favor, espera un momento.
+              </p>
+            </div>
+
+            {/* Opcional: Botones de acción */}
+            {/* 
+    <div className="flex gap-3 px-6 pb-6">
+      <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium">
+        Cancelar
+      </button>
+      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+        Confirmar
+      </button>
+    </div>
+    */}
+          </div>
+        </div>
+      )}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
-        onClick={() => navigate('/micuenta')}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4"
+        onClick={() => navigate("/micuenta")}
       >
         <div
           className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-[100dvh] xl:max-h-[90dvh] flex flex-col"
@@ -127,7 +187,7 @@ const GestionCoberturas = () => {
                 <h3 className="text-2xl font-bold">Gestionar Coberturas</h3>
               </div>
               <button
-                onClick={() => navigate('/micuenta')}
+                onClick={() => navigate("/micuenta")}
                 disabled={isLoadingState}
                 className="text-white hover:bg-white/20 rounded-full p-1 transition"
                 aria-label="Cerrar"
@@ -145,12 +205,19 @@ const GestionCoberturas = () => {
             {isLoadingState ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                <p className="text-gray-600 font-medium">Cargando coberturas...</p>
+                <p className="text-gray-600 font-medium">
+                  Cargando coberturas...
+                </p>
               </div>
             ) : error ? (
               <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-center">
-                <FaTimesCircle className="text-red-500 mx-auto mb-3" size={24} />
-                <p className="text-red-700 font-medium">Error al cargar datos</p>
+                <FaTimesCircle
+                  className="text-red-500 mx-auto mb-3"
+                  size={24}
+                />
+                <p className="text-red-700 font-medium">
+                  Error al cargar datos
+                </p>
                 <p className="text-red-600 text-sm mt-1">{error.message}</p>
               </div>
             ) : (
@@ -158,7 +225,8 @@ const GestionCoberturas = () => {
                 {/* Coberturas Activas */}
                 <section>
                   <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <FaCheckCircle className="text-green-500" /> Coberturas Activas
+                    <FaCheckCircle className="text-green-500" /> Coberturas
+                    Activas
                   </h4>
 
                   {activeCoberturas && activeCoberturas.length > 0 ? (
@@ -172,7 +240,12 @@ const GestionCoberturas = () => {
                             {cobertura.siglas}
                           </span>
                           <button
-                            onClick={() => handleOpenConfirmModal(cobertura.id, cobertura.siglas)}
+                            onClick={() =>
+                              handleOpenConfirmModal(
+                                cobertura.id,
+                                cobertura.siglas
+                              )
+                            }
                             disabled={isRemoving === cobertura.id}
                             className="text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-1 transition disabled:opacity-50"
                           >
@@ -187,7 +260,9 @@ const GestionCoberturas = () => {
                     </div>
                   ) : (
                     <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
-                      <p className="text-gray-500 text-sm">No hay coberturas activas en este consultorio.</p>
+                      <p className="text-gray-500 text-sm">
+                        No hay coberturas activas en este consultorio.
+                      </p>
                     </div>
                   )}
                 </section>
@@ -195,9 +270,12 @@ const GestionCoberturas = () => {
                 {/* Añadir Cobertura */}
                 <section>
                   <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <FaPlusCircle className="text-blue-500" /> Añadir Nueva Cobertura
+                    <FaPlusCircle className="text-blue-500" /> Añadir Nueva
+                    Cobertura
                   </h4>
-                  <p className="text-gray-600 text-sm mb-4">Busca una cobertura para agregarla a tu lista.</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Busca una cobertura para agregarla a tu lista.
+                  </p>
 
                   <div className="flex flex-col lg:flex-row gap-4">
                     <div className="relative flex-1">
@@ -222,11 +300,20 @@ const GestionCoberturas = () => {
                               className="flex items-center justify-between p-4 hover:bg-gray-100 transition"
                             >
                               <div>
-                                <p className="font-semibold text-gray-800">{cobertura.siglas}</p>
-                                <p className="text-xs text-gray-500">{cobertura.nombre}</p>
+                                <p className="font-semibold text-gray-800">
+                                  {cobertura.siglas}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {cobertura.nombre}
+                                </p>
                               </div>
                               <button
-                                onClick={() => handleAddCobertura(cobertura.id, cobertura.siglas)}
+                                onClick={() =>
+                                  handleAddCobertura(
+                                    cobertura.id,
+                                    cobertura.siglas
+                                  )
+                                }
                                 disabled={isAdding === cobertura.id}
                                 className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm px-4 py-2 rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition flex items-center gap-1"
                               >
@@ -265,7 +352,7 @@ const GestionCoberturas = () => {
           {/* Footer */}
           <div className="flex justify-end gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
             <button
-              onClick={() => navigate('/micuenta')}
+              onClick={() => navigate("/micuenta")}
               disabled={isLoadingState}
               className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
             >
@@ -303,9 +390,9 @@ const GestionCoberturas = () => {
             {/* Cuerpo */}
             <div className="p-6 space-y-6">
               <p className="text-gray-700 text-sm leading-relaxed">
-                ¿Estás seguro de que deseas eliminar la cobertura <strong>{coberturaToDelete?.siglas}</strong> del consultorio?
+                ¿Estás seguro de que deseas eliminar la cobertura{" "}
+                <strong>{coberturaToDelete?.siglas}</strong> del consultorio?
               </p>
-             
             </div>
 
             {/* Footer */}

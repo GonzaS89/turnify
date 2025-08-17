@@ -89,16 +89,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
-
-    <ToastContainer 
-    
-    hideProgressBar={false}
-    newestOnTop={false}
-    closeOnClick
-    rtl={false}
-    pauseOnFocusLoss
-    draggable
-    />
+     
       <div className="flex flex-col min-h-screen 
                      bg-gradient-to-r from-cyan-200 to-violet-200
                      dark:from-gray-900 dark:to-gray-800
@@ -137,18 +128,7 @@ const App = () => {
           </div>
         )}
 
-          <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+         
 
 
 
@@ -176,6 +156,20 @@ const App = () => {
           </Routes>
         </main>
       </div>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+         key="app-toast"
+        style={{zIndex: 999999}}
+      />
     </BrowserRouter>
   );
 };

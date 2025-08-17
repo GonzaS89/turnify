@@ -2,23 +2,19 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [duracionTurno, setDuracionTurno] = useState(30);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generando, setGenerando] = useState(false);
 
   const navigate = useNavigate();
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  // Previene scroll del fondo
-  document.body.style.overflow = 'hidden';
 
   // Calcular cantidad de turnos
   const calculatedTurns = useMemo(() => {
@@ -72,7 +68,7 @@ const GenerarTurnosModal = () => {
     if (duracionTurno < 5) return toast.error("La duración mínima es 5 minutos.");
     if (calculatedTurns <= 0) return toast.warn("No se pueden generar turnos con estos parámetros.");
 
-    setIsSubmitting(true);
+    setGenerando(true);
 
     try {
       const response = await fetch(`${API_URL}/api/habilitarturnos`, {
@@ -96,6 +92,9 @@ const GenerarTurnosModal = () => {
       const result = await response.json();
 
       // Éxito
+     
+     
+
       toast.success(
         <div className="text-sm">
           ✅ <strong>{calculatedTurns} turnos</strong> generados para el{' '}
@@ -103,20 +102,19 @@ const GenerarTurnosModal = () => {
           <strong>{startTime}</strong> a <strong>{endTime}</strong>, cada{' '}
           <strong>{duracionTurno} min</strong>.
         </div>,
-        { autoClose: 1000 }
+        { autoClose: 1000, position:"bottom-right" }
       );
 
       // Redirigir tras éxito
       setTimeout(() => {
         navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
+        
       }, 1500);
 
     } catch (err) {
       toast.error(`❌ Error: ${err.message}`);
       console.error('Error al habilitar turnos:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
 
   // Formato de fecha legible
@@ -133,7 +131,7 @@ const GenerarTurnosModal = () => {
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
+        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
         onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
       >
         <div
@@ -276,17 +274,17 @@ const GenerarTurnosModal = () => {
             <button
               type="button"
               onClick={handleEnableTurns}
-              disabled={isSubmitting || calculatedTurns <= 0}
+              disabled={generando || calculatedTurns <= 0}
               className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
-                isSubmitting || calculatedTurns <= 0
+                generando || calculatedTurns <= 0
                   ? 'bg-gray-400'
                   : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg'
               }`}
             >
-              {isSubmitting ? (
+              {generando ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                  Creando...
+                  Habilitando ...
                 </div>
               ) : (
                 `Habilitar ${calculatedTurns} turno${calculatedTurns !== 1 ? 's' : ''}`
@@ -295,9 +293,6 @@ const GenerarTurnosModal = () => {
           </div>
         </div>
       </div>
-
-    
-
     </>
   );
 };
