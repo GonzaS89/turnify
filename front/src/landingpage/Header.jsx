@@ -37,7 +37,7 @@ export const Header = ({ openLogin }) => {
 
         {/* Navegación Desktop */}
         <nav className="hidden md:flex items-center space-x-8">
-          <ul className="flex items-center gap-3 lg:gap-10">
+          <ul className="flex items-center gap-3 md:gap-4 xl:gap-10">
             {[
               { to: 'hero-section', label: 'Inicio', offset: -150 },
               { to: 'info', label: '¿Como funciona?', offset: -150 },
@@ -52,7 +52,7 @@ export const Header = ({ openLogin }) => {
                   smooth
                   duration={800}
                   offset={item.offset}
-                  className="text-gray-700 hover:text-indigo-600 sm:text-sm lg:text-base font-medium cursor-pointer transition-colors duration-200 relative group"
+                  className="text-gray-700 hover:text-indigo-600 sm:text-sm xl:text-base font-medium cursor-pointer transition-colors duration-200 relative group"
                   aria-label={`Ir a ${item.label}`}
                 >
                   {item.label}
@@ -69,7 +69,7 @@ export const Header = ({ openLogin }) => {
               openLogin(true);
               closeMobileMenu();
             }}
-            className="text-xs sm:text-sm lg:text-base px-4 py-1 md:px-6 md:py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
+            className="text-xs sm:text-sm xl:text-base px-4 py-1 md:px-6 md:py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
             aria-label="Abrir formulario de inicio de sesión"
           >
             Acceso para afiliados
