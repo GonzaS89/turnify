@@ -65,7 +65,7 @@ const DualYouTubeSection = () => {
         <motion.h2
                   id="video-title"
                   variants={itemVariants}
-                  className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 text-center mb-6 leading-tight"
+                  className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-bold text-gray-900 text-center mb-6 leading-tight"
                 >
                   Conocé en acción cómo funciona{" "}
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -75,7 +75,7 @@ const DualYouTubeSection = () => {
 
         <motion.p
           variants={itemVariants}
-          className="text-lg text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
+          className="text-lg xl:text-xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
         >
           Elegí el camino que mejor se adapta a tu modelo: desde el consultorio
           individual hasta el centro médico con múltiples especialistas. Te
