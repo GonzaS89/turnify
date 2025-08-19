@@ -6,10 +6,13 @@ import Hero from "./Hero";
 import Steps from "./Steps";
 import Benefits from "./Benefits";
 import FAQS from "./FAQS";
+import VideoSection from './VideoSection';
+import YouTubeEmbed from "./YoutubeEmbed";
 // import Testimonials from "./Testimonials";
 import { Header } from "./Header";
 
 import {Footer} from './Footer'
+
 
 // CARGA DE LAYOUTS
 
@@ -120,6 +123,7 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-500 border-t-2" />
       <Benefits />
       <hr className="my-16 border-gray-500 border-t-2" />
+      <YouTubeEmbed />
       {/* <Testimonials />
       <hr className="my-16 border-gray-200 border-t-2" /> */}
       <FAQS />
