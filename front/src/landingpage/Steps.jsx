@@ -29,7 +29,7 @@ const Steps = () => {
     {
       titulo: "3. Confirma tu reserva",
       contenido:
-        "Completa tus datos personales y recibe la confirmación de tu turno al instante por y WhatsApp.",
+        "Completa tus datos personales y recibe la confirmación de tu turno al instante por WhatsApp.",
       icon: "✅",
       color: "from-green-500 to-teal-500",
     },
