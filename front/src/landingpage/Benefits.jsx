@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import {
   FcCalendar,
   FcSmartphoneTablet,
-  FcBullish,
+  FcOvertime,
   FcSms,
   FcLeave,
 } from "react-icons/fc";
@@ -152,11 +152,11 @@ const Benefits = () => {
             titulo="Gestión 24/7"
             contenido="Agenda online siempre activa. Reduce carga administrativa y mantén tu calendario perfectamente organizado."
           />
-          <Benefit
-            icono={<FcBullish />}
-            titulo="Más Pacientes"
-            contenido="Aparece en nuestro directorio médico y llega a miles de pacientes en busca de especialistas como vos."
-          />
+        <Benefit
+  icono={<FcOvertime />}
+  titulo="Gestioná desde cualquier lugar"
+  contenido="Accedé a tu agenda médica desde tu celular, tablet o computadora. Tu consultorio siempre disponible, las 24 horas."
+/>
           <Benefit
             icono={<FcSms />}
             titulo="Recordatorios Smart"
