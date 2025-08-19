@@ -37,6 +37,7 @@ const DualYouTubeSection = () => {
     <section
       className="py-16 md:py-24 px-6 sm:px-8 lg:px-12 relative max-w-7xl mx-auto"
       aria-labelledby="dual-video-title"
+      id="videos"
     >
       {/* Fondos decorativos sutiles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -53,29 +54,39 @@ const DualYouTubeSection = () => {
       >
         {/* Badge diferenciada */}
         <motion.div
-          variants={itemVariants}
-          className="flex justify-center mb-6"
-        >
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-white/80 backdrop-blur-md text-indigo-700 rounded-full border border-indigo-200 shadow-md">
-            🎥 Videos explicativos
-          </span>
-        </motion.div>
+  variants={itemVariants}
+  className="flex justify-center mb-6"
+>
+  <div className="inline-flex justify-center items-center gap-3 px-6 py-3 backdrop-blur-md 
+    border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider 
+    rounded-full shadow-md bg-white/70"
+  >
+    {/* Punto animado */}
+    <span className="relative flex h-2.5 w-2.5">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+    </span>
+    
+    {/* Texto */}
+    <span>Videos explicativos</span>
+  </div>
+</motion.div>
 
         {/* Título principal */}
         <motion.h2
-                  id="video-title"
-                  variants={itemVariants}
-                  className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-bold text-gray-900 text-center mb-6 leading-tight"
-                >
-                  Conocé en acción cómo funciona{" "}
-                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Turnate
-                  </span>
-                </motion.h2>
+          id="video-title"
+          variants={itemVariants}
+          className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 text-center mb-6 leading-tight"
+        >
+          Conocé en acción cómo funciona{" "}
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Turnate
+          </span>
+        </motion.h2>
 
         <motion.p
           variants={itemVariants}
-          className="text-lg xl:text-xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
+          className="text-lg md:text-base xl:text-xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
         >
           Elegí el camino que mejor se adapta a tu modelo: desde el consultorio
           individual hasta el centro médico con múltiples especialistas. Te
@@ -139,8 +150,8 @@ const DualYouTubeSection = () => {
               </h3>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
                 Gestioná múltiples profesionales, especialidades y turnos
-                simultáneos. Con panel administrativo y sincronización
-                en tiempo real.
+                simultáneos. Con panel administrativo y sincronización en tiempo
+                real.
               </p>
             </div>
           </div>

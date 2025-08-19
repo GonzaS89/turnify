@@ -37,12 +37,14 @@ export const Header = ({ openLogin }) => {
 
         {/* Navegación Desktop */}
         <nav className="hidden md:flex items-center space-x-8">
-          <ul className="flex space-x-8">
+          <ul className="flex items-center gap-3 lg:gap-10">
             {[
               { to: 'hero-section', label: 'Inicio', offset: -150 },
-              { to: 'info', label: 'Info', offset: -150 },
+              { to: 'info', label: '¿Como funciona?', offset: -150 },
               { to: 'beneficios', label: 'Beneficios', offset: -150 },
+                 { to: 'videos', label: 'Videos', offset: -150 },
               { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150 },
+            
             ].map((item) => (
               <li key={item.to}>
                 <Link
@@ -50,7 +52,7 @@ export const Header = ({ openLogin }) => {
                   smooth
                   duration={800}
                   offset={item.offset}
-                  className="text-gray-700 hover:text-indigo-600 font-medium cursor-pointer transition-colors duration-200 relative group"
+                  className="text-gray-700 hover:text-indigo-600 sm:text-sm lg:text-base font-medium cursor-pointer transition-colors duration-200 relative group"
                   aria-label={`Ir a ${item.label}`}
                 >
                   {item.label}
@@ -67,7 +69,7 @@ export const Header = ({ openLogin }) => {
               openLogin(true);
               closeMobileMenu();
             }}
-            className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
+            className="text-xs sm:text-sm lg:text-base px-4 py-1 md:px-6 md:py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
             aria-label="Abrir formulario de inicio de sesión"
           >
             Acceso para afiliados
@@ -124,9 +126,11 @@ export const Header = ({ openLogin }) => {
             <ul className="space-y-4">
               {[
                 { to: 'hero-section', label: 'Inicio', offset: -150, emoji: '🏡' },
-                { to: 'info', label: 'Info', offset: -150, emoji: 'ℹ️' },
-                { to: 'beneficios', label: 'Beneficios', offset: -150, emoji: '✨' },
+                { to: 'info', label: 'Como funciona', offset: -150, emoji: 'ℹ️' },
+                { to: 'beneficios', label: 'Beneficios de afiliarte', offset: -150, emoji: '✨' },
+                 { to: 'videos', label: 'Videos explicativos', offset: -150, emoji: '🎥' },
                 { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150, emoji: '❓' },
+                
               ].map((item) => (
                 <li key={item.to}>
                   <Link
