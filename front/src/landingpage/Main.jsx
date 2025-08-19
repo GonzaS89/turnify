@@ -8,6 +8,7 @@ import Benefits from "./Benefits";
 import FAQS from "./FAQS";
 import VideoSection from './VideoSection';
 import YouTubeEmbed from "./YoutubeEmbed";
+import DualYouTubeSection from "./DualYoutubeSection";
 // import Testimonials from "./Testimonials";
 import { Header } from "./Header";
 
@@ -123,7 +124,11 @@ const Main = ({ openLogin }) => {
       <hr className="my-16 border-gray-500 border-t-2" />
       <Benefits />
       <hr className="my-16 border-gray-500 border-t-2" />
-      <YouTubeEmbed />
+      {/* <YouTubeEmbed /> */}
+      <DualYouTubeSection />
+
+            <hr className="my-16 border-gray-500 border-t-2" />
+
       {/* <Testimonials />
       <hr className="my-16 border-gray-200 border-t-2" /> */}
       <FAQS />

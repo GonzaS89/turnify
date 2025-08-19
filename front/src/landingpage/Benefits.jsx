@@ -160,7 +160,7 @@ const Benefits = () => {
           <Benefit
             icono={<FcSms />}
             titulo="Recordatorios Smart"
-            contenido="Envía notificaciones automáticas por WhatsApp y email para reducir ausencias y mejorar la comunicación."
+            contenido="Envía notificaciones automáticas por WhatsApp para reducir ausencias y mejorar la comunicación."
           />
           <Benefit
             icono={<FcSmartphoneTablet />}

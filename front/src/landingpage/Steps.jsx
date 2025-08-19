@@ -15,7 +15,7 @@ const Steps = () => {
     {
       titulo: "1. Busca a tu médico",
       contenido:
-        "Usa nuestro buscador inteligente para filtrar por especialidad, nombre o fecha y encuentra al profesional de la salud ideal.",
+        "Usa nuestro buscador inteligente para filtrar por especialidad, nombre y encuentra al profesional de la salud ideal.",
       icon: "🔍",
       color: "from-blue-500 to-blue-600",
     },
