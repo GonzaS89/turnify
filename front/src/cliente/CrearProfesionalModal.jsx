@@ -51,10 +51,12 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID, consultorio }
     if (!apellido.trim()) return setMensajeError("El apellido es obligatorio.");
     if (!especialidad)
       return setMensajeError("Debe seleccionar una especialidad.");
-    if (!matricula.trim())
-      return setMensajeError("La matrícula es obligatoria.");
-    if (matricula.trim().length < 3)
-      return setMensajeError("La matrícula debe tener al menos 3 caracteres.");
+      if (!matricula.trim()) {
+        return setMensajeError("La matrícula es obligatoria.");
+      }
+      if (matricula.trim().length < 4 || matricula.trim().length > 5) {
+        return setMensajeError("La matrícula debe tener entre 4 y 5 dígitos.");
+      }
 
     const telefonoLimpio = telefono.replace(/\D/g, "");
     if (telefonoLimpio.length !== 10) {
@@ -247,17 +249,32 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID, consultorio }
                 {/* Matrícula */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaIdCard className="text-green-500" /> Matrícula *
+                    <FaIdCard className="text-green-500" /> Matrícula (4-5 dígitos) *
                   </label>
                   <input
-                    type="number"
+                    type="text" // Usamos "text" para evitar flechas en algunos navegadores, pero solo dejamos números
+                    inputMode="numeric"
                     value={matricula}
-                    onChange={(e) => setMatricula(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
-                    placeholder="12345"
-                    maxLength="5
-                    "
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Solo permite números y máximo 5 caracteres
+                      if (/^\d{0,5}$/.test(value)) {
+                        setMatricula(value);
+                      }
+                    }}
+                    placeholder="1234"
+                    maxLength="5"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
+      ${matricula && (matricula.length < 4 || matricula.length > 5)
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-green-500"
+                      }`}
                   />
+                  {matricula && matricula.length > 0 && (matricula.length < 4 || matricula.length > 5) && (
+                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                      <FaExclamationCircle /> La matrícula debe tener entre 4 y 5 dígitos
+                    </p>
+                  )}
                 </div>
 
                 {/* Teléfono */}
@@ -276,10 +293,9 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID, consultorio }
                     placeholder="3816969546"
                     maxLength="10"
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
-                      ${
-                        telefono && telefono.replace(/\D/g, "").length !== 10
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-blue-500"
+                      ${telefono && telefono.replace(/\D/g, "").length !== 10
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
                       }`}
                   />
                   {telefono && telefono.replace(/\D/g, "").length !== 10 && (
