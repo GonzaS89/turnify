@@ -60,7 +60,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
 
   const tapButtonConsultorio = (consultorio) => {
     if (!consultorio?.id) return;
-    navigate(`/seleccionfecha/${consultorio.id}/${profesionalId}`);
+    navigate(`/elegirturno/${consultorio.id}/${profesionalId}`);
   };
 
   return (

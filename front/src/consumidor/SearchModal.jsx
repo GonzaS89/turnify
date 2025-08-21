@@ -244,7 +244,7 @@ const SearchModal = ({ enviarIds }) => {
                             </div>
                           </div>
                           <div className="p-4 bg-gray-50 rounded-b-3xl border-t border-gray-100">
-                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} />
+                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} nombreProfesional={`${doctor?.nombre}-${doctor?.apellido}`}/>
                           </div>
                         </div>
                       );
