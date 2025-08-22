@@ -1289,138 +1289,138 @@ function formatearTitulo(titulo) {
   }
 }
 
-// cron.schedule('* * * * *', async () => {
-//   console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');
+cron.schedule('* * * * *', async () => {
+  console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');
 
-//   const ahora = dayjs();
+  const ahora = dayjs();
 
-//   try {
-//     const [rows] = await pool.execute(`
-//       SELECT 
-//         t.id, 
-//         t.DNI,
-//         t.telefono,
-//         t.nombre_paciente, 
-//         t.apellido_paciente, 
-//         t.telefono, 
-//         DATE_FORMAT(t.fecha, '%Y-%m-%d') AS fecha, 
-//         t.hora,
-//         t.notificacion_5h_enviada,
-//         p.nombre AS nombre_profesional,
-//         p.apellido AS apellido_profesional,
-//         p.titulo,
-//         c.direccion,
-//         c.telefono AS telConsultorio,
-//         l.nombre AS localidad
-//       FROM turnos t
-//       JOIN profesionales p ON t.profesional_id = p.id
-//       JOIN consultorios c ON t.consultorio_id = c.id
-//       JOIN localidades l ON c.localidad = l.id
-//       WHERE t.estado = 'reservado' 
-//       AND t.notificacion_5h_enviada = 0
-//     `);
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        t.id, 
+        t.DNI,
+        t.telefono,
+        t.nombre_paciente, 
+        t.apellido_paciente, 
+        t.telefono, 
+        DATE_FORMAT(t.fecha, '%Y-%m-%d') AS fecha, 
+        t.hora,
+        t.notificacion_5h_enviada,
+        p.nombre AS nombre_profesional,
+        p.apellido AS apellido_profesional,
+        p.titulo,
+        c.direccion,
+        c.telefono AS telConsultorio,
+        l.nombre AS localidad
+      FROM turnos t
+      JOIN profesionales p ON t.profesional_id = p.id
+      JOIN consultorios c ON t.consultorio_id = c.id
+      JOIN localidades l ON c.localidad = l.id
+      WHERE t.estado = 'reservado' 
+      AND t.notificacion_5h_enviada = 0
+    `);
 
-//     if (rows.length === 0) {
-//       console.log('📭 No hay turnos pendientes para notificar.');
-//       return;
-//     }
+    if (rows.length === 0) {
+      console.log('📭 No hay turnos pendientes para notificar.');
+      return;
+    }
 
-//     console.log(`✅ ${rows.length} turnos encontrados.`);
+    console.log(`✅ ${rows.length} turnos encontrados.`);
 
-//     for (const turno of rows) {
-//       // Fecha y hora del turno en zona horaria local
-//       const fechaHoraTurno = dayjs.tz(
-//         `${turno.fecha} ${turno.hora}`,
-//         'YYYY-MM-DD HH:mm:ss',
-//         'America/Argentina/Buenos_Aires'
-//       );
+    for (const turno of rows) {
+      // Fecha y hora del turno en zona horaria local
+      const fechaHoraTurno = dayjs.tz(
+        `${turno.fecha} ${turno.hora}`,
+        'YYYY-MM-DD HH:mm:ss',
+        'America/Argentina/Buenos_Aires'
+      );
 
-//       if (!fechaHoraTurno.isValid()) {
-//         console.warn(`⚠️ Fecha inválida para turno ID ${turno.id}`);
-//         continue;
-//       }
+      if (!fechaHoraTurno.isValid()) {
+        console.warn(`⚠️ Fecha inválida para turno ID ${turno.id}`);
+        continue;
+      }
 
-//       // Diferencia en minutos
-//       const diffMinutos = fechaHoraTurno.diff(ahora, 'minute');
-//       const diffHoras = diffMinutos / 60;
+      // Diferencia en minutos
+      const diffMinutos = fechaHoraTurno.diff(ahora, 'minute');
+      const diffHoras = diffMinutos / 60;
 
-//       console.log(`📋 Turno: ${turno.nombre_paciente} | Faltan ${diffMinutos} min`);
+      console.log(`📋 Turno: ${turno.nombre_paciente} | Faltan ${diffMinutos} min`);
 
-//       // Si ya pasó el turno
-//       if (diffMinutos < 0) {
-//         console.log(`⚠️ Turno ID ${turno.id} ya pasó. Saltando...`);
-//         continue;
-//       }
+      // Si ya pasó el turno
+      if (diffMinutos < 0) {
+        console.log(`⚠️ Turno ID ${turno.id} ya pasó. Saltando...`);
+        continue;
+      }
 
-//       // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
-//       if (diffHoras <= 5) {
-//         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
+      // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
+      if (diffHoras <= 5) {
+        console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
-//         // Formatear hora: HH:mm (sin segundos)
-//         const [horas, minutos] = turno.hora.split(':');
-//         const horaFormateada = `${horas}:${minutos}`;
+        // Formatear hora: HH:mm (sin segundos)
+        const [horas, minutos] = turno.hora.split(':');
+        const horaFormateada = `${horas}:${minutos}`;
 
-//         // Formatear título
-//         const { pronombre, tituloAbrev } = formatearTitulo(turno.titulo);
+        // Formatear título
+        const { pronombre, tituloAbrev } = formatearTitulo(turno.titulo);
 
-//         // Generar mensaje
-//         const mensaje = `
-//   👋 ¡Hola ${turno.nombre_paciente}!
+        // Generar mensaje
+        const mensaje = `
+  👋 ¡Hola ${turno.nombre_paciente}!
 
-//   🆔 DNI: ${turno.DNI}
-//   📱 Teléfono: ${turno.telefono}
+  🆔 DNI: ${turno.DNI}
+  📱 Teléfono: ${turno.telefono}
 
-//   Este es un recordatorio de tu turno con ${pronombre} ${tituloAbrev.toUpperCase()} ${turno.nombre_profesional.toUpperCase()} ${turno.apellido_profesional.toUpperCase()}.
+  Este es un recordatorio de tu turno con ${pronombre} ${tituloAbrev.toUpperCase()} ${turno.nombre_profesional.toUpperCase()} ${turno.apellido_profesional.toUpperCase()}.
 
-//   📅 Hoy a las ${horaFormateada}  
-//   📍 ${turno.direccion.toUpperCase()}, ${turno.localidad.toUpperCase()}
+  📅 Hoy a las ${horaFormateada}  
+  📍 ${turno.direccion.toUpperCase()}, ${turno.localidad.toUpperCase()}
 
-//   ⏰ Te pedimos llegar con 10 minutos de anticipación.
+  ⏰ Te pedimos llegar con 10 minutos de anticipación.
 
-//   ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${turno.telConsultorio} lo antes posible.
+  ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${turno.telConsultorio} lo antes posible.
 
-//   🙏 ¡Gracias por tu confianza!
+  🙏 ¡Gracias por tu confianza!
 
-//   Te esperamos 🩺✨
-// `
-//   .split('\n')           // Divide en líneas
-//   .map(linea => linea.trim())  // ✅ Elimina espacios SOLO al inicio y final de cada línea
-//   .filter(linea => linea !== '') // Mantiene líneas vacías intencionales como separadores
-//   .join('\n'); // Vuelve a unirlas con saltos de línea
+  Te esperamos 🩺✨
+`
+  .split('\n')           // Divide en líneas
+  .map(linea => linea.trim())  // ✅ Elimina espacios SOLO al inicio y final de cada línea
+  .filter(linea => linea !== '') // Mantiene líneas vacías intencionales como separadores
+  .join('\n'); // Vuelve a unirlas con saltos de línea
 
 
-//         console.log(mensaje)
+        console.log(mensaje)
 
-//         try {
-//           // ✅ Enviar WhatsApp con Twilio
-//           await client.messages.create({
-//             from: twilioWhatsApp, // Ej: +14155238886
-//             to: `whatsapp:+5493815588504`, // Asegúrate que esté en formato internacional +549...
-//             body: mensaje
-//           });
+        try {
+          // ✅ Enviar WhatsApp con Twilio
+          await client.messages.create({
+            from: twilioWhatsApp, // Ej: +14155238886
+            to: `whatsapp:+5493815588504`, // Asegúrate que esté en formato internacional +549...
+            body: mensaje
+          });
 
-//           console.log(`✅ Mensaje enviado a ${turno.telefono} para el turno ID ${turno.id}`);
+          console.log(`✅ Mensaje enviado a ${turno.telefono} para el turno ID ${turno.id}`);
 
-//           // ✅ Marcar como notificado
-//           await pool.execute(
-//             'UPDATE turnos SET notificacion_5h_enviada = ? WHERE id = ?',
-//             [TRUE, turno.id]
-//           );
+          // ✅ Marcar como notificado
+          await pool.execute(
+            'UPDATE turnos SET notificacion_5h_enviada = ? WHERE id = ?',
+            [TRUE, turno.id]
+          );
 
-//           console.log(`📌 Turno ID ${turno.id} marcado como notificado.`);
+          console.log(`📌 Turno ID ${turno.id} marcado como notificado.`);
 
-//         } catch (error) {
-//           console.error(`❌ Error al enviar mensaje al turno ID ${turno.id}:`, error.message);
-//           // No actualizamos el estado si falló el envío, para reintentar luego
-//         }
-//       } else {
-//         console.log(`⏳ Faltan ${Math.floor(diffHoras)}h ${Math.round(diffMinutos % 60)}m - Aún no es momento.`);
-//       }
-//     }
-//   } catch (error) {
-//     console.error('❌ Error en el cron de notificaciones:', error.message);
-//   }
-// });
+        } catch (error) {
+          console.error(`❌ Error al enviar mensaje al turno ID ${turno.id}:`, error.message);
+          // No actualizamos el estado si falló el envío, para reintentar luego
+        }
+      } else {
+        console.log(`⏳ Faltan ${Math.floor(diffHoras)}h ${Math.round(diffMinutos % 60)}m - Aún no es momento.`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error en el cron de notificaciones:', error.message);
+  }
+});
 
 
 
