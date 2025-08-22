@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
+import cron from 'node-cron'
 
 dotenv.config();
 
@@ -1262,6 +1263,58 @@ app.put("/api/desvincularprofesional/:consultorioId/:profesionalId", async(req, 
     res.status(500).json({message: "Error interno al no desvincular profesional"})
   }
 })
+
+cron.schedule('* * * * *', async () => {
+  console.log('🔍 Buscando turnos que ocurran en 8 horas...');
+
+  const ahora = new Date();
+  const en8horas = new Date(ahora.getTime() + 8 * 60 * 60 * 1000); // +8h
+  const en7horas = new Date(ahora.getTime() + 7 * 60 * 60 * 1000); // +7h (para margen)
+
+  try {
+    // Formatear fechas para SQL (YYYY-MM-DD HH:MM:SS)
+    const formatoSQL = (date) =>
+      date.toISOString().slice(0, 19).replace('T', ' ');
+
+    const formatoFecha = (date) =>
+      date.toISOString().slice(0, 10); // YYYY-MM-DD (para comparar)
+
+    const desde = formatoSQL(en7horas);
+    const hasta = formatoSQL(en8horas);
+    const hoy = formatoFecha(ahora);
+
+    console.log("📅 Hoy:", hoy);
+
+    // Consulta a MySQL
+    const [rows] = await pool.execute(
+      `SELECT 
+        id, nombre_paciente, apellido_paciente, DNI, telefono, 
+        DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha, 
+        hora 
+      FROM turnos 
+      WHERE estado = 'reservado'`
+    );
+
+    const [profesional] = await pool.execute(
+      `SELECT id,nombre, apellido FROM profesionales WHERE id = ?`,[rows.id])
+
+
+
+
+    console.log(rows);
+
+    // Comparar fecha de DB con fecha de hoy
+    rows.forEach((turno) => {
+      if (turno.fecha === hoy) {
+        console.log(`✅ El turno con ID ${turno.id} es de HOY (${turno.fecha})`);
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al consultar la base de datos:', error.message);
+  }
+});
+
 
 
 
