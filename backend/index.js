@@ -8,7 +8,14 @@ import jwt from 'jsonwebtoken';
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
-import cron from 'node-cron'
+import cron from 'node-cron';
+import dayjs from "dayjs";
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('America/Argentina/Buenos_Aires');
 
 dotenv.config();
 
@@ -17,7 +24,9 @@ const PORT = process.env.PORT || 3006;
 
 app.use(cors({ origin: "*" }));
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb", type: "application/json" }));
+app.use(express.urlencoded({ extended: true }));
+;
 
 const client = twilio(accountSid, authToken);
 
@@ -87,13 +96,13 @@ app.get("/api/especialidades", async (req, res) => {
 
 // OBTENER CODIGOS DISPONIBLES //
 
-app.get("/api/codigosdisponibles", async(req,res) => {
+app.get("/api/codigosdisponibles", async (req, res) => {
   const query = 'SELECT codigo_activacion AS codigos FROM consultorios WHERE usuario is NULL';
 
-  try{
+  try {
     const [resultado] = await pool.execute(query);
     res.json(resultado);
-  }catch{
+  } catch {
     console.error("Error al obtener codigos");
     res.status(500).send("Error al obtener codigos")
   }
@@ -422,7 +431,7 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
         [profesionalID]
       );
 
-    
+
 
       const linkCancelar = `https://turnate.site/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
 
@@ -435,17 +444,14 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
 
 📅 *Fecha:* ${fecha}
 ⏰ *Hora:* ${hora}
-👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${
-        datosProfesional[0].apellido
-      }
+👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${datosProfesional[0].apellido
+        }
 🏥 *Consultorio:* ${datosConsultorio[0].tipo === 'Particular' ? datosConsultorio[0].tipo : `${datosConsultorio[0].tipo} ${datosConsultorio[0].nombre}`}
-📍 *Dirección:* ${datosConsultorio[0].direccion}, ${
-        datosConsultorio[0].localidad
-      }
+📍 *Dirección:* ${datosConsultorio[0].direccion}, ${datosConsultorio[0].localidad
+        }
 
-${
-  datosConsultorio[0].seña === 1 ?
-  `
+${datosConsultorio[0].seña === 1 ?
+          `
 💰 *Importe de la seña:* $${datosConsultorio[0].importe}
 🏦 *Banco:* ${datosConsultorio[0].banco}
 🏧 *CBU:* ${datosConsultorio[0].cbu}
@@ -454,7 +460,7 @@ ${
 
 Enviar comprobante a ${datosConsultorio[0].telefono} para que se haga efectivo el turno.
 ` : ""
-}
+        }
 
 ❌ *¿Necesitás cancelar?*
 Puedes hacerlo fácilmente aquí:
@@ -1238,80 +1244,181 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
 
 // DESVINCULAR PROFESIONAL DE CENTRO MEDICO //
 
-app.put("/api/desvincularprofesional/:consultorioId/:profesionalId", async(req, res) => {
+app.put("/api/desvincularprofesional/:consultorioId/:profesionalId", async (req, res) => {
   const { consultorioId, profesionalId } = req.params;
 
-  try{
+  try {
     const query = `
   UPDATE profesional_consultorio
   SET estado = 'inactivo'
   WHERE profesional_id = ? AND consultorio_id = ?
 `;
 
-    const [resultado] = await pool.execute(query,[
-      profesionalId, 
+    const [resultado] = await pool.execute(query, [
+      profesionalId,
       consultorioId
     ]);
 
-    if(resultado.affectedRows === 0) {
-      return res.status(404).json({message: "Profesional no encontrado en centro médico"});
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ message: "Profesional no encontrado en centro médico" });
     };
 
-    res.status(200).json({message: "Profesional encontrado y desvinculado"})
-  }catch(err){
-    console.error("Error al desvincular profesional",err);
-    res.status(500).json({message: "Error interno al no desvincular profesional"})
+    res.status(200).json({ message: "Profesional encontrado y desvinculado" })
+  } catch (err) {
+    console.error("Error al desvincular profesional", err);
+    res.status(500).json({ message: "Error interno al no desvincular profesional" })
   }
 })
 
-cron.schedule('* * * * *', async () => {
-  console.log('🔍 Buscando turnos que ocurran en 8 horas...');
+function formatearTitulo(titulo) {
+  const normalizado = titulo
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 
-  const ahora = new Date();
-  const en8horas = new Date(ahora.getTime() + 8 * 60 * 60 * 1000); // +8h
-  const en7horas = new Date(ahora.getTime() + 7 * 60 * 60 * 1000); // +7h (para margen)
+  switch (normalizado) {
+    case 'doctor': return { pronombre: 'el', tituloAbrev: 'Dr.' };
+    case 'doctora': return { pronombre: 'la', tituloAbrev: 'Dra.' };
+    case 'licenciado': return { pronombre: 'el', tituloAbrev: 'Lic.' };
+    case 'licenciada': return { pronombre: 'la', tituloAbrev: 'Lic.' };
+    default:
+      return {
+        pronombre: normalizado.endsWith('a') ? 'la' : 'el',
+        tituloAbrev: titulo.charAt(0).toUpperCase() + titulo.slice(1) + '.'
+      };
+  }
+}
+
+cron.schedule('* * * * *', async () => {
+  console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');
+
+  const ahora = dayjs();
 
   try {
-    // Formatear fechas para SQL (YYYY-MM-DD HH:MM:SS)
-    const formatoSQL = (date) =>
-      date.toISOString().slice(0, 19).replace('T', ' ');
+    const [rows] = await pool.execute(`
+      SELECT 
+        t.id, 
+        t.DNI,
+        t.telefono,
+        t.nombre_paciente, 
+        t.apellido_paciente, 
+        t.telefono, 
+        DATE_FORMAT(t.fecha, '%Y-%m-%d') AS fecha, 
+        t.hora,
+        t.notificacion_5h_enviada,
+        p.nombre AS nombre_profesional,
+        p.apellido AS apellido_profesional,
+        p.titulo,
+        c.direccion,
+        c.telefono AS telConsultorio,
+        l.nombre AS localidad
+      FROM turnos t
+      JOIN profesionales p ON t.profesional_id = p.id
+      JOIN consultorios c ON t.consultorio_id = c.id
+      JOIN localidades l ON c.localidad = l.id
+      WHERE t.estado = 'reservado' 
+      AND t.notificacion_5h_enviada = 0
+    `);
 
-    const formatoFecha = (date) =>
-      date.toISOString().slice(0, 10); // YYYY-MM-DD (para comparar)
+    if (rows.length === 0) {
+      console.log('📭 No hay turnos pendientes para notificar.');
+      return;
+    }
 
-    const desde = formatoSQL(en7horas);
-    const hasta = formatoSQL(en8horas);
-    const hoy = formatoFecha(ahora);
+    console.log(`✅ ${rows.length} turnos encontrados.`);
 
-    console.log("📅 Hoy:", hoy);
+    for (const turno of rows) {
+      // Fecha y hora del turno en zona horaria local
+      const fechaHoraTurno = dayjs.tz(
+        `${turno.fecha} ${turno.hora}`,
+        'YYYY-MM-DD HH:mm:ss',
+        'America/Argentina/Buenos_Aires'
+      );
 
-    // Consulta a MySQL
-    const [rows] = await pool.execute(
-      `SELECT 
-        id, nombre_paciente, apellido_paciente, DNI, telefono, 
-        DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha, 
-        hora 
-      FROM turnos 
-      WHERE estado = 'reservado'`
-    );
-
-    const [profesional] = await pool.execute(
-      `SELECT id,nombre, apellido FROM profesionales WHERE id = ?`,[rows.id])
-
-
-
-
-    console.log(rows);
-
-    // Comparar fecha de DB con fecha de hoy
-    rows.forEach((turno) => {
-      if (turno.fecha === hoy) {
-        console.log(`✅ El turno con ID ${turno.id} es de HOY (${turno.fecha})`);
+      if (!fechaHoraTurno.isValid()) {
+        console.warn(`⚠️ Fecha inválida para turno ID ${turno.id}`);
+        continue;
       }
-    });
 
+      // Diferencia en minutos
+      const diffMinutos = fechaHoraTurno.diff(ahora, 'minute');
+      const diffHoras = diffMinutos / 60;
+
+      console.log(`📋 Turno: ${turno.nombre_paciente} | Faltan ${diffMinutos} min`);
+
+      // Si ya pasó el turno
+      if (diffMinutos < 0) {
+        console.log(`⚠️ Turno ID ${turno.id} ya pasó. Saltando...`);
+        continue;
+      }
+
+      // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
+      if (diffHoras <= 5) {
+        console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
+
+        // Formatear hora: HH:mm (sin segundos)
+        const [horas, minutos] = turno.hora.split(':');
+        const horaFormateada = `${horas}:${minutos}`;
+
+        // Formatear título
+        const { pronombre, tituloAbrev } = formatearTitulo(turno.titulo);
+
+        // Generar mensaje
+        const mensaje = `
+  👋 ¡Hola ${turno.nombre_paciente}!
+
+  🆔 DNI: ${turno.DNI}
+  📱 Teléfono: ${turno.telefono}
+
+  Este es un recordatorio de tu turno con ${pronombre} ${tituloAbrev.toUpperCase()} ${turno.nombre_profesional.toUpperCase()} ${turno.apellido_profesional.toUpperCase()}.
+
+  📅 Hoy a las ${horaFormateada}  
+  📍 ${turno.direccion.toUpperCase()}, ${turno.localidad.toUpperCase()}
+
+  ⏰ Te pedimos llegar con 10 minutos de anticipación.
+
+  ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${turno.telConsultorio} lo antes posible.
+
+  🙏 ¡Gracias por tu confianza!
+
+  Te esperamos 🩺✨
+`
+  .split('\n')           // Divide en líneas
+  .map(linea => linea.trim())  // ✅ Elimina espacios SOLO al inicio y final de cada línea
+  .filter(linea => linea !== '') // Mantiene líneas vacías intencionales como separadores
+  .join('\n'); // Vuelve a unirlas con saltos de línea
+
+
+        console.log(mensaje)
+
+        try {
+          // ✅ Enviar WhatsApp con Twilio
+          await client.messages.create({
+            from: twilioWhatsApp, // Ej: +14155238886
+            to: `whatsapp:+5493815588504`, // Asegúrate que esté en formato internacional +549...
+            body: mensaje
+          });
+
+          console.log(`✅ Mensaje enviado a ${turno.telefono} para el turno ID ${turno.id}`);
+
+          // ✅ Marcar como notificado
+          await pool.execute(
+            'UPDATE turnos SET notificacion_5h_enviada = ? WHERE id = ?',
+            [TRUE, turno.id]
+          );
+
+          console.log(`📌 Turno ID ${turno.id} marcado como notificado.`);
+
+        } catch (error) {
+          console.error(`❌ Error al enviar mensaje al turno ID ${turno.id}:`, error.message);
+          // No actualizamos el estado si falló el envío, para reintentar luego
+        }
+      } else {
+        console.log(`⏳ Faltan ${Math.floor(diffHoras)}h ${Math.round(diffMinutos % 60)}m - Aún no es momento.`);
+      }
+    }
   } catch (error) {
-    console.error('❌ Error al consultar la base de datos:', error.message);
+    console.error('❌ Error en el cron de notificaciones:', error.message);
   }
 });
 
