@@ -190,7 +190,7 @@ const ConfirmationModalInterno = ({
                         {profesional?.especialidad}
                       </p>
                       <p>
-                        <span className="font-medium text-blue-600">Consultorio:</span>{" "}
+                        <span className="font-medium text-blue-600">Establecimiento:</span>{" "}
                         {consultorio?.tipo === "Particular"
                           ? "Consultorio Particular"
                           : `Centro médico ${consultorio?.nombre}`}
@@ -221,9 +221,11 @@ const ConfirmationModalInterno = ({
                     </p>
                     <p>
                       <span className="font-medium text-gray-600">Cobertura:</span>{" "}
-                      {coberturaElegida
-                        ? `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
-                        : "Particular"}
+                      {coberturaElegida ? (
+                        coberturaElegida.nombre === coberturaElegida.siglas
+                          ? coberturaElegida.nombre
+                          : `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
+                      ) : "Particular"}
                     </p>
                   </div>
                 </div>

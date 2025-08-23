@@ -205,7 +205,7 @@ const SearchModal = ({ enviarIds }) => {
                       return (
                         <div
                           key={doctor.id}
-                          className="bg-white rounded-3xl shadow-md border border-gray-100 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full w-80 overflow-hidden"
+                          className="bg-white rounded-3xl shadow-md border border-gray-100 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full overflow-hidden"
                         >
                           <div className="p-6 pb-4 border-b border-gray-100">
                             <div className="flex items-start gap-4">
@@ -213,14 +213,14 @@ const SearchModal = ({ enviarIds }) => {
                                 <FaUserDoctor className="text-2xl" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-bold text-gray-900 truncate">
+                                <h3 className="text-lg font-bold text-gray-900 capitalize">
                                   {doctor.apellido}, {doctor.nombre}
                                 </h3>
                                 <p className="text-indigo-700 font-medium text-sm mt-1">
                                   {doctor.especialidad}
                                 </p>
                                 <p className="text-gray-500 text-xs mt-1">
-                                  Matrícula: {doctor.matricula}
+                                  MP {doctor.matricula}
                                 </p>
                                 {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
                                   <div className="mt-2 flex flex-wrap gap-1">

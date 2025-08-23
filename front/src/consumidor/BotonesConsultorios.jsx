@@ -1,4 +1,5 @@
 import useProfessionalConsultorios from '../../customHooks/useProfessionalConsultorios';
+import useProfesionalxId from '../../customHooks/useProfesionalxId';
 import Turnosdisponibles from './Turnosdisponibles';
 import { useNavigate } from 'react-router';
 import { useMemo } from 'react';
@@ -15,6 +16,15 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
   const { consultorios, isLoading, error } = isValidId
     ? useProfessionalConsultorios(profesionalId)
     : { consultorios: [], isLoading: false, error: null };
+
+    const {profesional: prof, isLoading: isLoadingProfesional, error: errorProfesional} = useProfesionalxId(profesionalId);
+
+    const profesional = prof[0];
+
+    const slug = profesional?.slug;
+
+    console.log(slug)
+    
 
   // ✅ Manejar caso de ID inválido
   if (!isValidId) {
@@ -60,7 +70,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
 
   const tapButtonConsultorio = (consultorio) => {
     if (!consultorio?.id) return;
-    navigate(`/elegirturno/${consultorio.id}/${profesionalId}`);
+    navigate(`/turnos/${consultorio.id}/${slug}`);
   };
 
   return (
@@ -104,7 +114,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
             </div>
 
             {/* Dirección */}
-            <p className="text-gray-600 text-opacity-75 text-xs text-center -mt-1 leading-tight">
+            <p className="text-gray-600 text-opacity-75 text-xs text-center -mt-1 leading-tight uppercase">
               {direccion}
               {localidad && <><br />{localidad}</>}
             </p>

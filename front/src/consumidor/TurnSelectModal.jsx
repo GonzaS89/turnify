@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
@@ -13,26 +14,42 @@ import {
   FaExclamationTriangle,
   FaInfoCircle,
   FaTimes,
-  FaCalendarCheck,
 } from "react-icons/fa";
 import { MdOutlineErrorOutline } from "react-icons/md";
 import { BiLoaderCircle } from "react-icons/bi";
 
 const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const { consultorioId } = useParams();
-  const { profesionalId } = useParams();
+  const { consultorioId, profesionalSlug } = useParams();
+  const [profesionalId, setProfesionalId] = useState(null);
 
-  // Carga de datos
-  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(profesionalId);
-  const { consultorio: consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } = useConsultorioxId(consultorioId);
+  // Traer el ID del profesional
+  useEffect(() => {
+    const fetchProfesionalId = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/profesionales/${profesionalSlug}`);
+        const prof = Array.isArray(res.data) ? res.data[0] : res.data;
+        if (prof?.id) setProfesionalId(prof.id);
+        else console.error("No se encontró el profesional");
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchProfesionalId();
+  }, [profesionalSlug]);
+
+  // Siempre llamamos los hooks aunque profesionalId sea null
+  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } =
+    useProfesionalxId(profesionalId || 0);
+
+  const { consultorio: consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } =
+    useConsultorioxId(consultorioId);
+
   const consultorio = consultorios?.[0];
 
-  const {
-    turnos,
-    isLoading: isLoadingTurnos,
-    error: errorTurnos,
-  } = useProfessionalConsultorioTurnos(profesionalId, consultorio?.id);
+  const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } =
+    useProfessionalConsultorioTurnos(profesionalId || 0, consultorio?.id || 0);
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
 
@@ -53,21 +70,14 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   // Fechas disponibles
   const fechasUnicas = useMemo(() => {
     if (!turnos || !Array.isArray(turnos)) return [];
-
-    return [...new Set(
-      turnos
-        .filter((t) => t.estado === 'disponible')
-        .map((t) => t.fecha)
-    )]
-      .filter((fecha) => fecha >= todayDate)
+    return [...new Set(turnos.filter(t => t.estado === "disponible").map(t => t.fecha))]
+      .filter(fecha => fecha >= todayDate)
       .sort();
   }, [turnos, todayDate]);
 
   // Turnos filtrados por fecha
   const turnosFiltrados = useMemo(() => {
-    return fechaSeleccionada
-      ? (turnos?.filter((t) => t.fecha === fechaSeleccionada) || [])
-      : [];
+    return fechaSeleccionada ? (turnos?.filter(t => t.fecha === fechaSeleccionada) || []) : [];
   }, [turnos, fechaSeleccionada]);
 
   // Título del profesional
@@ -81,7 +91,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     return map[medico?.titulo] || "";
   }, [medico?.titulo]);
 
-  const formatearFechaSQL = (fecha) => {
+  const formatearFechaSQL = fecha => {
     const date = new Date(fecha);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -89,29 +99,14 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     return `${day}/${month}/${year}`;
   };
 
-  const formatearSoloDia = (fecha) => {
-    const date = new Date(fecha);
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${day}`;
-  };
-
-  const obtenerDiaDeLaSemanaCorto = (fecha) => {
-    const dateObj = new Date(fecha);
-    return dateObj.toLocaleDateString('es-ES', { weekday: 'short' })
-      .replace('.', '');
-  };
-
-  const obtenerMesCorto = (fecha) => {
-    const dateObj = new Date(fecha);
-    return dateObj.toLocaleDateString('es-ES', { month: 'short' })
-      .replace('.', '');
-  };
+  const formatearSoloDia = fecha => new Date(fecha).getDate().toString().padStart(2, "0");
+  const obtenerDiaDeLaSemanaCorto = fecha =>
+    new Date(fecha).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
+  const obtenerMesCorto = fecha =>
+    new Date(fecha).toLocaleDateString("es-ES", { month: "short" }).replace(".", "");
 
   // Manejadores
-  const handleFechaChange = (e) => {
-    setFechaSeleccionada(e.target.value);
-  };
-
+  const handleFechaChange = e => setFechaSeleccionada(e.target.value);
   const handleSelectTurno = (turno, index) => {
     navigate(`/formulario-usuario/${consultorio?.id}/${profesionalId}`);
     enviarTurnoYOrden(turno, index + 1);
@@ -121,8 +116,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[300] p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform max-h-[90vh] flex flex-col overflow-hidden">
-        
-        {/* Encabezado con gradiente */}
+        {/* Encabezado */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-start gap-3">
@@ -136,7 +130,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
                   </p>
                 ) : (
                   <>
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-xl font-bold capitalize">
                       {titulo} {medico?.nombre} {medico?.apellido}
                     </h2>
                     <p className="text-blue-100 opacity-90">{medico?.especialidad}</p>
@@ -145,7 +139,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
               </div>
             </div>
             <button
-              onClick={() => navigate('/buscarprofesionales')}
+              onClick={() => navigate("/buscarprofesionales")}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
               aria-label="Cerrar"
             >
@@ -172,7 +166,6 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
 
         {/* Cuerpo */}
         <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-          
           {/* Selector de Fecha */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -214,12 +207,6 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
                     </option>
                   ))}
                 </select>
-                <FaCalendarAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
               </div>
             )}
           </div>
@@ -245,12 +232,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
                 {turnosFiltrados.length > 0 ? (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {turnosFiltrados.map((turno, index) => (
-                      <Turno
-                        key={turno.id}
-                        turno={turno}
-                        index={index}
-                        enviarTurno={handleSelectTurno}
-                      />
+                      <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />
                     ))}
                   </div>
                 ) : (
@@ -267,7 +249,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
         {/* Botón de cierre */}
         <div className="p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
           <button
-            onClick={() => navigate('/buscarprofesionales')}
+            onClick={() => navigate("/buscarprofesionales")}
             className="w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
           >
             Volver a buscar

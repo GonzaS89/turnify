@@ -1,4 +1,4 @@
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaClock, FaTimesCircle } from "react-icons/fa";
 import { PiClock } from "react-icons/pi";
 
 const formatearHora = (hora) => {
@@ -52,7 +52,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
           `}
         >
           {isAvailable ? (
-            <FaCheckCircle className="text-xl" />
+            <FaClock className="text-xl" />
           ) : (
             <FaTimesCircle className="text-xl" />
           )}

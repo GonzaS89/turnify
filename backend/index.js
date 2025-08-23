@@ -328,7 +328,8 @@ p.nombre,
 p.apellido,
 p.especialidad,
 p.matricula,
-p.titulo
+p.titulo,
+p.slug
 FROM profesionales AS p
 WHERE id = ?
     `;
@@ -1288,6 +1289,29 @@ function formatearTitulo(titulo) {
       };
   }
 }
+
+// OBTENER SLUG //
+
+app.get("/api/profesionales/:slug", async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      "SELECT id, nombre FROM profesionales WHERE slug = ? LIMIT 1",
+      [slug]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Profesional no encontrado" });
+    }
+
+    res.json(rows[0]); // { id: 22, nombre: "Dr. García" }
+  } catch (err) {
+    console.error("Error al buscar profesional:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
 
 cron.schedule('* * * * *', async () => {
   console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');

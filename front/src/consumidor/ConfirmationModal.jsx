@@ -34,38 +34,36 @@ const ConfirmationModal = ({
     (cobertura) => cobertura.id == formData?.selectedOption
   );
 
-  console.log(formData.selectedOption)
-
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Formatear fecha
   const formatearFechaSQL = (fecha) => {
-  if (!fecha) return "N/A";
-  const date = new Date(fecha);
-  let fechaFormateada = date.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+    if (!fecha) return "N/A";
+    const date = new Date(fecha);
+    let fechaFormateada = date.toLocaleDateString("es-AR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
-  // Capitalizar la primera letra
-  return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
-};
+    // Capitalizar la primera letra
+    return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  };
 
-const definirTitulo = (value) => {
-  switch (value) {
-    case 'doctor':
-      return 'Dr.';
-    case 'doctora':
-      return 'Dra.';
-    case 'licenciado':
-    case 'licenciada':
-      return 'Lic.'; 
-    default:
-      return ''; 
-  }
-};
+  const definirTitulo = (value) => {
+    switch (value) {
+      case 'doctor':
+        return 'Dr.';
+      case 'doctora':
+        return 'Dra.';
+      case 'licenciado':
+      case 'licenciada':
+        return 'Lic.';
+      default:
+        return '';
+    }
+  };
 
   // Formatear hora
   const formatearHora = (hora) => {
@@ -109,14 +107,14 @@ const definirTitulo = (value) => {
     }
   };
 
-  
+
 
   return (
     <>
       {/* Overlay oscuro con blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
-      
+
       >
         <div
           className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[90dvh] sm:max-h-[90vh] flex flex-col"
@@ -187,7 +185,7 @@ const definirTitulo = (value) => {
                         {profesional?.especialidad}
                       </p>
                       <p>
-                        <span className="font-medium text-blue-600">Consultorio:</span>{" "}
+                        <span className="font-medium text-blue-600">Establecimiento:</span>{" "}
                         {consultorio?.tipo === "Particular"
                           ? "Consultorio Particular"
                           : `Centro médico ${consultorio?.nombre}`}
@@ -218,9 +216,12 @@ const definirTitulo = (value) => {
                     </p>
                     <p>
                       <span className="font-medium text-gray-600">Cobertura:</span>{" "}
-                      {coberturaElegida
-                        ? `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
-                        : "Particular"}
+                      {coberturaElegida ? (
+                        coberturaElegida.nombre === coberturaElegida.siglas
+                          ? coberturaElegida.nombre
+                          : `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
+                      ) : "Particular"}
+
                     </p>
                   </div>
                 </div>
@@ -252,11 +253,10 @@ const definirTitulo = (value) => {
                   type="button"
                   onClick={reservarTurno}
                   disabled={isSubmitting}
-                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
-                    isSubmitting
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${isSubmitting
                       ? "bg-gray-400"
                       : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
-                  }`}
+                    }`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
@@ -268,16 +268,16 @@ const definirTitulo = (value) => {
                   )}
                 </button>
               </>
-            // ) : (
-            //   <button
-            //     type="button"
-            //     onClick={() =>
-            //       navigate('/')
-            //     }
-            //     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
-            //   >
-            //     Volver al Panel
-            //   </button>
+              // ) : (
+              //   <button
+              //     type="button"
+              //     onClick={() =>
+              //       navigate('/')
+              //     }
+              //     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
+              //   >
+              //     Volver al Panel
+              //   </button>
             )}
           </div>
         </div>

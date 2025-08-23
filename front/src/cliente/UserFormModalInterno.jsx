@@ -257,7 +257,7 @@ const UserFormModalInterno = ({ onSubmit }) => {
                     <option value="Particular">Particular</option>
                     {options.map((opt) => (
                       <option key={opt.id} value={opt.id}>
-                        {opt.siglas} - {opt.nombre}
+                             {opt.nombre === opt.siglas ? opt.nombre : opt.nombre - opt.siglas}
                       </option>
                     ))}
                   </select>
