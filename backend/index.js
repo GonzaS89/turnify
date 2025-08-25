@@ -97,7 +97,7 @@ app.get("/api/especialidades", async (req, res) => {
 // OBTENER CODIGOS DISPONIBLES //
 
 app.get("/api/codigosdisponibles", async (req, res) => {
-  const query = 'SELECT codigo_activacion AS codigos FROM consultorios WHERE usuario is NULL';
+  const query = 'SELECT codigo_activacion AS codigos FROM perfiles WHERE usuario is NULL';
 
   try {
     const [resultado] = await pool.execute(query);

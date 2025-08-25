@@ -20,7 +20,7 @@ import CancelarTurno from "./consumidor/CancelarTurno";
 
 import UserDashboard from "./cliente/UserDashboard";
 import GestionProfesionales from "./cliente/GestionProfesionales";
-import CrearConsultorio from "./cliente/CrearConsultorio";
+import CrearPerfil from "./cliente/CrearPerfil";
 import CrearProfesional from "./cliente/CrearProfesionalModal";
 import ConfirmationModalInterno from "./cliente/ConfirmationModalInterno";
 import UserFormModalInterno from "./cliente/UserFormModalInterno";
@@ -138,7 +138,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Main openLogin={openLogin} />} />
             <Route path="/micuenta" element={<UserDashboard enviarPass={recibirPass} />} />
-            <Route path="/crearconsultorio/:codigo" element={<CrearConsultorio handleCrearConsultorio={() => setOpenLoginModal(true)} />} />
+            <Route path="/crearperfil/:codigo" element={<CrearPerfil handleCrearConsultorio={() => setOpenLoginModal(true)} />} />
             <Route path="/crearprofesional" element={<CrearProfesional />} />
             <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
             <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds} />} />

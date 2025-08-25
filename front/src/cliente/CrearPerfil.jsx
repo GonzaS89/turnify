@@ -20,7 +20,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CrearConsultorio = ({ handleCrearConsultorio }) => {
+const CrearPerfil = ({ handleCrearConsultorio }) => {
   const { codigo: codigoValidacion } = useParams();
   const navigate = useNavigate();
 
@@ -607,4 +607,4 @@ const CrearConsultorio = ({ handleCrearConsultorio }) => {
   );
 };
 
-export default CrearConsultorio;
+export default CrearPerfil;
