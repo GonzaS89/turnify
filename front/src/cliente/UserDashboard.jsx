@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSpinner, FaPowerOff ,FaHome, FaExclamationCircle } from 'react-icons/fa';
 import useConsultorioById from '../../customHooks/useConsultorioxId';
+import useObtenerConsultorioxIdPerfil from '../../customHooks/useObtenerConsultorioxIdPerfil';
 import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
 import { RingLoader } from 'react-spinners';
@@ -12,10 +13,14 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   const navigate = useNavigate();
 
   // Obtener consultorio desde localStorage
-  const storedConsultorio = JSON.parse(localStorage.getItem('consultorio') || 'null');
-  const consultorioId = storedConsultorio?.id;
+  const recuperarPerfil = JSON.parse(localStorage.getItem('perfil') || 'null');
+  const perfilId = recuperarPerfil?.id;
 
-  const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
+  const {consultorios, isLoading:isLoadingConsultoriosxIdPerfil, error:errorConsultoriosxIdPerfil} = useObtenerConsultorioxIdPerfil(perfilId);
+
+  const hayConsultorios = useState(consultorios.length > 1)
+
+  const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(perfilId);
   const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
   const [cerrandoSesion, setCerrandoSesion] = useState(false)
 
@@ -32,7 +37,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   useEffect(() => {
     if (consultorio) {
       try {
-        localStorage.setItem('consultorio', JSON.stringify(consultorio));
+        localStorage.setItem('perfil', JSON.stringify(consultorio));
       } catch (err) {
         console.error('Error al guardar consultorio en localStorage:', err);
       }
@@ -105,7 +110,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // === Estado vacío (sin consultorio) ===
-  if (!consultorio && !storedConsultorio) {
+  if (!consultorio && !recuperarPerfil) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6">
         <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-gray-200">
@@ -124,7 +129,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // Usar el consultorio disponible
-  const consultorioToUse = consultorio || storedConsultorio;
+  const consultorioToUse = consultorio || recuperarPerfil;
 
   return (
     <div className="min-h-screen">

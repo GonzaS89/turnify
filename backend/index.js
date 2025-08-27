@@ -54,6 +54,19 @@ app.get("/api/consultorios", async (req, res) => {
   }
 });
 
+// OBTENER TODOS LOS PERFILES
+
+
+app.get("/api/perfiles", async (req, res) => {
+  try {
+    const [resultado] = await pool.execute("SELECT * FROM perfiles");
+    res.json(resultado);
+  } catch {
+    console.error("Error al obtener perfiles");
+    res.status(500).send("Error al obtener perfiles");
+  }
+});
+
 //OBTENER TODAS LAS COBERTURAS //
 
 app.get("/api/coberturas", async (req, res) => {
@@ -357,6 +370,39 @@ app.get("/api/todoslosturnos/:turnoID", async (req, res) => {
     res.status(500).send("Error interno del servidor al obtener turno");
   }
 });
+
+// OBTENER CONSULTORIOS X ID PERFIL //
+
+app.get("/api/consultoriosxidperfil/:perfilId", async(req, res) => {
+  const {perfilId} = req.params;
+
+  const consulta = `SELECT 
+  c.id,
+  c.nombre,
+  c.direccion,
+  c.telefono,
+  loc.nombre AS localidad,
+  prov.nombre AS provincia
+  FROM consultorios AS c
+  JOIN
+  localidades AS loc ON loc.id = c.localidad
+  JOIN
+  provincias AS prov ON prov.id = c.provincia
+  JOIN
+  perfiles_consultorios AS pc ON pc.consultorio_id = c.id
+  JOIN
+  perfiles AS p ON p.id = pc.perfil_id
+  WHERE p.id = ?`
+
+  try{
+    const [ resultados ] = await pool.execute(consulta,[perfilId]);
+    res.json(resultados);
+  }catch(error){
+    console.error("Error al obtener consultorios", error);
+    res.status(500).send("Error interno del servidor al obtener consultorios")
+  }
+
+})
 
 // RESERVAR TURNO //
 
@@ -773,7 +819,7 @@ app.post('/api/login', async (req, res) => {
 
   try {
     const [rows] = await pool.execute(
-      'SELECT * FROM consultorios WHERE usuario = ?',
+      'SELECT * FROM perfiles WHERE usuario = ?',
       [usuario]
     );
 
@@ -781,8 +827,8 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    const consultorio = rows[0];
-    const isValid = await bcrypt.compare(contraseña, consultorio.contrasena);
+    const perfil = rows[0];
+    const isValid = await bcrypt.compare(contraseña, perfil.contrasena);
 
     if (!isValid) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
@@ -790,14 +836,14 @@ app.post('/api/login', async (req, res) => {
 
     // Generar JWT (opcional, pero recomendado)
     const token = jwt.sign(
-      { id: consultorio.id, usuario: consultorio.usuario },
+      { id: perfil.id, usuario: perfil.usuario, tipo: perfil.tipo },
       'tu_clave_secreta', // Usa una variable de entorno
       { expiresIn: '1h' }
     );
 
     res.json({
       message: 'Login exitoso',
-      consultorio: { id: consultorio.id, usuario: consultorio.usuario, nombre: consultorio.nombre },
+      perfil: { id: perfil.id, usuario: perfil.usuario, nombre: perfil.nombre },
       token
     });
 
@@ -908,8 +954,6 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
     titular,
   } = req.body;
 
-  console.log("Código recibido:", codigo);
-  console.log("Datos recibidos:", req.body);
 
   // Validar campos obligatorios
   if (!direccion || !localidad || !provincia || !usuario || !contraseña) {
@@ -1000,6 +1044,62 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
     });
   }
 });
+
+// CREAR PERFIL
+
+app.put("/api/crearperfil/:codigo", async (req, res) => {
+  const { codigo } = req.params;
+  const {
+    usuario,
+    contraseña,
+    tipo
+  } = req.body;
+
+  console.log(usuario,contraseña,tipo)
+
+  if(!usuario || !contraseña || !tipo) {
+    return res.status(400).json({message:"Faltan campos obligatorios "})
+  }
+
+  try{
+    const [perfilesExistentes] = await pool.execute(
+      "SELECT id FROM perfiles WHERE usuario = ?",
+      [usuario]
+    );
+    if(perfilesExistentes.length > 0) {
+      return res.status(409).json({message:"El usuario ya esta en uso"});
+    }
+
+    const [perfiles] = await pool.execute(
+      "SELECT id FROM perfiles WHERE codigo_activacion = ?",
+      [codigo]
+    );
+    if (perfiles.length === 0) {
+      return res.status(404).json({ message: "Código de activación inválido."}) 
+    }
+
+    const hashedPassword = await bcrypt.hash(contraseña, 10);
+
+    const [resultado] = await pool.execute(
+      `UPDATE perfiles SET usuario = ?, contrasena = ?, tipo = ? WHERE codigo_activacion = ?`,
+      [usuario, hashedPassword, tipo, codigo]
+    )
+
+    if(resultado.affectedRows === 0){
+      return res.status(500).json({ message: "No se pudo actualizar el perfil (ninguna fila afectada)." });
+    }
+
+    res.status(200).json({
+      message: "Perfil creado con éxito.",
+      affectedRows: resultado.affectedRows,
+    });
+  }catch (error) {
+    console.error("Error al crear perfil:", error);
+    res.status(500).json({
+      message: "Error interno del servidor al crear el perfil."
+    });
+  }
+})
 
 // CREAR PROFESIONAL //
 
