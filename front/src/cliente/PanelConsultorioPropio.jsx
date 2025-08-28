@@ -1,6 +1,8 @@
 // src/components/PanelConsultorioPropio.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import useConsultorioById from '../../customHooks/useConsultorioxId';
+import useObtenerConsultorioxIdPerfil from '../../customHooks/useObtenerConsultorioxIdPerfil';
 
 // CARGA DE ICONOS
 
@@ -26,22 +28,26 @@ import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalC
 import AsociarProfesionalAConsultorio from '../cliente/AsociarProfesionalAConsultorio';
 import ModalListaTurnos from '../cliente/ModalListaTurnos'
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }) => {
+const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
 
   const [refreshProfesionales, setRefreshProfesionales] = useState(null);
 
-  const consultorioID = consultorio?.id;
-  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID, refreshProfesionales);
+  const perfilID = perfil?.id;
+  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(perfilID, refreshProfesionales);
+
+  const {consultorios: consultoriosObtenidos, isLoading:isLoadingConsultoriosxIdPerfil, error:errorConsultoriosxIdPerfil} = useObtenerConsultorioxIdPerfil(perfilID);
+
+  const  hayConsultorioAsociados = consultoriosObtenidos.length > 0;
 
   const medico = profesional?.[0] || null;
   const medicoID = medico?.id;
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
     medicoID,
-    consultorioID
+    perfilID
   );
 
   const refrescarListaProfesionales = () => {
@@ -79,7 +85,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
   }).replace(/^\w/, (c) => c.toUpperCase());
 
   if (isLoading) return <LoadingCard />;
-  if (error || !consultorio)
+  if (error || !perfil)
     return (
       <ErrorCard
         title="Error"
@@ -149,7 +155,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
             description="Gestiona tus turnos diarios y pacientes."
             icon={FaCalendarAlt}
             gradient="from-emerald-500 to-teal-600"
-            onClick={() => navigate(`/micuenta/panelturnos/${consultorioID}/${medicoID}`)}
+            onClick={() => navigate(`/micuenta/panelturnos/${perfilID}/${medicoID}`)}
             footer={
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-white">{isLoadingTurnos ? 'Sin turnos' : turnsToday()}</span>
@@ -166,7 +172,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
             description="Personaliza horarios, consultorio y más."
             icon={FaCog}
             gradient="from-slate-500 to-slate-700"
-            onClick={() => navigate(`/micuenta/datosconsultorio/${consultorio.id}`)}
+            onClick={() => navigate(`/micuenta/datosconsultorio/${perfil.id}`)}
             footer={
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-slate-700/50 px-3 py-1 rounded-full">
                 <FaCheckCircle size={12} /> Editar
@@ -180,7 +186,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
             description="Administra obras sociales y prepagas."
             icon={FaShieldAlt}
             gradient="from-blue-500 to-indigo-600"
-            onClick={() => navigate(`/micuenta/gestioncoberturas/${consultorioID}`)}
+            onClick={() => navigate(`/micuenta/gestioncoberturas/${perfilID}`)}
             footer={
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600/50 px-3 py-1 rounded-full">
                 <FaChevronRight size={12} /> Gestionar
@@ -188,7 +194,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
             }
           />
 
-          {/* Asociar Profesional */}
+          {/* Asociar Profesional
           {!medico && (
             <ActionCard
               title="Asociar Médico"
@@ -202,7 +208,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
                 </span>
               }
             />
-          )}
+          )} */}
         </section>
 
         {/* ===== ESTADÍSTICAS OPCIONALES (opcional) ===== */}
@@ -229,8 +235,8 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
         {/* Modal de asociación */}
         {showModalAsociarProfesional && (
           <AsociarProfesionalAConsultorio
-            consultorioID={consultorioID}
-            consultorio = {consultorio}
+            consultorioID={perfilID}
+            consultorio = {perfil}
             onClose={() => setShowModalAsociarProfesional(false)}
             refrescarListaProfesionales={refrescarListaProfesionales}
             profesionalVinculado={medicoID != undefined}

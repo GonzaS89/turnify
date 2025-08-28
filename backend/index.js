@@ -381,6 +381,7 @@ app.get("/api/consultoriosxidperfil/:perfilId", async(req, res) => {
   c.nombre,
   c.direccion,
   c.telefono,
+  c.tipo,
   loc.nombre AS localidad,
   prov.nombre AS provincia
   FROM consultorios AS c

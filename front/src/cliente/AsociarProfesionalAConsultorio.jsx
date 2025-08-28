@@ -37,7 +37,7 @@ const AsociarProfesionalAConsultorio = ({
 
   const navigate = useNavigate();
 
-  console.log(consultorio);
+  // console.log(consultorio);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -121,7 +121,7 @@ const AsociarProfesionalAConsultorio = ({
     <>
       {/* Fondo oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in"
+        className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4 animate-fade-in"
         onClick={profesionalVinculado ? onClose : null}
       >
         <div
