@@ -1314,7 +1314,7 @@ app.get("/api/profesionales/:slug", async (req, res) => {
 
 
 cron.schedule('* * * * *', async () => {
-  console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');
+  console.log('🔍 Buscando turnos que ocurran en 12 horas o menos...');
 
   const ahora = dayjs();
 
@@ -1377,7 +1377,7 @@ cron.schedule('* * * * *', async () => {
       }
 
       // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
-      if (diffHoras <= 5) {
+      if (diffHoras <= 12) {
         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
         // Formatear hora: HH:mm (sin segundos)
@@ -1402,6 +1402,7 @@ cron.schedule('* * * * *', async () => {
   ⏰ Te pedimos llegar con 10 minutos de anticipación.
 
   ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${turno.telConsultorio} lo antes posible.
+  **NO RESPONDER A ESTE NÚMERO**
 
   🙏 ¡Gracias por tu confianza!
 
