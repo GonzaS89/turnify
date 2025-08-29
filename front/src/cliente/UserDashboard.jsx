@@ -55,7 +55,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
       setTimeout(() => {
         // setCerrandoSesion(false)
         navigate('/');
-        set
+      
         setCerrandoSesion(false)
         localStorage.removeItem('perfil');
       localStorage.removeItem('userPassword');

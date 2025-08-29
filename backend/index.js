@@ -405,6 +405,34 @@ app.get("/api/consultoriosxidperfil/:perfilId", async(req, res) => {
 
 })
 
+// OBTENER PROFESIONAL X ID PERFIL
+
+app.get("/api/profesionalxidperfil/:perfilId", async(req, res) => {
+  const {perfilId} = req.params;
+
+  const consulta = `SELECT 
+  p.id,
+  p.nombre,
+  p.apellido,
+  p.matricula,
+  p.especialidad,
+  p.telefono,
+  p.slug
+  FROM profesionales AS p
+  JOIN
+  perfiles_profesionales AS pp ON pp.profesional_id = p.id
+  WHERE pp.perfil_id = ?`
+
+  try{
+    const [ resultados ] = await pool.execute(consulta,[perfilId]);
+    res.json(resultados);
+  }catch(error){
+    console.error("Error al obtener profesional", error);
+    res.status(500).send("Error interno del servidor al obtener profesional")
+  }
+
+})
+
 // RESERVAR TURNO //
 
 app.put("/api/reservarturno/:turnoId", async (req, res) => {
