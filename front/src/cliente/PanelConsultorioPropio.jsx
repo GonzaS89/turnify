@@ -7,6 +7,7 @@ import useObtenerConsultorioxIdPerfil from '../../customHooks/useObtenerConsulto
 
 import CrearConsultorioModal from '../cliente/CrearConsultorioModal';
 import CrearProfesionalModal from './CrearProfesionalModal';
+import AsociarProfesionalAPerfil from './AsociarProfesionalAPerfil';
 
 // CARGA DE ICONOS
 
@@ -29,7 +30,7 @@ import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalC
 
 // CARGA DE LAYOUTS
 
-import AsociarProfesionalAConsultorio from '../cliente/AsociarProfesionalAConsultorio';
+import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 import ModalListaTurnos from '../cliente/ModalListaTurnos'
 
 const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
@@ -44,7 +45,7 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
 
   const { consultorios: consultoriosObtenidos, isLoading: isLoadingConsultoriosxIdPerfil, error: errorConsultoriosxIdPerfil } = useObtenerConsultorioxIdPerfil(perfilID);
 
-  const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionalesxIdPerfil, error: errorProfesionalesxIdPerfil } = useObtenerProfesionalxIdPerfil(perfilID);
+  const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionalesxIdPerfil, error: errorProfesionalesxIdPerfil, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
 
   const noHayConsultorioAsociados = consultoriosObtenidos?.length === 0;
   const noHayProfesionalesAsociados = profesionalesObtenidos?.length === 0;
@@ -154,9 +155,9 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
           </div>
         </header>
 
-        {noHayProfesionalesAsociados && (
+        {/* {noHayProfesionalesAsociados && (
           <CrearProfesionalModal />
-        )}
+        )} */}
 
         {/* ===== TARJETAS DE ACCESO RÁPIDO ===== */}
         {noHayConsultorioAsociados === 0 ? (
@@ -260,15 +261,16 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
         )}
 
         {/* Modal de asociación */}
-        {/* {showModalAsociarProfesional && (
-          <AsociarProfesionalAConsultorio
-            consultorioID={perfilID}
-            consultorio = {perfil}
+        {noHayProfesionalesAsociados && (
+          <AsociarProfesionalAPerfil
+            perfilID={perfilID}
+            perfil = {perfil}
             onClose={() => setShowModalAsociarProfesional(false)}
             refrescarListaProfesionales={refrescarListaProfesionales}
             profesionalVinculado={medicoID != undefined}
+            fetchProfesional={fetchProfesional}
           />
-        )} */}
+        )}
 
 
         {/* Modal de listado de turnos */}

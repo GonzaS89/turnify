@@ -1130,7 +1130,7 @@ app.put("/api/crearperfil/:codigo", async (req, res) => {
   }
 })
 
-// CREAR PROFESIONAL //
+// VINCULAR PROFESIONAL CON CONSULTORIO //
 
 // app.post("/api/crearprofesional", async (req, res) => {
 //   const { nombre, apellido, matricula, especialidad, titulo, telefono } = req.body;
@@ -1264,6 +1264,7 @@ app.post("/api/unionprofesionalconsultorio", async (req, res) => {
   }
 });
 
+// CREAR Y VINCULAR PROFESIONAL CON CONSULTORIO //
 
 app.post("/api/crear-y-vincular-profesional", async (req, res) => {
   const {
@@ -1347,6 +1348,115 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
         titulo,
         telefono,
         consultorioID
+      }
+    });
+
+  } catch (error) {
+    // Revertir transacción si falló algo
+    if (connection) {
+      await connection.rollback().catch(console.error);
+      connection.release();
+    }
+
+    console.error("Error en crear-y-vincular-profesional:", error);
+
+    // Manejo específico de errores
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        message: "Este profesional ya está asociado a este consultorio."
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor al crear o vincular el profesional."
+    });
+  }
+});
+
+// CREAR Y VINCULAR PROFESIONAL CON PERFIL //
+
+app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
+  const {
+    nombre,
+    apellido,
+    matricula,
+    especialidad,
+    titulo,
+    telefono,
+    perfilID
+  } = req.body;
+
+  console.log("Datos recibidos:", req.body);
+
+  // Validación de campos obligatorios
+  if (!nombre || !apellido || !matricula || !especialidad || !perfilID) {
+    return res.status(400).json({
+      message: "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o perfilID.",
+    });
+  }
+
+  let connection;
+
+  try {
+    // Obtener conexión directa para manejar transacción
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // 1. Verificar si ya existe un profesional con esa matrícula
+    const [existing] = await connection.execute(
+      "SELECT id FROM profesionales WHERE matricula = ?",
+      [matricula]
+    );
+
+    let profesionalID;
+
+    if (existing.length > 0) {
+      // Si ya existe, usar el ID existente
+      profesionalID = existing[0].id;
+      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
+    } else {
+      // Si no existe, crear uno nuevo
+      const [insertResult] = await connection.execute(
+        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
+        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null]
+      );
+      profesionalID = insertResult.insertId;
+      console.log(`Profesional creado con ID: ${profesionalID}`);
+    }
+
+    // 2. Intentar asociar al consultorio
+    try {
+      await connection.execute(
+        "INSERT INTO perfiles_profesionales (perfil_id, profesional_id) VALUES (?, ?)",
+        [perfilID, profesionalID]
+      );
+      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${perfilID}`);
+    } catch (error) {
+      // Si ya está vinculado (duplicado), ignoramos el error y continuamos
+      if (error.code === 'ER_DUP_ENTRY') {
+        console.log(`Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${perfilID}`);
+      } else {
+        throw error; // Otro error sí debe romper la transacción
+      }
+    }
+
+    // 3. Confirmar transacción
+    await connection.commit();
+
+    // Responder con éxito
+    return res.status(201).json({
+      message: existing.length > 0
+        ? "Profesional ya existente y asociado correctamente."
+        : "Profesional creado y asociado correctamente.",
+      profesional: {
+        id: profesionalID,
+        nombre,
+        apellido,
+        especialidad,
+        matricula,
+        titulo,
+        telefono,
+        perfilID
       }
     });
 

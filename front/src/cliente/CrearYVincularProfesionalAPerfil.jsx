@@ -16,7 +16,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 
-const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
+const CrearYVincularProfesionalAPerfil = ({ onClose, onCreate, perfilID }) => {
 
   const navigate = useNavigate()
 
@@ -69,11 +69,11 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         titulo: titulo || "",
         matricula: matricula.trim(),
         telefono: telefonoLimpio,
-        consultorioID,
+        perfilID,
       };
 
       const response = await axios.post(
-        `${API_URL}/api/crear-y-vincular-profesional`,
+        `${API_URL}/api/crear-y-vincular-profesional-perfil`,
         nuevoProfesional
       );
       const data = response.data;
@@ -338,4 +338,4 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
   );
 };
 
-export default CrearProfesionalModal;
+export default CrearYVincularProfesionalAPerfil;

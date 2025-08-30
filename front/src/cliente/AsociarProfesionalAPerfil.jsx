@@ -1,0 +1,278 @@
+import { useState } from "react";
+import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
+import useAllProfesionals from "../../customHooks/useAllProfesionals";
+import axios from "axios";
+import { ToastContainer } from "react-toastify";
+import {
+  FaUserMd,
+  FaLink,
+  FaPlusCircle,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaTimes,
+} from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
+
+const AsociarProfesionalAPerfil = ({
+  onClose,
+  perfilID,
+  idsProfesionalesVinculados,
+  refrescarListaProfesionales,
+  profesionalVinculado,
+  perfil,
+  actualizarProfesionales
+}) => {
+  const {
+    profesionales,
+    isLoading,
+    error: hookError
+  } = useAllProfesionals();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedProfesional, setSelectedProfesional] = useState("");
+  const [mensajeError, setMensajeError] = useState(null);
+  const [mensaje, setMensaje] = useState(null);
+  const [vinculando, setVinculando] = useState(false);
+
+  const navigate = useNavigate();
+
+  // console.log(consultorio);
+
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const handleSelect = async (e) => {
+    e.preventDefault();
+    setMensajeError(null);
+    setMensaje(null);
+    setVinculando(true);
+
+    if (!selectedProfesional) {
+      setMensajeError("Debe seleccionar un profesional.");
+      return;
+    }
+    if (!perfilID) {
+      setMensajeError("No se especificó el consultorio.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/unionprofesionalperfil`,
+        {
+          profesionalID: selectedProfesional,
+          consultorioID: perfilID,
+        }
+      );
+
+      // ✅ Usar el mensaje devuelto por el backend
+
+      // Personalizar el toast según el caso
+
+      toast.info("✅ Revinculando profesional");
+
+      // Refrescar lista tras breve espera
+      setTimeout(() => {
+        setVinculando(false);
+        refrescarListaProfesionales();
+        // Cierra el modal primero
+        if (perfil?.tipo === "Particular") {
+
+          onClose();
+        }
+      }, 1500);
+
+
+
+    } catch (err) {
+      // Capturar mensaje de error claro
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Error de conexión con el servidor";
+
+      setMensajeError(`❌ ${errorMsg}`);
+
+      // Mostrar toast de error
+      toast.error("Error al asociar profesional");
+
+      console.error("Error al asociar profesional:", err);
+    }
+  };
+
+  const handleCreateSuccess = () => {
+    // Primero: actualizar lista si la función existe
+    if (typeof actualizarProfesionales === "function") {
+      actualizarProfesionales();
+    }
+
+    // Segundo: redirigir o refrescar según el tipo de consultorio
+    if (perfil?.tipo === "Particular") {
+      onClose();
+    }
+
+    refrescarListaProfesionales();
+
+    // Tercero: mostrar toast
+    toast.success("✅ Nuevo profesional creado y vinculado");
+  };
+
+  return (
+    <>
+      {/* Fondo oscuro con blur */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4 animate-fade-in"
+        onClick={profesionalVinculado ? onClose : null}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Encabezado con gradiente */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-t-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FaLink className="text-2xl" />
+                <h2 className="text-2xl font-bold">Vincular Profesional</h2>
+              </div>
+              {profesionalVinculado && (
+                <button
+                  onClick={onClose}
+                  className="text-white hover:bg-white/20 rounded-full p-1 transition"
+                  aria-label="Cerrar"
+                >
+                  <FaTimes size={20} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Cuerpo */}
+          <div className="p-6 space-y-6">
+            {/* Mensajes */}
+            {hookError && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
+                <FaExclamationCircle className="mt-1 flex-shrink-0" />
+                <span className="text-sm">{hookError}</span>
+              </div>
+            )}
+
+            {mensajeError && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-700">
+                <FaExclamationCircle className="mt-1 flex-shrink-0" />
+                <span className="text-sm">{mensajeError}</span>
+              </div>
+            )}
+
+            {mensaje && (
+              <div className="p-4 rounded-xl bg-green-50 border border-green-200 flex items-start gap-3 text-green-700">
+                <FaCheckCircle className="mt-1 flex-shrink-0" />
+                <span className="text-sm">{mensaje}</span>
+              </div>
+            )}
+
+            {/* Cargando */}
+            {isLoading ? (
+              <div className="py-10 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
+                <p className="text-gray-500 text-sm">
+                  Cargando profesionales...
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Selector de profesional */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaUserMd className="text-purple-500" /> Seleccionar
+                    Profesional *
+                  </label>
+                  <select
+                    value={selectedProfesional}
+                    onChange={(e) => setSelectedProfesional(e.target.value)}
+                    className="
+    w-full 
+    px-4 py-3 
+    border-2 border-gray-300 
+    rounded-xl 
+    bg-white text-gray-700
+    focus:outline-none 
+    focus:border-purple-500 
+    focus:ring-0 
+    hover:border-purple-400
+    transition-all 
+    duration-200
+    ease-in-out
+    appearance-none
+    disabled:opacity-50
+  "
+                  >
+                    <option value="">Seleccionar profesional</option>
+                    {profesionales?.map((prof) => (
+                      <option
+                        key={prof.id}
+                        value={prof.id}
+                        disabled={idsProfesionalesVinculados?.includes(prof.id)}
+                        className="font-semibold"
+                      >
+                        {prof.nombre} {prof.apellido} • {prof.especialidad} •
+                        MP: {prof.matricula}
+                        {idsProfesionalesVinculados?.includes(prof.id)
+                          ? " (Ya vinculado)"
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center justify-center gap-2 flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition transform hover:scale-105 focus:outline-none"
+                  >
+                    <FaPlusCircle /> Nuevo Profesional
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSelect}
+                    disabled={!selectedProfesional || !!mensaje}
+                    className={`"flex-1 py-3 px-4  disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none" ${vinculando
+                      ? "bg-gray-300"
+                      : "bg-gradient-to-r from-blue-600 to-indigo-600  hover:from-blue-700 hover:to-indigo-700"
+                      }`}
+                  >
+                    {vinculando ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                        Vinculando ...
+                      </div>
+                    ) : (
+                      "Vincular"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ToastContainer position="bottom-right" autoClose={1000} />
+
+      {/* Modal de creación (reutilizado con estilo consistente) */}
+      {showCreateModal && (
+        <CrearYVincularProfesionalAPerfil
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateSuccess}
+          perfilID={perfilID}
+          perfil={perfil}
+        />
+      )}
+    </>
+  );
+};
+
+export default AsociarProfesionalAPerfil;
