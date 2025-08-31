@@ -6,6 +6,10 @@ import axios from "axios";
 import {
   FaEye,
   FaEyeSlash,
+  FaBuilding,
+  FaHome,
+  FaMapMarkerAlt,
+  FaPhone,
   FaUser,
   FaLock,
   FaInfoCircle,
@@ -21,14 +25,37 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
   const navigate = useNavigate();
 
   // Estados del formulario
+  const [direccion, setDireccion] = useState("");
+  const [localidad, setLocalidad] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [tipo, setTipo] = useState("Particular");
+  const [banco, setBanco] = useState("");
+  const [cbu, setCbu] = useState("");
+  const [alias, setAlias] = useState("");
+  const [titular, setTitular] = useState("");
+  const [seña, setSeña] = useState(false);
+  const [importe, setImporte] = useState("");
   const [usuario, setUsuario] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [repetirContraseña, setRepetirContraseña] = useState("");
   const [mostrarContraseña, setMostrarContraseña] = useState(false);
   const [mostrarRepetir, setMostrarRepetir] = useState(false);
+  const [idProvinciaSelected, setIdProvinciaSelected] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const [creando, setCreando] = useState(false);
+
+  const {
+    provincias,
+    loading: loadingProvincias,
+    error: errorProvincias,
+  } = useAllProvincias();
+  const {
+    localidades,
+    loading: loadingLocalidades,
+    error: errorLocalidades,
+  } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -147,7 +174,7 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
         {/* Encabezado */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-            Crea tu cuenta de TURNATE
+            Crear Establecimiento
           </h1>
           <p className="mt-2 text-lg text-gray-600">
             Completa los datos para activar tu consultorio o centro médico
@@ -309,7 +336,7 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
           </section>
 
           {/* Sección: Datos del Establecimiento */}
-          {/* <section>
+          <section>
             <h2 className="text-xl font-semibold text-gray-800 mb-5 flex items-center gap-2">
               <FaBuilding className="text-indigo-500" /> Datos del
               Establecimiento
@@ -469,10 +496,10 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
                 </select>
               </div>
             </div>
-          </section> */}
+          </section>
 
           {/* Sección: Seña (condicional) */}
-          {/* {tipo === "Particular" && (
+          {tipo === "Particular" && (
             <section>
               <div className="flex items-center mb-5">
                 <input
@@ -548,7 +575,7 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
                 </div>
               )}
             </section>
-          )} */}
+          )}
 
           {/* Botón de envío */}
           <div className="pt-4">
@@ -562,7 +589,7 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
                 </span>
               ) : (
                 <span className="inline-flex gap-2 items-center">
-                  🚀 Crear perfil
+                  🚀 Crear Establecimiento
                 </span>
               )}
             </button>
