@@ -9,15 +9,7 @@ const useObtenerConsultorioxIdPerfil = (perfilId) => {
 
     const API_URL = import.meta.env.VITE_API_URL;
 
-    useEffect(() => {
-        if (!perfilId) {
-            setConsultorios([]);
-            setIsLoading(false);
-            setError(null);
-            return;
-        }
-
-        const fetchConsultorio = async () => {
+    const fetchConsultorio = async () => {
             setIsLoading(true);
             setError(null);
 
@@ -39,10 +31,18 @@ const useObtenerConsultorioxIdPerfil = (perfilId) => {
             }
         };
 
+    useEffect(() => {
+        if (!perfilId) {
+            setConsultorios([]);
+            setIsLoading(false);
+            setError(null);
+            return;
+        }
+
         fetchConsultorio();
     }, [perfilId]);
 
-    return { consultorios, isLoading, error };
+    return { consultorios, isLoading, error, fetchConsultorio };
 };
 
 export default useObtenerConsultorioxIdPerfil;

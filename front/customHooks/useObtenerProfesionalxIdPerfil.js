@@ -43,7 +43,7 @@ const useObtenerProfesionalxIdPerfil = (perfilId) => {
         
     }, [perfilId]);
 
-    return { profesional, isLoading, error, fetchProfesional, };
+    return { profesional, isLoading, error, fetchProfesional };
 };
 
 export default useObtenerProfesionalxIdPerfil;

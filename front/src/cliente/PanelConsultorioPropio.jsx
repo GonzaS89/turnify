@@ -5,9 +5,8 @@ import useConsultorioById from '../../customHooks/useConsultorioxId';
 import useObtenerProfesionalxIdPerfil from '../../customHooks/useObtenerProfesionalxIdPerfil';
 import useObtenerConsultorioxIdPerfil from '../../customHooks/useObtenerConsultorioxIdPerfil';
 
-import CrearConsultorioModal from '../cliente/CrearConsultorioModal';
-import CrearProfesionalModal from './CrearProfesionalModal';
 import AsociarProfesionalAPerfil from './AsociarProfesionalAPerfil';
+import CrearConsultorioModal from '../cliente/CrearConsultorioModal';
 
 // CARGA DE ICONOS
 
@@ -30,28 +29,30 @@ import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalC
 
 // CARGA DE LAYOUTS
 
-import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 import ModalListaTurnos from '../cliente/ModalListaTurnos'
 
 const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
-
+  const [showModalCrearConsultorio, setShowModalCrearConsultorio] = useState(false);
   const [refreshProfesionales, setRefreshProfesionales] = useState(null);
 
   const perfilID = perfil?.id;
-  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(perfilID, refreshProfesionales);
+  const perfilTipo = perfil.tipo;
 
   const { consultorios: consultoriosObtenidos, isLoading: isLoadingConsultoriosxIdPerfil, error: errorConsultoriosxIdPerfil } = useObtenerConsultorioxIdPerfil(perfilID);
 
   const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionalesxIdPerfil, error: errorProfesionalesxIdPerfil, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
 
+   const medico = profesionalesObtenidos?.[0] || null;
+    const medicoID = medico?.id;
+
+
   const noHayConsultorioAsociados = consultoriosObtenidos?.length === 0;
   const noHayProfesionalesAsociados = profesionalesObtenidos?.length === 0;
 
-  const medico = profesional?.[0] || null;
-  const medicoID = medico?.id;
+ 
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
     medicoID,
@@ -64,9 +65,9 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
 
 
   useEffect(() => {
-    profesional[0] === undefined ? setShowModalAsociarProfesional(true) : setShowModalAsociarProfesional(false)
+    profesionalesObtenidos[0] === undefined ? setShowModalAsociarProfesional(true) : setShowModalAsociarProfesional(false)
     enviarMedicoID(medicoID)
-  }, [profesional, medicoID])
+  }, [profesionalesObtenidos, medicoID])
 
 
 
@@ -92,8 +93,8 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
     year: 'numeric',
   }).replace(/^\w/, (c) => c.toUpperCase());
 
-  if (isLoading) return <LoadingCard />;
-  if (error || !perfil)
+  if (isLoadingProfesionalesxIdPerfil) return <LoadingCard />;
+  if (errorProfesionalesxIdPerfil || !perfil)
     return (
       <ErrorCard
         title="Error"
@@ -111,8 +112,8 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             {/* Info del médico */}
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-center">
-                Tu consultorio virtual
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                {consultoriosObtenidos?.length > 1 ? 'Gestión de consultorios' : 'Gestión de consultorio'}
               </h1>
 
               {medico ? (
@@ -232,15 +233,24 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
             description="Crea tu primer consultorio para comenzar a gestionar tus turnos."
             icon={FaUserPlus}
             gradient="from-indigo-500 to-purple-600"
-            onClick={() => setShowModalAsociarProfesional(true)}
+            onClick={() => setShowModalCrearConsultorio(true)}
           />
+        )}
+
+        {showModalCrearConsultorio && (
+          <CrearConsultorioModal i
+          isOpen={true} 
+          onClose={()=> setShowModalCrearConsultorio(false)}
+          perfilID={perfilID}
+          perfilTipo={perfilTipo}
+          />  
         )}
 
 
         
 
         {/* ===== ESTADÍSTICAS OPCIONALES (opcional) ===== */}
-        {medico && (
+        {medico && !noHayConsultorioAsociados && (
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 mb-8">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Resumen del día</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">

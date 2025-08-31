@@ -4,18 +4,18 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bcrypt from "bcryptjs";
 import twilio from "twilio";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
-import cron from 'node-cron';
+import cron from "node-cron";
 import dayjs from "dayjs";
-import utc from 'dayjs/plugin/utc.js';
-import timezone from 'dayjs/plugin/timezone.js';
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault('America/Argentina/Buenos_Aires');
+dayjs.tz.setDefault("America/Argentina/Buenos_Aires");
 
 dotenv.config();
 
@@ -26,8 +26,6 @@ app.use(cors({ origin: "*" }));
 
 app.use(express.json({ limit: "10mb", type: "application/json" }));
 app.use(express.urlencoded({ extended: true }));
-;
-
 const client = twilio(accountSid, authToken);
 
 //OBTENER TODOS LOS PROFESIONALES //
@@ -55,7 +53,6 @@ app.get("/api/consultorios", async (req, res) => {
 });
 
 // OBTENER TODOS LOS PERFILES
-
 
 app.get("/api/perfiles", async (req, res) => {
   try {
@@ -99,27 +96,30 @@ app.get("/api/localidades/:provinciaId", async (req, res) => {
 
 app.get("/api/especialidades", async (req, res) => {
   try {
-    const [resultado] = await pool.execute("SELECT * FROM especialidades_medicas");
+    const [resultado] = await pool.execute(
+      "SELECT * FROM especialidades_medicas"
+    );
     res.json(resultado);
   } catch {
     console.error("Error al obtener especialidades");
     res.status(500).send("Error al obtener especialidades");
   }
-})
+});
 
 // OBTENER CODIGOS DISPONIBLES //
 
 app.get("/api/codigosdisponibles", async (req, res) => {
-  const query = 'SELECT codigo_activacion AS codigos FROM perfiles WHERE usuario is NULL';
+  const query =
+    "SELECT codigo_activacion AS codigos FROM perfiles WHERE usuario is NULL";
 
   try {
     const [resultado] = await pool.execute(query);
     res.json(resultado);
   } catch {
     console.error("Error al obtener codigos");
-    res.status(500).send("Error al obtener codigos")
+    res.status(500).send("Error al obtener codigos");
   }
-})
+});
 
 //OBTENER LOCALIDADES SEGUN ID PROVINCIA //
 
@@ -135,7 +135,8 @@ app.get("/api/provincias", async (req, res) => {
 
 //OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
-app.get("/api/turnos-profesional/:profesionalId/:consultorioId",
+app.get(
+  "/api/turnos-profesional/:profesionalId/:consultorioId",
   async (req, res) => {
     const { profesionalId, consultorioId } = req.params;
 
@@ -290,7 +291,6 @@ app.get("/api/coberturas/:id", async (req, res) => {
   }
 });
 
-
 // OBTENER CONSULTORIOS POR ID //
 
 app.get("/api/consultorio/:id", async (req, res) => {
@@ -373,8 +373,8 @@ app.get("/api/todoslosturnos/:turnoID", async (req, res) => {
 
 // OBTENER CONSULTORIOS X ID PERFIL //
 
-app.get("/api/consultoriosxidperfil/:perfilId", async(req, res) => {
-  const {perfilId} = req.params;
+app.get("/api/consultoriosxidperfil/:perfilId", async (req, res) => {
+  const { perfilId } = req.params;
 
   const consulta = `SELECT 
   c.id,
@@ -393,22 +393,21 @@ app.get("/api/consultoriosxidperfil/:perfilId", async(req, res) => {
   perfiles_consultorios AS pc ON pc.consultorio_id = c.id
   JOIN
   perfiles AS p ON p.id = pc.perfil_id
-  WHERE p.id = ?`
+  WHERE p.id = ?`;
 
-  try{
-    const [ resultados ] = await pool.execute(consulta,[perfilId]);
+  try {
+    const [resultados] = await pool.execute(consulta, [perfilId]);
     res.json(resultados);
-  }catch(error){
+  } catch (error) {
     console.error("Error al obtener consultorios", error);
-    res.status(500).send("Error interno del servidor al obtener consultorios")
+    res.status(500).send("Error interno del servidor al obtener consultorios");
   }
-
-})
+});
 
 // OBTENER PROFESIONAL X ID PERFIL
 
-app.get("/api/profesionalxidperfil/:perfilId", async(req, res) => {
-  const {perfilId} = req.params;
+app.get("/api/profesionalxidperfil/:perfilId", async (req, res) => {
+  const { perfilId } = req.params;
 
   const consulta = `SELECT 
   p.id,
@@ -421,17 +420,16 @@ app.get("/api/profesionalxidperfil/:perfilId", async(req, res) => {
   FROM profesionales AS p
   JOIN
   perfiles_profesionales AS pp ON pp.profesional_id = p.id
-  WHERE pp.perfil_id = ?`
+  WHERE pp.perfil_id = ?`;
 
-  try{
-    const [ resultados ] = await pool.execute(consulta,[perfilId]);
+  try {
+    const [resultados] = await pool.execute(consulta, [perfilId]);
     res.json(resultados);
-  }catch(error){
+  } catch (error) {
     console.error("Error al obtener profesional", error);
-    res.status(500).send("Error interno del servidor al obtener profesional")
+    res.status(500).send("Error interno del servidor al obtener profesional");
   }
-
-})
+});
 
 // RESERVAR TURNO //
 
@@ -507,8 +505,6 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
         [profesionalID]
       );
 
-
-
       const linkCancelar = `https://turnate.site/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
 
       const mensaje = `
@@ -520,14 +516,21 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
 
 📅 *Fecha:* ${fecha}
 ⏰ *Hora:* ${hora}
-👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${datosProfesional[0].apellido
-        }
-🏥 *Consultorio:* ${datosConsultorio[0].tipo === 'Particular' ? datosConsultorio[0].tipo : `${datosConsultorio[0].tipo} ${datosConsultorio[0].nombre}`}
-📍 *Dirección:* ${datosConsultorio[0].direccion}, ${datosConsultorio[0].localidad
-        }
+👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${
+        datosProfesional[0].apellido
+      }
+🏥 *Consultorio:* ${
+        datosConsultorio[0].tipo === "Particular"
+          ? datosConsultorio[0].tipo
+          : `${datosConsultorio[0].tipo} ${datosConsultorio[0].nombre}`
+      }
+📍 *Dirección:* ${datosConsultorio[0].direccion}, ${
+        datosConsultorio[0].localidad
+      }
 
-${datosConsultorio[0].seña === 1 ?
-          `
+${
+  datosConsultorio[0].seña === 1
+    ? `
 💰 *Importe de la seña:* $${datosConsultorio[0].importe}
 🏦 *Banco:* ${datosConsultorio[0].banco}
 🏧 *CBU:* ${datosConsultorio[0].cbu}
@@ -535,8 +538,9 @@ ${datosConsultorio[0].seña === 1 ?
 👤 *Titular de la cuenta:* ${datosConsultorio[0].titular}
 
 Enviar comprobante a ${datosConsultorio[0].telefono} para que se haga efectivo el turno.
-` : ""
-        }
+`
+    : ""
+}
 
 ❌ *¿Necesitás cancelar?*
 Puedes hacerlo fácilmente aquí:
@@ -608,9 +612,8 @@ app.post("/api/habilitarturnos", async (req, res) => {
     fecha,
     cantidadTurnos,
     horaInicio,
-    duracion
+    duracion,
   } = req.body;
-
 
   // Validación básica
   if (
@@ -651,7 +654,7 @@ app.post("/api/habilitarturnos", async (req, res) => {
         profesionalId,
         fecha,
         currentHour,
-        duracion
+        duracion,
       ]);
 
       // Calcular próxima hora
@@ -843,42 +846,41 @@ app.post(
 
 //LOGIN //
 
-app.post('/api/login', async (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { usuario, contraseña } = req.body;
 
   try {
     const [rows] = await pool.execute(
-      'SELECT * FROM perfiles WHERE usuario = ?',
+      "SELECT * FROM perfiles WHERE usuario = ?",
       [usuario]
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ message: 'Credenciales inválidas' });
+      return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
     const perfil = rows[0];
     const isValid = await bcrypt.compare(contraseña, perfil.contrasena);
 
     if (!isValid) {
-      return res.status(401).json({ message: 'Credenciales inválidas' });
+      return res.status(401).json({ message: "Credenciales inválidas" });
     }
 
     // Generar JWT (opcional, pero recomendado)
     const token = jwt.sign(
       { id: perfil.id, usuario: perfil.usuario, tipo: perfil.tipo },
-      'tu_clave_secreta', // Usa una variable de entorno
-      { expiresIn: '1h' }
+      "tu_clave_secreta", // Usa una variable de entorno
+      { expiresIn: "1h" }
     );
 
     res.json({
-      message: 'Login exitoso',
+      message: "Login exitoso",
       perfil: { id: perfil.id, usuario: perfil.usuario, nombre: perfil.nombre },
-      token
+      token,
     });
-
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error del servidor' });
+    res.status(500).json({ message: "Error del servidor" });
   }
 });
 
@@ -983,7 +985,6 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
     titular,
   } = req.body;
 
-
   // Validar campos obligatorios
   if (!direccion || !localidad || !provincia || !usuario || !contraseña) {
     return res.status(400).json({ message: "Faltan campos obligatorios." });
@@ -1005,14 +1006,17 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
       [codigo]
     );
     if (consultorios.length === 0) {
-      return res.status(404).json({ message: "Código de activación inválido." });
+      return res
+        .status(404)
+        .json({ message: "Código de activación inválido." });
     }
 
     // Hashear contraseña
     const hashedPassword = await bcrypt.hash(contraseña, 10);
 
     // Normalizar valores de seña
-    const safeImporte = seña && importeSeña ? (parseFloat(importeSeña) || null) : null;
+    const safeImporte =
+      seña && importeSeña ? parseFloat(importeSeña) || null : null;
     const safeBanco = seña && banco ? banco : null;
     const safeCbu = seña && cbu ? cbu : null;
     const safeAlias = seña && alias ? alias : null;
@@ -1051,13 +1055,18 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
         safeCbu,
         safeAlias,
         safeTitular,
-        codigo
+        codigo,
       ]
     );
 
     // ✅ Verificar si se afectó alguna fila
     if (resultado.affectedRows === 0) {
-      return res.status(500).json({ message: "No se pudo actualizar el consultorio (ninguna fila afectada)." });
+      return res
+        .status(500)
+        .json({
+          message:
+            "No se pudo actualizar el consultorio (ninguna fila afectada).",
+        });
     }
 
     res.status(200).json({
@@ -1065,11 +1074,10 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
       affectedRows: resultado.affectedRows,
       nombre: nombre,
     });
-
   } catch (error) {
     console.error("Error al crear consultorio:", error);
     res.status(500).json({
-      message: "Error interno del servidor al crear el consultorio."
+      message: "Error interno del servidor al crear el consultorio.",
     });
   }
 });
@@ -1078,25 +1086,21 @@ app.put("/api/crearconsultorio/:codigo", async (req, res) => {
 
 app.put("/api/crearperfil/:codigo", async (req, res) => {
   const { codigo } = req.params;
-  const {
-    usuario,
-    contraseña,
-    tipo
-  } = req.body;
+  const { usuario, contraseña, tipo } = req.body;
 
-  console.log(usuario,contraseña,tipo)
+  console.log(usuario, contraseña, tipo);
 
-  if(!usuario || !contraseña || !tipo) {
-    return res.status(400).json({message:"Faltan campos obligatorios "})
+  if (!usuario || !contraseña || !tipo) {
+    return res.status(400).json({ message: "Faltan campos obligatorios " });
   }
 
-  try{
+  try {
     const [perfilesExistentes] = await pool.execute(
       "SELECT id FROM perfiles WHERE usuario = ?",
       [usuario]
     );
-    if(perfilesExistentes.length > 0) {
-      return res.status(409).json({message:"El usuario ya esta en uso"});
+    if (perfilesExistentes.length > 0) {
+      return res.status(409).json({ message: "El usuario ya esta en uso" });
     }
 
     const [perfiles] = await pool.execute(
@@ -1104,7 +1108,9 @@ app.put("/api/crearperfil/:codigo", async (req, res) => {
       [codigo]
     );
     if (perfiles.length === 0) {
-      return res.status(404).json({ message: "Código de activación inválido."}) 
+      return res
+        .status(404)
+        .json({ message: "Código de activación inválido." });
     }
 
     const hashedPassword = await bcrypt.hash(contraseña, 10);
@@ -1112,87 +1118,30 @@ app.put("/api/crearperfil/:codigo", async (req, res) => {
     const [resultado] = await pool.execute(
       `UPDATE perfiles SET usuario = ?, contrasena = ?, tipo = ? WHERE codigo_activacion = ?`,
       [usuario, hashedPassword, tipo, codigo]
-    )
+    );
 
-    if(resultado.affectedRows === 0){
-      return res.status(500).json({ message: "No se pudo actualizar el perfil (ninguna fila afectada)." });
+    if (resultado.affectedRows === 0) {
+      return res
+        .status(500)
+        .json({
+          message: "No se pudo actualizar el perfil (ninguna fila afectada).",
+        });
     }
 
     res.status(200).json({
       message: "Perfil creado con éxito.",
       affectedRows: resultado.affectedRows,
     });
-  }catch (error) {
+  } catch (error) {
     console.error("Error al crear perfil:", error);
     res.status(500).json({
-      message: "Error interno del servidor al crear el perfil."
+      message: "Error interno del servidor al crear el perfil.",
     });
   }
-})
+});
 
 // VINCULAR PROFESIONAL CON CONSULTORIO //
 
-// app.post("/api/crearprofesional", async (req, res) => {
-//   const { nombre, apellido, matricula, especialidad, titulo, telefono } = req.body;
-
-//   console.log("Datos recibidos:", req.body);
-
-//   // Validación
-//   if (!nombre || !apellido || !matricula || !especialidad) {
-//     return res.status(400).json({ message: "Faltan campos obligatorios." });
-//   }
-
-//   try {
-//     // Verificar si ya existe por matrícula
-//     const [existing] = await pool.execute(
-//       "SELECT id FROM profesionales WHERE matricula = ?",
-//       [matricula]
-//     );
-
-//     if (existing.length > 0) {
-//       return res.status(409).json({
-//         message: "Ya existe un profesional con esa matrícula.",
-//       });
-//     }
-
-//     // Insertar nuevo profesional
-//     const [result] = await pool.execute(
-//       "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-//       [nombre, apellido, especialidad, titulo || null, matricula, telefono]
-//     );
-
-//     // ✅ Usamos `res` para responder, NO `result`
-//     res.status(201).json({
-//       message: "Profesional creado con éxito.",
-//       id: result.insertId,
-//       nombre,
-//       apellido,
-//       especialidad,
-//       matricula,
-//       titulo,
-//       telefono
-//     });
-
-//   } catch (error) {
-//     console.error("Error al crear profesional:", error);
-
-//     // Manejo de error de duplicado (opcional)
-//     if (error.code === 'ER_DUP_ENTRY') {
-//       return res.status(409).json({
-//         message: "Matrícula ya registrada.",
-//       });
-//     }
-
-//     // Error genérico
-//     res.status(500).json({
-//       message: "Error interno del servidor al crear el profesional.",
-//     });
-//   }
-// });
-
-// // CREAR UNION PROFESIONA Y CONSULTORIO //
-
-// Ruta: POST /api/unionprofesionalconsultorio
 app.post("/api/unionprofesionalconsultorio", async (req, res) => {
   const { profesionalID, consultorioID } = req.body;
 
@@ -1274,7 +1223,7 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
     especialidad,
     titulo,
     telefono,
-    consultorioID
+    consultorioID,
   } = req.body;
 
   console.log("Datos recibidos:", req.body);
@@ -1282,7 +1231,8 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
   // Validación de campos obligatorios
   if (!nombre || !apellido || !matricula || !especialidad || !consultorioID) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o consultorioID.",
+      message:
+        "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o consultorioID.",
     });
   }
 
@@ -1304,12 +1254,21 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
     if (existing.length > 0) {
       // Si ya existe, usar el ID existente
       profesionalID = existing[0].id;
-      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
+      console.log(
+        `Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`
+      );
     } else {
       // Si no existe, crear uno nuevo
       const [insertResult] = await connection.execute(
         "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null]
+        [
+          nombre,
+          apellido,
+          especialidad,
+          titulo || null,
+          matricula,
+          telefono || null,
+        ]
       );
       profesionalID = insertResult.insertId;
       console.log(`Profesional creado con ID: ${profesionalID}`);
@@ -1321,11 +1280,15 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
         "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
         [profesionalID, consultorioID]
       );
-      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`);
+      console.log(
+        `Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`
+      );
     } catch (error) {
       // Si ya está vinculado (duplicado), ignoramos el error y continuamos
-      if (error.code === 'ER_DUP_ENTRY') {
-        console.log(`Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${consultorioID}`);
+      if (error.code === "ER_DUP_ENTRY") {
+        console.log(
+          `Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${consultorioID}`
+        );
       } else {
         throw error; // Otro error sí debe romper la transacción
       }
@@ -1336,9 +1299,10 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
 
     // Responder con éxito
     return res.status(201).json({
-      message: existing.length > 0
-        ? "Profesional ya existente y asociado correctamente."
-        : "Profesional creado y asociado correctamente.",
+      message:
+        existing.length > 0
+          ? "Profesional ya existente y asociado correctamente."
+          : "Profesional creado y asociado correctamente.",
       profesional: {
         id: profesionalID,
         nombre,
@@ -1347,10 +1311,9 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
         matricula,
         titulo,
         telefono,
-        consultorioID
-      }
+        consultorioID,
+      },
     });
-
   } catch (error) {
     // Revertir transacción si falló algo
     if (connection) {
@@ -1361,14 +1324,135 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
     console.error("Error en crear-y-vincular-profesional:", error);
 
     // Manejo específico de errores
-    if (error.code === 'ER_DUP_ENTRY') {
+    if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({
-        message: "Este profesional ya está asociado a este consultorio."
+        message: "Este profesional ya está asociado a este consultorio.",
       });
     }
 
     return res.status(500).json({
-      message: "Error interno del servidor al crear o vincular el profesional."
+      message: "Error interno del servidor al crear o vincular el profesional.",
+    });
+  }
+});
+
+app.post("/api/crear-y-vincular-profesional", async (req, res) => {
+  const {
+    nombre,
+    apellido,
+    matricula,
+    especialidad,
+    titulo,
+    telefono,
+    consultorioID,
+  } = req.body;
+
+  console.log("Datos recibidos:", req.body);
+
+  // Validación de campos obligatorios
+  if (!nombre || !apellido || !matricula || !especialidad || !consultorioID) {
+    return res.status(400).json({
+      message:
+        "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o consultorioID.",
+    });
+  }
+
+  let connection;
+
+  try {
+    // Obtener conexión directa para manejar transacción
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // 1. Verificar si ya existe un profesional con esa matrícula
+    const [existing] = await connection.execute(
+      "SELECT id FROM profesionales WHERE matricula = ?",
+      [matricula]
+    );
+
+    let profesionalID;
+
+    if (existing.length > 0) {
+      // Si ya existe, usar el ID existente
+      profesionalID = existing[0].id;
+      console.log(
+        `Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`
+      );
+    } else {
+      // Si no existe, crear uno nuevo
+      const [insertResult] = await connection.execute(
+        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
+        [
+          nombre,
+          apellido,
+          especialidad,
+          titulo || null,
+          matricula,
+          telefono || null,
+        ]
+      );
+      profesionalID = insertResult.insertId;
+      console.log(`Profesional creado con ID: ${profesionalID}`);
+    }
+
+    // 2. Intentar asociar al consultorio
+    try {
+      await connection.execute(
+        "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
+        [profesionalID, consultorioID]
+      );
+      console.log(
+        `Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`
+      );
+    } catch (error) {
+      // Si ya está vinculado (duplicado), ignoramos el error y continuamos
+      if (error.code === "ER_DUP_ENTRY") {
+        console.log(
+          `Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${consultorioID}`
+        );
+      } else {
+        throw error; // Otro error sí debe romper la transacción
+      }
+    }
+
+    // 3. Confirmar transacción
+    await connection.commit();
+
+    // Responder con éxito
+    return res.status(201).json({
+      message:
+        existing.length > 0
+          ? "Profesional ya existente y asociado correctamente."
+          : "Profesional creado y asociado correctamente.",
+      profesional: {
+        id: profesionalID,
+        nombre,
+        apellido,
+        especialidad,
+        matricula,
+        titulo,
+        telefono,
+        consultorioID,
+      },
+    });
+  } catch (error) {
+    // Revertir transacción si falló algo
+    if (connection) {
+      await connection.rollback().catch(console.error);
+      connection.release();
+    }
+
+    console.error("Error en crear-y-vincular-profesional:", error);
+
+    // Manejo específico de errores
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        message: "Este profesional ya está asociado a este consultorio.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor al crear o vincular el profesional.",
     });
   }
 });
@@ -1383,7 +1467,7 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     especialidad,
     titulo,
     telefono,
-    perfilID
+    perfilID,
   } = req.body;
 
   console.log("Datos recibidos:", req.body);
@@ -1391,7 +1475,8 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
   // Validación de campos obligatorios
   if (!nombre || !apellido || !matricula || !especialidad || !perfilID) {
     return res.status(400).json({
-      message: "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o perfilID.",
+      message:
+        "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o perfilID.",
     });
   }
 
@@ -1413,12 +1498,21 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     if (existing.length > 0) {
       // Si ya existe, usar el ID existente
       profesionalID = existing[0].id;
-      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
+      console.log(
+        `Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`
+      );
     } else {
       // Si no existe, crear uno nuevo
       const [insertResult] = await connection.execute(
         "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null]
+        [
+          nombre,
+          apellido,
+          especialidad,
+          titulo || null,
+          matricula,
+          telefono || null,
+        ]
       );
       profesionalID = insertResult.insertId;
       console.log(`Profesional creado con ID: ${profesionalID}`);
@@ -1430,11 +1524,15 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
         "INSERT INTO perfiles_profesionales (perfil_id, profesional_id) VALUES (?, ?)",
         [perfilID, profesionalID]
       );
-      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${perfilID}`);
+      console.log(
+        `Profesional ID ${profesionalID} asociado al consultorio ID ${perfilID}`
+      );
     } catch (error) {
       // Si ya está vinculado (duplicado), ignoramos el error y continuamos
-      if (error.code === 'ER_DUP_ENTRY') {
-        console.log(`Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${perfilID}`);
+      if (error.code === "ER_DUP_ENTRY") {
+        console.log(
+          `Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${perfilID}`
+        );
       } else {
         throw error; // Otro error sí debe romper la transacción
       }
@@ -1445,9 +1543,10 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
 
     // Responder con éxito
     return res.status(201).json({
-      message: existing.length > 0
-        ? "Profesional ya existente y asociado correctamente."
-        : "Profesional creado y asociado correctamente.",
+      message:
+        existing.length > 0
+          ? "Profesional ya existente y asociado correctamente."
+          : "Profesional creado y asociado correctamente.",
       profesional: {
         id: profesionalID,
         nombre,
@@ -1456,10 +1555,9 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
         matricula,
         titulo,
         telefono,
-        perfilID
-      }
+        perfilID,
+      },
     });
-
   } catch (error) {
     // Revertir transacción si falló algo
     if (connection) {
@@ -1470,61 +1568,208 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     console.error("Error en crear-y-vincular-profesional:", error);
 
     // Manejo específico de errores
-    if (error.code === 'ER_DUP_ENTRY') {
+    if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({
-        message: "Este profesional ya está asociado a este consultorio."
+        message: "Este profesional ya está asociado a este consultorio.",
       });
     }
 
     return res.status(500).json({
-      message: "Error interno del servidor al crear o vincular el profesional."
+      message: "Error interno del servidor al crear o vincular el profesional.",
+    });
+  }
+});
+
+// CREAR Y VINCULAR CONSULTORIO CON PERFIL //
+
+app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) => {
+  const { perfilID } = req.params;
+
+  const {
+    direccion,
+    localidad,
+    provincia,
+    telefono,
+    nombre,
+    seña,
+    importe,
+    banco,
+    cbu,
+    alias,
+    titular,
+  } = req.body;
+
+  console.log("Datos recibidos:", req.body);
+
+  // Validación de campos obligatorios
+  if (!nombre || !direccion || !localidad || !provincia) {
+    return res.status(400).json({
+      message: "Faltan campos obligatorios: nombre, dirección, localidad o provincia.",
+    });
+  }
+
+  let connection;
+  let consultorioID;
+
+  // Convertir valores seguros para la seña
+  const safeImporte = seña && importe ? parseFloat(importe) : null;
+  const safeBanco = seña ? banco : null;
+  const safeCbu = seña ? cbu : null;
+  const safeAlias = seña ? alias : null;
+  const safeTitular = seña ? titular : null;
+
+  // Validar que si seña es true, el importe sea válido
+  if (seña && (isNaN(safeImporte) || safeImporte <= 0)) {
+    return res.status(400).json({
+      message: "El importe de la seña debe ser un número válido mayor a 0.",
+    });
+  }
+
+  try {
+    // Obtener conexión y comenzar transacción
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Insertar nuevo consultorio
+    const [insertResult] = await connection.execute(
+      `INSERT INTO consultorios 
+        (nombre, direccion, localidad, provincia, telefono, sena, importe_sena, banco, cbu, alias, cuenta_nombre) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        nombre,
+        direccion,
+        localidad,
+        provincia,
+        telefono || null,
+        seña ? 1 : 0, // booleano a TINYINT(1)
+        safeImporte,
+        safeBanco,
+        safeCbu,
+        safeAlias,
+        safeTitular,
+      ]
+    );
+
+    consultorioID = insertResult.insertId;
+    console.log(`Consultorio creado con ID: ${consultorioID}`);
+
+    // Asociar al perfil
+    try {
+      await connection.execute(
+        "INSERT INTO perfiles_consultorios (perfil_id, consultorio_id) VALUES (?, ?)",
+        [perfilID, consultorioID]
+      );
+      console.log(`Consultorio ID ${consultorioID} asociado al perfil ID ${perfilID}`);
+    } catch (error) {
+      if (error.code === "ER_DUP_ENTRY") {
+        console.log(
+          `Advertencia: El consultorio ya está asociado al perfil ID ${perfilID}`
+        );
+      } else {
+        throw error; // Otro error rompe la transacción
+      }
+    }
+
+    // Confirmar transacción
+    await connection.commit();
+
+    // Respuesta exitosa
+    return res.status(201).json({
+      message: "Consultorio creado y asociado correctamente.",
+      consultorio: {
+        id: consultorioID,
+        nombre,
+        direccion,
+        localidad,
+        provincia,
+        telefono,
+        seña,
+        importe: safeImporte,
+        banco: safeBanco,
+        cbu: safeCbu,
+        alias: safeAlias,
+        titular: safeTitular,
+        perfilID,
+      },
+    });
+  } catch (error) {
+    // Revertir transacción
+    if (connection) {
+      await connection.rollback().catch((err) => console.error("Error en rollback:", err));
+      connection.release();
+    }
+
+    console.error("Error en crear y vincular consultorio:", error);
+
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        message: "Este consultorio ya está asociado a este perfil.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Error interno del servidor al crear o vincular el consultorio.",
     });
   }
 });
 
 // DESVINCULAR PROFESIONAL DE CENTRO MEDICO //
 
-app.put("/api/desvincularprofesional/:consultorioId/:profesionalId", async (req, res) => {
-  const { consultorioId, profesionalId } = req.params;
+app.put(
+  "/api/desvincularprofesional/:consultorioId/:profesionalId",
+  async (req, res) => {
+    const { consultorioId, profesionalId } = req.params;
 
-  try {
-    const query = `
+    try {
+      const query = `
   UPDATE profesional_consultorio
   SET estado = 'inactivo'
   WHERE profesional_id = ? AND consultorio_id = ?
 `;
 
-    const [resultado] = await pool.execute(query, [
-      profesionalId,
-      consultorioId
-    ]);
+      const [resultado] = await pool.execute(query, [
+        profesionalId,
+        consultorioId,
+      ]);
 
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ message: "Profesional no encontrado en centro médico" });
-    };
+      if (resultado.affectedRows === 0) {
+        return res
+          .status(404)
+          .json({ message: "Profesional no encontrado en centro médico" });
+      }
 
-    res.status(200).json({ message: "Profesional encontrado y desvinculado" })
-  } catch (err) {
-    console.error("Error al desvincular profesional", err);
-    res.status(500).json({ message: "Error interno al no desvincular profesional" })
+      res
+        .status(200)
+        .json({ message: "Profesional encontrado y desvinculado" });
+    } catch (err) {
+      console.error("Error al desvincular profesional", err);
+      res
+        .status(500)
+        .json({ message: "Error interno al no desvincular profesional" });
+    }
   }
-})
+);
 
 function formatearTitulo(titulo) {
   const normalizado = titulo
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
 
   switch (normalizado) {
-    case 'doctor': return { pronombre: 'el', tituloAbrev: 'Dr.' };
-    case 'doctora': return { pronombre: 'la', tituloAbrev: 'Dra.' };
-    case 'licenciado': return { pronombre: 'el', tituloAbrev: 'Lic.' };
-    case 'licenciada': return { pronombre: 'la', tituloAbrev: 'Lic.' };
+    case "doctor":
+      return { pronombre: "el", tituloAbrev: "Dr." };
+    case "doctora":
+      return { pronombre: "la", tituloAbrev: "Dra." };
+    case "licenciado":
+      return { pronombre: "el", tituloAbrev: "Lic." };
+    case "licenciada":
+      return { pronombre: "la", tituloAbrev: "Lic." };
     default:
       return {
-        pronombre: normalizado.endsWith('a') ? 'la' : 'el',
-        tituloAbrev: titulo.charAt(0).toUpperCase() + titulo.slice(1) + '.'
+        pronombre: normalizado.endsWith("a") ? "la" : "el",
+        tituloAbrev: titulo.charAt(0).toUpperCase() + titulo.slice(1) + ".",
       };
   }
 }
@@ -1551,9 +1796,8 @@ app.get("/api/profesionales/:slug", async (req, res) => {
   }
 });
 
-
-cron.schedule('* * * * *', async () => {
-  console.log('🔍 Buscando turnos que ocurran en 5 horas o menos...');
+cron.schedule("* * * * *", async () => {
+  console.log("🔍 Buscando turnos que ocurran en 5 horas o menos...");
 
   const ahora = dayjs();
 
@@ -1584,7 +1828,7 @@ cron.schedule('* * * * *', async () => {
     `);
 
     if (rows.length === 0) {
-      console.log('📭 No hay turnos pendientes para notificar.');
+      console.log("📭 No hay turnos pendientes para notificar.");
       return;
     }
 
@@ -1594,8 +1838,8 @@ cron.schedule('* * * * *', async () => {
       // Fecha y hora del turno en zona horaria local
       const fechaHoraTurno = dayjs.tz(
         `${turno.fecha} ${turno.hora}`,
-        'YYYY-MM-DD HH:mm:ss',
-        'America/Argentina/Buenos_Aires'
+        "YYYY-MM-DD HH:mm:ss",
+        "America/Argentina/Buenos_Aires"
       );
 
       if (!fechaHoraTurno.isValid()) {
@@ -1604,10 +1848,12 @@ cron.schedule('* * * * *', async () => {
       }
 
       // Diferencia en minutos
-      const diffMinutos = fechaHoraTurno.diff(ahora, 'minute');
+      const diffMinutos = fechaHoraTurno.diff(ahora, "minute");
       const diffHoras = diffMinutos / 60;
 
-      console.log(`📋 Turno: ${turno.nombre_paciente} | Faltan ${diffMinutos} min`);
+      console.log(
+        `📋 Turno: ${turno.nombre_paciente} | Faltan ${diffMinutos} min`
+      );
 
       // Si ya pasó el turno
       if (diffMinutos < 0) {
@@ -1620,7 +1866,7 @@ cron.schedule('* * * * *', async () => {
         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
         // Formatear hora: HH:mm (sin segundos)
-        const [horas, minutos] = turno.hora.split(':');
+        const [horas, minutos] = turno.hora.split(":");
         const horaFormateada = `${horas}:${minutos}`;
 
         // Formatear título
@@ -1640,53 +1886,59 @@ cron.schedule('* * * * *', async () => {
 
   ⏰ Te pedimos llegar con 10 minutos de anticipación.
 
-  ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${turno.telConsultorio} lo antes posible.
+  ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${
+    turno.telConsultorio
+  } lo antes posible.
 
   🙏 ¡Gracias por tu confianza!
 
   Te esperamos 🩺✨
 `
-  .split('\n')           // Divide en líneas
-  .map(linea => linea.trim())  // ✅ Elimina espacios SOLO al inicio y final de cada línea
-  .filter(linea => linea !== '') // Mantiene líneas vacías intencionales como separadores
-  .join('\n'); // Vuelve a unirlas con saltos de línea
+          .split("\n") // Divide en líneas
+          .map((linea) => linea.trim()) // ✅ Elimina espacios SOLO al inicio y final de cada línea
+          .filter((linea) => linea !== "") // Mantiene líneas vacías intencionales como separadores
+          .join("\n"); // Vuelve a unirlas con saltos de línea
 
-
-        console.log(mensaje)
+        console.log(mensaje);
 
         try {
           // ✅ Enviar WhatsApp con Twilio
           await client.messages.create({
             from: twilioWhatsApp, // Ej: +14155238886
             to: `whatsapp:+5493815588504`, // Asegúrate que esté en formato internacional +549...
-            body: mensaje
+            body: mensaje,
           });
 
-          console.log(`✅ Mensaje enviado a ${turno.telefono} para el turno ID ${turno.id}`);
+          console.log(
+            `✅ Mensaje enviado a ${turno.telefono} para el turno ID ${turno.id}`
+          );
 
           // ✅ Marcar como notificado
           await pool.execute(
-            'UPDATE turnos SET notificacion_5h_enviada = ? WHERE id = ?',
+            "UPDATE turnos SET notificacion_5h_enviada = ? WHERE id = ?",
             [1, turno.id]
           );
 
           console.log(`📌 Turno ID ${turno.id} marcado como notificado.`);
-
         } catch (error) {
-          console.error(`❌ Error al enviar mensaje al turno ID ${turno.id}:`, error.message);
+          console.error(
+            `❌ Error al enviar mensaje al turno ID ${turno.id}:`,
+            error.message
+          );
           // No actualizamos el estado si falló el envío, para reintentar luego
         }
       } else {
-        console.log(`⏳ Faltan ${Math.floor(diffHoras)}h ${Math.round(diffMinutos % 60)}m - Aún no es momento.`);
+        console.log(
+          `⏳ Faltan ${Math.floor(diffHoras)}h ${Math.round(
+            diffMinutos % 60
+          )}m - Aún no es momento.`
+        );
       }
     }
   } catch (error) {
-    console.error('❌ Error en el cron de notificaciones:', error.message);
+    console.error("❌ Error en el cron de notificaciones:", error.message);
   }
 });
-
-
-
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend corriendo en http://0.0.0.0:${PORT}`);
