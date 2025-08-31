@@ -125,7 +125,6 @@ const GenerarTurnosModal = () => {
   ? format(parseISO(selectedDate), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
   : "";
 
-    console.log(selectedDate);
 
   return (
     <>
