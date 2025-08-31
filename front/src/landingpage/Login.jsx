@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useAllConsultorios from "../../customHooks/useAllConsultorios";
+import useAllPerfiles from "../../customHooks/useAllPerfiles";
 import axios from 'axios';
 import { FaUser, FaLock } from 'react-icons/fa';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { FaTimes } from 'react-icons/fa';
 
 const Login = ({ closeLogin }) => {
-  const { consultorios, isLoading, error: fetchError } = useAllConsultorios();
+  const { perfiles, isLoading, error: fetchError } = useAllPerfiles();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -40,12 +40,12 @@ const Login = ({ closeLogin }) => {
         contraseña: password,
       });
 
-      const { consultorio, token } = response.data;
+      const { perfil, token } = response.data;
 
       // ✅ Guardar datos necesarios en localStorage
       localStorage.setItem('authToken', token);
       localStorage.setItem('userPassword', password);
-      localStorage.setItem('consultorio', JSON.stringify(consultorio));
+      localStorage.setItem('perfil', JSON.stringify(perfil));
 
       setTimeout(() => {
         setIsSubmitting(false);

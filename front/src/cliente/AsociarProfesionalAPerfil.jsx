@@ -1,5 +1,5 @@
 import { useState } from "react";
-import CrearProfesionalModal from "./CrearProfesionalModal";
+import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
@@ -15,19 +15,19 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 
-const AsociarProfesionalAConsultorio = ({
+const AsociarProfesionalAPerfil = ({
   onClose,
-  consultorioID,
+  perfilID,
   idsProfesionalesVinculados,
   refrescarListaProfesionales,
   profesionalVinculado,
-  consultorio,
+  perfil,
+  actualizarProfesionales
 }) => {
   const {
     profesionales,
     isLoading,
-    error: hookError,
-    actualizarProfesionales,
+    error: hookError
   } = useAllProfesionals();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProfesional, setSelectedProfesional] = useState("");
@@ -51,17 +51,17 @@ const AsociarProfesionalAConsultorio = ({
       setMensajeError("Debe seleccionar un profesional.");
       return;
     }
-    if (!consultorioID) {
+    if (!perfilID) {
       setMensajeError("No se especificó el consultorio.");
       return;
     }
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/unionprofesionalconsultorio`,
+        `${API_URL}/api/unionprofesionalperfil`,
         {
           profesionalID: selectedProfesional,
-          consultorioID: consultorioID,
+          consultorioID: perfilID,
         }
       );
 
@@ -76,14 +76,14 @@ const AsociarProfesionalAConsultorio = ({
         setVinculando(false);
         refrescarListaProfesionales();
         // Cierra el modal primero
-        if (consultorio?.tipo === "Particular") {
-          
+        if (perfil?.tipo === "Particular") {
+
           onClose();
         }
       }, 1500);
-      
 
-      
+
+
     } catch (err) {
       // Capturar mensaje de error claro
       const errorMsg =
@@ -107,7 +107,7 @@ const AsociarProfesionalAConsultorio = ({
     }
 
     // Segundo: redirigir o refrescar según el tipo de consultorio
-    if (consultorio?.tipo === "Particular") {
+    if (perfil?.tipo === "Particular") {
       onClose();
     }
 
@@ -239,11 +239,10 @@ const AsociarProfesionalAConsultorio = ({
                     type="button"
                     onClick={handleSelect}
                     disabled={!selectedProfesional || !!mensaje}
-                    className={`"flex-1 py-3 px-4  disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none" ${
-                      vinculando
-                        ? "bg-gray-300"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600  hover:from-blue-700 hover:to-indigo-700"
-                    }`}
+                    className={`"flex-1 py-3 px-4  disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl disabled:cursor-not-allowed transition transform hover:scale-105 disabled:transform-none focus:outline-none" ${vinculando
+                      ? "bg-gray-300"
+                      : "bg-gradient-to-r from-blue-600 to-indigo-600  hover:from-blue-700 hover:to-indigo-700"
+                      }`}
                   >
                     {vinculando ? (
                       <div className="flex items-center justify-center">
@@ -265,15 +264,15 @@ const AsociarProfesionalAConsultorio = ({
 
       {/* Modal de creación (reutilizado con estilo consistente) */}
       {showCreateModal && (
-        <CrearProfesionalModal
+        <CrearYVincularProfesionalAPerfil
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateSuccess}
-          consultorioID={consultorioID}
-          consultorio={consultorio}
+          perfilID={perfilID}
+          perfil={perfil}
         />
       )}
     </>
   );
 };
 
-export default AsociarProfesionalAConsultorio;
+export default AsociarProfesionalAPerfil;

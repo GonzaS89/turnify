@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSpinner, FaPowerOff ,FaHome, FaExclamationCircle } from 'react-icons/fa';
-import useConsultorioById from '../../customHooks/useConsultorioxId';
+import useAllPerfiles from '../../customHooks/useAllPerfiles';
 import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
 import { RingLoader } from 'react-spinners';
@@ -11,13 +11,19 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Obtener consultorio desde localStorage
-  const storedConsultorio = JSON.parse(localStorage.getItem('consultorio') || 'null');
-  const consultorioId = storedConsultorio?.id;
-
-  const { consultorio: consultorioDataArray, isLoading, error } = useConsultorioById(consultorioId);
-  const consultorio = consultorioDataArray ? consultorioDataArray[0] : null;
   const [cerrandoSesion, setCerrandoSesion] = useState(false)
+
+  // Obtener consultorio desde localStorage
+  const recuperarPerfil = JSON.parse(localStorage.getItem('perfil') || 'null');
+  const perfilId = recuperarPerfil?.id;
+
+  const {perfiles, isLoading:isLoadingPerfiles, error:errorPerfiles} = useAllPerfiles();
+
+  const perfilFiltrado = perfiles.filter((f) => f.id === perfilId);
+
+  const perfil = perfilFiltrado[0];
+  
+  const { tipo } = perfil || {};
 
   const password = localStorage.getItem('userPassword') || '';
 
@@ -30,25 +36,28 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
 
   // Guardar consultorio en localStorage si se carga correctamente
   useEffect(() => {
-    if (consultorio) {
+    if (perfil) {
       try {
-        localStorage.setItem('consultorio', JSON.stringify(consultorio));
+        localStorage.setItem('perfil', JSON.stringify(perfil));
       } catch (err) {
         console.error('Error al guardar consultorio en localStorage:', err);
       }
     }
-  }, [consultorio]);
+  }, [perfil]);
 
   // Manejo de cierre de sesión
   const handleLogout = () => {
+
+    setCerrandoSesion(true)
     
     try {
       setCerrandoSesion(true)
       setTimeout(() => {
         // setCerrandoSesion(false)
         navigate('/');
+      
         setCerrandoSesion(false)
-        localStorage.removeItem('consultorio');
+        localStorage.removeItem('perfil');
       localStorage.removeItem('userPassword');
       if (onLogout && typeof onLogout === 'function') {
         onLogout();
@@ -68,7 +77,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // === Pantalla de carga ===
-  if (isLoading) {
+  if (isLoadingPerfiles) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6">
         <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-blue-100">
@@ -81,7 +90,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // === Manejo de errores ===
-  if (error) {
+  if (errorPerfiles) {
     if (error.message.includes('No autorizado') || error.message.includes('401')) {
       localStorage.removeItem('consultorio');
       localStorage.removeItem('userPassword');
@@ -105,7 +114,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // === Estado vacío (sin consultorio) ===
-  if (!consultorio && !storedConsultorio) {
+  if (!perfil && !recuperarPerfil) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6">
         <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-gray-200">
@@ -124,7 +133,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   }
 
   // Usar el consultorio disponible
-  const consultorioToUse = consultorio || storedConsultorio;
+  const perfilEnUso = perfil;
 
   return (
     <div className="min-h-screen">
@@ -147,7 +156,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
           </button>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl sm:text-3xl font-bold">
-            ¡Bienvenido, {consultorioToUse?.usuario || 'Usuario'}!
+            ¡Bienvenido, {perfilEnUso?.usuario || 'Usuario'}!
           </h1>
           
         </div>
@@ -155,15 +164,15 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
 
       {/* Contenido principal */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {consultorioToUse.tipo === 'Particular' ? (
+        {tipo === 'Particular' ? (
           <PanelConsultorioPropio
-            consultorioData={consultorioToUse}
+            perfilData={perfilEnUso}
             enviarTurnoYOrden={enviarTurnoYOrden}
             enviarMedicoID={recibirMedicoID}
           />
         ) : (
           <PanelCentroMedico
-            consultorioData={consultorioToUse}
+            consultorioData={perfilEnUso}
             password={password}
             profesionalVinculado={medicoID}
           />

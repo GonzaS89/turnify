@@ -1,6 +1,13 @@
 // src/components/PanelConsultorioPropio.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import useConsultorioById from '../../customHooks/useConsultorioxId';
+import useObtenerProfesionalxIdPerfil from '../../customHooks/useObtenerProfesionalxIdPerfil';
+import useObtenerConsultorioxIdPerfil from '../../customHooks/useObtenerConsultorioxIdPerfil';
+
+import CrearConsultorioModal from '../cliente/CrearConsultorioModal';
+import CrearProfesionalModal from './CrearProfesionalModal';
+import AsociarProfesionalAPerfil from './AsociarProfesionalAPerfil';
 
 // CARGA DE ICONOS
 
@@ -23,25 +30,32 @@ import useProfessionalConsultorioTurnos from '../../customHooks/useProfessionalC
 
 // CARGA DE LAYOUTS
 
-import AsociarProfesionalAConsultorio from '../cliente/AsociarProfesionalAConsultorio';
+import AsociarProfesionalAConsultorio from './AsociarProfesionalAConsultorio';
 import ModalListaTurnos from '../cliente/ModalListaTurnos'
 
-const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }) => {
+const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
 
   const [refreshProfesionales, setRefreshProfesionales] = useState(null);
 
-  const consultorioID = consultorio?.id;
-  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(consultorioID, refreshProfesionales);
+  const perfilID = perfil?.id;
+  const { profesional, isLoading, error } = useProfesionalxIdConsultorio(perfilID, refreshProfesionales);
+
+  const { consultorios: consultoriosObtenidos, isLoading: isLoadingConsultoriosxIdPerfil, error: errorConsultoriosxIdPerfil } = useObtenerConsultorioxIdPerfil(perfilID);
+
+  const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionalesxIdPerfil, error: errorProfesionalesxIdPerfil, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
+
+  const noHayConsultorioAsociados = consultoriosObtenidos?.length === 0;
+  const noHayProfesionalesAsociados = profesionalesObtenidos?.length === 0;
 
   const medico = profesional?.[0] || null;
   const medicoID = medico?.id;
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(
     medicoID,
-    consultorioID
+    perfilID
   );
 
   const refrescarListaProfesionales = () => {
@@ -79,7 +93,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
   }).replace(/^\w/, (c) => c.toUpperCase());
 
   if (isLoading) return <LoadingCard />;
-  if (error || !consultorio)
+  if (error || !perfil)
     return (
       <ErrorCard
         title="Error"
@@ -89,6 +103,7 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
 
   return (
     <div className="min-h-screen py-6 px-4 sm:px-6">
+
       <div className="max-w-7xl mx-auto">
 
         {/* ===== ENCABEZADO ===== */}
@@ -140,70 +155,89 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
           </div>
         </header>
 
+        {/* {noHayProfesionalesAsociados && (
+          <CrearProfesionalModal />
+        )} */}
+
         {/* ===== TARJETAS DE ACCESO RÁPIDO ===== */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {noHayConsultorioAsociados === 0 ? (
+         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-          {/* Mi Agenda */}
-          <ActionCard
-            title="Mi Agenda"
-            description="Gestiona tus turnos diarios y pacientes."
-            icon={FaCalendarAlt}
-            gradient="from-emerald-500 to-teal-600"
-            onClick={() => navigate(`/micuenta/panelturnos/${consultorioID}/${medicoID}`)}
-            footer={
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-white">{isLoadingTurnos ? 'Sin turnos' : turnsToday()}</span>
-                <span className="text-sm text-emerald- font-medium flex items-center gap-1">
-                  ver <FaChevronRight size={12} />
-                </span>
-              </div>
-            }
+         {/* Mi Agenda */}
+         <ActionCard
+           title="Mi Agenda"
+           description="Gestiona tus turnos diarios y pacientes."
+           icon={FaCalendarAlt}
+           gradient="from-emerald-500 to-teal-600"
+           onClick={() => navigate(`/micuenta/panelturnos/${perfilID}/${medicoID}`)}
+           footer={
+             <div className="flex items-center justify-between">
+               <span className="text-2xl font-bold text-white">{isLoadingTurnos ? 'Sin turnos' : turnsToday()}</span>
+               <span className="text-sm text-emerald- font-medium flex items-center gap-1">
+                 ver <FaChevronRight size={12} />
+               </span>
+             </div>
+           }
+         />
+         
+         {/* Ajustes del Consultorio */}
+         <ActionCard
+           title="Configuración"
+           description="Personaliza horarios, consultorio y más."
+           icon={FaCog}
+           gradient="from-slate-500 to-slate-700"
+           onClick={() => navigate(`/micuenta/datosconsultorio/${perfil.id}`)}
+           footer={
+             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-slate-700/50 px-3 py-1 rounded-full">
+               <FaCheckCircle size={12} /> Editar
+             </span>
+           }
+         />
+         
+         {/* Coberturas Médicas */}
+         <ActionCard
+           title="Coberturas"
+           description="Administra obras sociales y prepagas."
+           icon={FaShieldAlt}
+           gradient="from-blue-500 to-indigo-600"
+           onClick={() => navigate(`/micuenta/gestioncoberturas/${perfilID}`)}
+           footer={
+             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600/50 px-3 py-1 rounded-full">
+               <FaChevronRight size={12} /> Gestionar
+             </span>
+           }
+         />
+         
+         {/* Asociar Profesional
+         {!medico && (
+           <ActionCard
+             title="Asociar Médico"
+             description="Vincula un profesional a este consultorio."
+             icon={FaUserPlus}
+             gradient="from-indigo-500 to-purple-600"
+             onClick={() => setShowModalAsociarProfesional(true)}
+             footer={
+               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-purple-600/50 px-3 py-1 rounded-full">
+                 <FaChevronRight size={12} /> Asociar
+               </span>
+             }
+           />
+         )} */}
+         </section>
+        ) : (
+
+          <ActionCard 
+
+            title="Crear Consultorio"
+            description="Crea tu primer consultorio para comenzar a gestionar tus turnos."
+            icon={FaUserPlus}
+            gradient="from-indigo-500 to-purple-600"
+            onClick={() => setShowModalAsociarProfesional(true)}
           />
+        )}
 
-          {/* Ajustes del Consultorio */}
-          <ActionCard
-            title="Configuración"
-            description="Personaliza horarios, consultorio y más."
-            icon={FaCog}
-            gradient="from-slate-500 to-slate-700"
-            onClick={() => navigate(`/micuenta/datosconsultorio/${consultorio.id}`)}
-            footer={
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-slate-700/50 px-3 py-1 rounded-full">
-                <FaCheckCircle size={12} /> Editar
-              </span>
-            }
-          />
 
-          {/* Coberturas Médicas */}
-          <ActionCard
-            title="Coberturas"
-            description="Administra obras sociales y prepagas."
-            icon={FaShieldAlt}
-            gradient="from-blue-500 to-indigo-600"
-            onClick={() => navigate(`/micuenta/gestioncoberturas/${consultorioID}`)}
-            footer={
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-indigo-600/50 px-3 py-1 rounded-full">
-                <FaChevronRight size={12} /> Gestionar
-              </span>
-            }
-          />
-
-          {/* Asociar Profesional */}
-          {!medico && (
-            <ActionCard
-              title="Asociar Médico"
-              description="Vincula un profesional a este consultorio."
-              icon={FaUserPlus}
-              gradient="from-indigo-500 to-purple-600"
-              onClick={() => setShowModalAsociarProfesional(true)}
-              footer={
-                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-purple-600/50 px-3 py-1 rounded-full">
-                  <FaChevronRight size={12} /> Asociar
-                </span>
-              }
-            />
-          )}
-        </section>
+        
 
         {/* ===== ESTADÍSTICAS OPCIONALES (opcional) ===== */}
         {medico && (
@@ -227,15 +261,17 @@ const PanelConsultorioPropio = ({ consultorioData: consultorio, enviarMedicoID }
         )}
 
         {/* Modal de asociación */}
-        {showModalAsociarProfesional && (
-          <AsociarProfesionalAConsultorio
-            consultorioID={consultorioID}
-            consultorio = {consultorio}
+        {noHayProfesionalesAsociados && (
+          <AsociarProfesionalAPerfil
+            perfilID={perfilID}
+            perfil = {perfil}
             onClose={() => setShowModalAsociarProfesional(false)}
             refrescarListaProfesionales={refrescarListaProfesionales}
             profesionalVinculado={medicoID != undefined}
+            fetchProfesional={fetchProfesional}
           />
         )}
+
 
         {/* Modal de listado de turnos */}
         {showModalListaTurnos && (
@@ -273,8 +309,8 @@ const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
   <div
     onClick={clickable ? onClick : undefined}
     className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${clickable
-        ? 'cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md'
-        : 'hover:bg-gray-100'
+      ? 'cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md'
+      : 'hover:bg-gray-100'
       }`}
   >
     <Icon className={`w-5 h-5 ${color} mb-2`} />
