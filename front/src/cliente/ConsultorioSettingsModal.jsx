@@ -2,14 +2,24 @@ import { useState, useEffect } from 'react';
 import { FaBuilding, FaUserShield, FaTimes, FaEye, FaEyeSlash, FaCircleNotch, FaExclamationTriangle } from 'react-icons/fa';
 import { useParams, useNavigate } from 'react-router';
 import useConsultorioxId from '../../customHooks/useConsultorioxId';
+import useAllPerfiles from '../../customHooks/useAllPerfiles';
 
 const ConsultorioSettingsModal = ({ password }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { consultorioId } = useParams();
+  const { perfilId } = useParams();
+
   const navigate = useNavigate();
+
 
   const { consultorio: consul, isLoading, error } = useConsultorioxId(consultorioId);
   const consultorio = consul?.[0]; // Accede al primer elemento seguro
+
+  const {perfiles, isLoading: perfilesLoading, error: perfilesError} = useAllPerfiles();
+
+  const perfilFiltrado = perfiles.filter((perfil) => perfil.id == perfilId);
+
+  const perfilObtenido = perfilFiltrado[0] || {}
 
   // Bloquear scroll al montar
 
@@ -80,7 +90,7 @@ const ConsultorioSettingsModal = ({ password }) => {
                     <DetailItem
                       label="Tipo"
                       value={
-                        consultorio.tipo === 'Particular'
+                        perfilObtenido.tipo === 'Particular'
                           ? 'Consultorio Particular'
                           : `Centro Médico: ${consultorio.nombre}`
                       }
@@ -98,7 +108,7 @@ const ConsultorioSettingsModal = ({ password }) => {
                     <FaUserShield className="text-purple-500" /> Credenciales de Acceso
                   </h4>
                   <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-xl p-5">
-                    <DetailItem label="Usuario" value={consultorio.usuario || 'No especificado'} />
+                    <DetailItem label="Usuario" value={perfilObtenido.usuario || 'No especificado'} />
                     <div>
                       <p className="text-sm font-semibold text-gray-700 mb-1">Contraseña</p>
                       <div className="flex items-center gap-3">

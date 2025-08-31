@@ -41,6 +41,8 @@ const AsociarProfesionalAPerfil = ({
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  console.log(perfil.tipo)
+
   const handleSelect = async (e) => {
     e.preventDefault();
     setMensajeError(null);
@@ -108,7 +110,7 @@ const AsociarProfesionalAPerfil = ({
 
     // Segundo: redirigir o refrescar según el tipo de consultorio
     if (perfil?.tipo === "Particular") {
-      onClose();
+      window.location.reload();
     }
 
     refrescarListaProfesionales();

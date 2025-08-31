@@ -1582,8 +1582,8 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
 
 // CREAR Y VINCULAR CONSULTORIO CON PERFIL //
 
-app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) => {
-  const { perfilID } = req.params;
+app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", async (req, res) => {
+  const { perfilID, profesionalID } = req.params;
 
   const {
     direccion,
@@ -1630,7 +1630,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    // Insertar nuevo consultorio
+    // 1. Insertar nuevo consultorio
     const [insertResult] = await connection.execute(
       `INSERT INTO consultorios 
         (nombre, direccion, localidad, provincia, telefono, sena, importe_sena, banco, cbu, alias, cuenta_nombre) 
@@ -1641,7 +1641,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
         localidad,
         provincia,
         telefono || null,
-        seña ? 1 : 0, // booleano a TINYINT(1)
+        seña ? 1 : 0,
         safeImporte,
         safeBanco,
         safeCbu,
@@ -1653,7 +1653,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
     consultorioID = insertResult.insertId;
     console.log(`Consultorio creado con ID: ${consultorioID}`);
 
-    // Asociar al perfil
+    // 2. Asociar el consultorio al perfil
     try {
       await connection.execute(
         "INSERT INTO perfiles_consultorios (perfil_id, consultorio_id) VALUES (?, ?)",
@@ -1662,20 +1662,33 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
       console.log(`Consultorio ID ${consultorioID} asociado al perfil ID ${perfilID}`);
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
-        console.log(
-          `Advertencia: El consultorio ya está asociado al perfil ID ${perfilID}`
-        );
+        console.log(`Advertencia: El consultorio ya está asociado al perfil ID ${perfilID}`);
+      } else {
+        throw error;
+      }
+    }
+
+    // 3. Asociar el profesional al consultorio (clave: profesional_consultorio)
+    try {
+      await connection.execute(
+        "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
+        [profesionalID, consultorioID]
+      );
+      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`);
+    } catch (error) {
+      if (error.code === "ER_DUP_ENTRY") {
+        console.log(`Advertencia: El profesional ya está asociado a este consultorio.`);
       } else {
         throw error; // Otro error rompe la transacción
       }
     }
 
-    // Confirmar transacción
+    // 4. Confirmar transacción
     await connection.commit();
 
     // Respuesta exitosa
     return res.status(201).json({
-      message: "Consultorio creado y asociado correctamente.",
+      message: "Consultorio creado, asociado al perfil y al profesional correctamente.",
       consultorio: {
         id: consultorioID,
         nombre,
@@ -1690,6 +1703,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
         alias: safeAlias,
         titular: safeTitular,
         perfilID,
+        profesionalID,
       },
     });
   } catch (error) {
@@ -1701,9 +1715,10 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID", async (req, res) =>
 
     console.error("Error en crear y vincular consultorio:", error);
 
+    // Manejo de duplicados
     if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({
-        message: "Este consultorio ya está asociado a este perfil.",
+        message: "Este consultorio ya está asociado al profesional o perfil.",
       });
     }
 

@@ -151,7 +151,7 @@ const App = () => {
             <Route path="/micuenta/panelturnos-centromedico/:consultorioId/:profesionalId" element={<TurnListCentroMedico enviarTurnoYOrden={recibirTurnoYOrden} />} />
             <Route path="/micuenta/generarturnos/:consultorioId/:profesionalId" element={<GenerarTurnosModal />} />
             <Route path="/codigosdisponibles" element={<PlantillaCodigosActivacion />} />
-            <Route path="/micuenta/datosconsultorio/:consultorioId" element={<ConsultorioSettingsModal password={pass} />} />
+            <Route path="/micuenta/datosconsultorio/:consultorioId/:perfilId" element={<ConsultorioSettingsModal password={pass} />} />
             <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />} />
             <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />} />
             <Route path="*" element={<Navigate to="/" replace />} />

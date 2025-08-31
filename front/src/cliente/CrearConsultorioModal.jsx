@@ -20,7 +20,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, perfilID, perfilTipo, actualizarConsultorio }) => {
+const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perfilID, perfilTipo, actualizarConsultorio }) => {
   const [direccion, setDireccion] = useState("");
   const [localidad, setLocalidad] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -122,9 +122,15 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, perfilID, perfilTip
     };
 
     const response = await axios.post(
-      `${API_URL}/api/crear-y-unir-consultorio-a-perfil/${perfilID}`,
+      `${API_URL}/api/crear-y-unir-consultorio-a-perfil/${perfilID}/${profesionalID}`,
       nuevoConsultorio
     );
+
+    if (typeof actualizarProfesionales === "function") {
+      actualizarConsultorio();
+    }
+
+    window.location.reload();
 
     toast.success("✅ ¡Consultorio creado exitosamente!");
     setCreando(false);

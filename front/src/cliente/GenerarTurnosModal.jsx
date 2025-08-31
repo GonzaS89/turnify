@@ -14,6 +14,9 @@ const GenerarTurnosModal = () => {
   const { consultorioId } = useParams();
   const { profesionalId } = useParams();
 
+  const consultorioIdParsed = parseInt(consultorioId, 10);
+  const profesionalIdParsed = parseInt(profesionalId, 10);
+
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Calcular cantidad de turnos
@@ -75,8 +78,8 @@ const GenerarTurnosModal = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          consultorioId,
-          profesionalId,
+          consultorioId: consultorioIdParsed,
+          profesionalId: profesionalIdParsed,
           fecha:  selectedDate,// Asegura que sea solo YYYY-MM-DD
           cantidadTurnos: calculatedTurns,
           horaInicio: startTime,
