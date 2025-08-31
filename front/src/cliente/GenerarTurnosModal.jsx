@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+import { parseISO, format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -19,6 +21,7 @@ const GenerarTurnosModal = () => {
   // Calcular cantidad de turnos
   const calculatedTurns = useMemo(() => {
     if (!selectedDate || !startTime || !endTime || duracionTurno <= 0) return 0;
+
 
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
@@ -119,13 +122,10 @@ const GenerarTurnosModal = () => {
 
   // Formato de fecha legible
   const formattedDate = selectedDate
-    ? new Date(selectedDate).toLocaleDateString('es-AR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '';
+  ? format(parseISO(selectedDate), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
+  : "";
+
+    console.log(selectedDate);
 
   return (
     <>
@@ -247,7 +247,7 @@ const GenerarTurnosModal = () => {
                       <span className="font-semibold text-green-800">Turnos generados</span>
                     </div>
                     <p className="text-green-700 text-sm leading-relaxed">
-                      Se crearán <strong>{calculatedTurns} turnos</strong> el <strong>{formattedDate}</strong>, desde las{' '}
+                      Se crearán <strong>{calculatedTurns} turnos</strong> para el <strong>{formattedDate}</strong>, desde las{' '}
                       <strong>{startTime}</strong> hasta las <strong>{endTime}</strong>, cada <strong>{duracionTurno} minutos</strong>.
                     </p>
                   </div>
