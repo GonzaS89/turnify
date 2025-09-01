@@ -187,88 +187,86 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
               )}
 
               {/* Lista de consultorios */}
-             
+
             </div>
 
-             <div>
-                {consultoriosObtenidos?.length > 0 && (
-                  <div className="mt-6 space-y-3">
-                    <h3 className="text-sm font-semibold text-blue-100 uppercase tracking-wide opacity-90">
-                      {consultoriosObtenidos.length > 1
-                        ? "Tus consultorios"
-                        : "Tu consultorio"}
-                    </h3>
-                    {consultoriosObtenidos.map((consultorio) => {
-                      const isSelected = ConsultorioSelecID === consultorio.id;
+            <div>
+              {consultoriosObtenidos?.length > 0 && (
+                <div className="mt-6 space-y-3">
+                  <h3 className="text-sm font-semibold text-blue-100 uppercase tracking-wide opacity-90">
+                    {consultoriosObtenidos.length > 1
+                      ? "Tus consultorios"
+                      : "Tu consultorio"}
+                  </h3>
+                  {consultoriosObtenidos.map((consultorio) => {
+                    const isSelected = ConsultorioSelecID === consultorio.id;
 
-                      return (
-                        <button
-                          key={consultorio.id}
-                          type="button"
-                          onClick={() => {
-                            // Solo cambia si es distinto, pero no permite deseleccionar
-                            if (ConsultorioSelecID !== consultorio.id) {
-                              setConsultorioSelecID(consultorio.id);
-                              localStorage.setItem(
-                                "consultorioSeleccionadoId",
-                                consultorio.id
-                              );
-                            }
-                          }}
-                          className={`
+                    return (
+                      <button
+                        key={consultorio.id}
+                        type="button"
+                        onClick={() => {
+                          // Solo cambia si es distinto, pero no permite deseleccionar
+                          if (ConsultorioSelecID !== consultorio.id) {
+                            setConsultorioSelecID(consultorio.id);
+                            localStorage.setItem(
+                              "consultorioSeleccionadoId",
+                              consultorio.id
+                            );
+                          }
+                        }}
+                        className={`
     w-full p-4 rounded-xl text-sm font-medium text-left transition-all
     flex items-center gap-3 group
-    ${
-      ConsultorioSelecID === consultorio.id
-        ? "bg-gray-800/70 text-blue-100 hover:bg-gray-700 border border-gray-600/50"
-        : "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white shadow-lg shadow-blue-500/25"
-    }
+    ${ConsultorioSelecID === consultorio.id
+                            ? "bg-gray-800/70 text-blue-100 hover:bg-gray-700 border border-gray-600/50"
+                            : "bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white shadow-lg shadow-blue-500/25"
+                          }
     backdrop-blur-sm
     hover:shadow-xl hover:shadow-gray-900/10
     transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50
   `}
-                        >
-                          <div
-                            className={`
+                      >
+                        <div
+                          className={`
       flex-shrink-0 flex items-center justify-center
       w-9 h-9 rounded-full text-white
-      ${
-        ConsultorioSelecID === consultorio.id
-          ? "bg-white/20"
-          : "bg-blue-500 group-hover:scale-110"
-      }
+      ${ConsultorioSelecID === consultorio.id
+                              ? "bg-white/20"
+                              : "bg-blue-500 group-hover:scale-110"
+                            }
       transition-transform duration-200
     `}
-                          >
-                            <FaHouseMedical size={16} />
-                          </div>
+                        >
+                          <FaHouseMedical size={16} />
+                        </div>
 
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm leading-tight">
-                              <span className="font-bold">
-                                {consultorio.nombre}
-                              </span>
-                            </p>
-                            <p className="text-xs opacity-90 truncate">
-                              {consultorio.direccion}, {consultorio.localidad}
-                            </p>
-                          </div>
-
-                          {ConsultorioSelecID === consultorio.id && (
-                            <span className="ml-2 flex-shrink-0 w-6 h-6 flex items-center justify-center bg-white text-blue-700 rounded-full shadow-sm text-xs font-bold">
-                              ✓
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm leading-tight">
+                            <span className="font-bold">
+                              {consultorio.nombre}
                             </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                          </p>
+                          <p className="text-xs opacity-90 truncate">
+                            {consultorio.direccion}, {consultorio.localidad}
+                          </p>
+                        </div>
 
-                {/* Botón crear/agregar consultorio */}
-                <button
-                  onClick={() => setShowModalCrearConsultorio(true)}
-                  className="mt-4 w-full px-6 py-3.5 
+                        {ConsultorioSelecID === consultorio.id && (
+                          <span className="ml-2 flex-shrink-0 w-6 h-6 flex items-center justify-center bg-white text-blue-700 rounded-full shadow-sm text-xs font-bold">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Botón crear/agregar consultorio */}
+              <button
+                onClick={() => setShowModalCrearConsultorio(true)}
+                className="mt-4 w-full px-6 py-3.5 
                     bg-gradient-to-r from-blue-600 to-blue-700 
                     hover:from-blue-700 hover:to-blue-800 
                     text-white text-sm font-semibold 
@@ -279,15 +277,15 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
                     transform hover:scale-102 hover:shadow-2xl 
                     focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50
                     active:scale-99"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <FaPlus size={14} />
-                    {consultoriosObtenidos?.length > 0
-                      ? "Agregar otro consultorio"
-                      : "Crear Consultorio"}
-                  </span>
-                </button>
-              </div>
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <FaPlus size={14} />
+                  {consultoriosObtenidos?.length > 0
+                    ? "Agregar otro consultorio"
+                    : "Crear Consultorio"}
+                </span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -463,18 +461,16 @@ const ActionCard = ({
 const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
   <div
     onClick={clickable ? onClick : undefined}
-    className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${
-      clickable
+    className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${clickable
         ? "cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md"
         : "hover:bg-gray-100"
-    }`}
+      }`}
   >
     <Icon className={`w-5 h-5 ${color} mb-2`} />
     <span className="text-2xl font-bold text-gray-800">{value}</span>
     <span
-      className={`text-xs font-medium mt-1 ${
-        clickable ? "text-indigo-600" : "text-gray-500"
-      }`}
+      className={`text-xs font-medium mt-1 ${clickable ? "text-indigo-600" : "text-gray-500"
+        }`}
     >
       {label}
     </span>

@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
+import useProfessionalConsultorios from "../../customHooks/useProfessionalConsultorios";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
-import useConsultorioxId from "../../customHooks/useConsultorioxId";
 import Turno from "./Turno";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -21,8 +21,10 @@ import { BiLoaderCircle } from "react-icons/bi";
 const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
-  const { consultorioId, profesionalSlug } = useParams();
+  const { profesionalSlug } = useParams();
   const [profesionalId, setProfesionalId] = useState(null);
+  
+
 
   // Traer el ID del profesional
   useEffect(() => {
@@ -39,17 +41,27 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     fetchProfesionalId();
   }, [profesionalSlug]);
 
+  
+
   // Siempre llamamos los hooks aunque profesionalId sea null
   const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } =
     useProfesionalxId(profesionalId || 0);
 
-  const { consultorio: consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } =
-    useConsultorioxId(consultorioId);
+    const { consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } = useProfessionalConsultorios(profesionalId || 0);
 
-  const consultorio = consultorios?.[0];
+const [consultorioSelec, setConsultorioSelec] = useState(null);
+
+// Cuando los consultorios carguen, establecer el primero como seleccionado
+useEffect(() => {
+  if (!isLoadingConsultorios && Array.isArray(consultorios) && consultorios.length > 0) {
+    setConsultorioSelec(consultorios[0].id);
+  } else if (consultorios?.length === 0) {
+    setConsultorioSelec(null); // o un valor por defecto
+  }
+}, [consultorios, isLoadingConsultorios]);
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } =
-    useProfessionalConsultorioTurnos(profesionalId || 0, consultorio?.id || 0);
+    useProfessionalConsultorioTurnos(profesionalId || 0, consultorioSelec || 0);
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
 
@@ -108,7 +120,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   // Manejadores
   const handleFechaChange = e => setFechaSeleccionada(e.target.value);
   const handleSelectTurno = (turno, index) => {
-    navigate(`/formulario-usuario/${consultorio?.id}/${profesionalId}`);
+    navigate(`/formulario-usuario/${consultorioSelec}/${profesionalId}`);
     enviarTurnoYOrden(turno, index + 1);
     onClose?.();
   };
@@ -118,51 +130,91 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform max-h-[90vh] flex flex-col overflow-hidden">
         {/* Encabezado */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-start gap-3">
-              <FaUserMd className="text-2xl mt-1" />
-              <div>
-                {isLoadingProfesional ? (
-                  <div className="bg-white/30 h-5 rounded w-36 animate-pulse"></div>
-                ) : errorProfesional ? (
-                  <p className="text-red-100 text-sm flex items-center gap-1">
-                    <MdOutlineErrorOutline /> Error al cargar médico
-                  </p>
-                ) : (
-                  <>
-                    <h2 className="text-xl font-bold capitalize">
-                      {titulo} {medico?.nombre} {medico?.apellido}
-                    </h2>
-                    <p className="text-blue-100 opacity-90">{medico?.especialidad}</p>
-                  </>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => navigate("/buscarprofesionales")}
-              className="text-white hover:bg-white/20 rounded-full p-1 transition"
-              aria-label="Cerrar"
-            >
-              <FaTimes size={20} />
-            </button>
-          </div>
-
-          {/* Consultorio */}
-          {consultorio && !isLoadingConsultorios && !errorConsultorios && (
-            <div className="mt-4 flex items-center gap-2 text-blue-100 text-sm">
-              {consultorio.tipo === "particular" ? (
-                <FaHome className="text-sm" />
-              ) : (
-                <FaHospital className="text-sm" />
-              )}
-              <span>
-                {consultorio.tipo === "Particular"
-                  ? "Consultorio Particular"
-                  : `Centro Médico ${consultorio.nombre}`}
-              </span>
-            </div>
+  <div className="flex items-start justify-between gap-4">
+    {/* Información del médico */}
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-3 mb-3">
+        <FaUserMd className="text-2xl text-white/90" aria-hidden="true" />
+        <div>
+          {isLoadingProfesional ? (
+            <div className="bg-white/30 h-5 rounded w-36 animate-pulse" aria-label="Cargando nombre"></div>
+          ) : errorProfesional ? (
+            <p className="text-red-100 text-sm flex items-center gap-1">
+              <MdOutlineErrorOutline /> <span>Error al cargar médico</span>
+            </p>
+          ) : (
+            <>
+              <h2 className="text-xl font-bold capitalize truncate">
+                {titulo} {medico?.nombre} {medico?.apellido}
+              </h2>
+              <p className="text-blue-100 opacity-90 truncate">{medico?.especialidad}</p>
+            </>
           )}
         </div>
+      </div>
+
+      {/* Consultorios */}
+      {Array.isArray(consultorios) && consultorios.length > 0 && !isLoadingProfesional && !errorProfesional && (
+        <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-100">
+        {consultorios.map((cons) => (
+ <div
+  key={cons.id}
+  className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-xs transition-all duration-200
+    ${cons.id === consultorioSelec
+      ? "bg-white/40 backdrop-blur border border-white/50 scale-100 shadow-lg shadow-white/10"
+      : "bg-white/15 hover:bg-white/25 border border-white/30 cursor-pointer hover:scale-102"}
+  `}
+  onClick={() => setConsultorioSelec(cons.id)}
+>
+  {/* Icono pequeño */}
+  <div className={`
+    w-5 h-5 flex items-center justify-center rounded-full
+    ${cons.id === consultorioSelec 
+      ? "bg-indigo-100 text-indigo-700" 
+      : "bg-white/30 text-indigo-100"}
+    text-[0.6rem] transition-colors
+  `}>
+    {cons.tipo === "Particular" ? (
+      <FaHome />
+    ) : (
+      <FaHospital />
+    )}
+  </div>
+
+  {/* Texto mínimo */}
+  <span className="text-white font-medium max-w-[120px]">
+    {cons.direccion}
+  </span>
+
+  {/* Solo localidad si hay espacio (opcional en mobile) */}
+  <span className="sm:inline text-white/80 text-[0.65rem]">
+    {cons.localidad}
+  </span>
+</div>
+        ))}
+      </div>
+      )}
+
+      {/* Estado de carga o error para consultorios (opcional) */}
+      {isLoadingProfesional && (
+        <div className="flex gap-2 mt-2">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="bg-white/30 h-6 rounded-full w-24 animate-pulse"></div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Botón de cerrar */}
+    <button
+      onClick={() => navigate("/buscarprofesionales")}
+      className="text-white hover:bg-white/20 rounded-full p-1 transition flex-shrink-0"
+      aria-label="Volver al buscador de profesionales"
+    >
+      <FaTimes size={20} />
+    </button>
+  </div>
+</div>
 
         {/* Cuerpo */}
         <div className="flex-1 p-6 space-y-6 overflow-y-auto">

@@ -123,6 +123,13 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const { coberturas } = useAllCoberturas();
   const { profesional } = useProfesionalxId(profesionalId);
   const { consultorio } = useConsultorioxId(consultorioId);
+
+  const consultorioObtenido = consultorio?.[0];
+
+  const {nombre, direccion } = consultorioObtenido || {};
+
+  console.log(nombre, direccion)
+
   const { coberturas: coberturasConsultorio } =
     useCoberturaxIdConsultorio(consultorioId);
   const [liberando, setLiberando] = useState(false);
@@ -328,7 +335,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <FaCalendarAlt />{" "}
               {tipoConsultorio === "propio"
                 ? "Tu Agenda"
-                : `Agenda de ${nombreMedico}`}
+                : `Agenda de consultorio de ${direccion}`}
             </h2>
             <div className="flex items-center gap-2">
               <button

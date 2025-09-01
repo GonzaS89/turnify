@@ -3,6 +3,7 @@ import { FaUserDoctor } from "react-icons/fa6";
 import { BiFilterAlt, BiSearch } from "react-icons/bi";
 import BotonesConsultorios from "./BotonesConsultorios";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
+import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import { useNavigate } from "react-router";
 
 const SearchModal = ({ enviarIds }) => {
@@ -35,12 +36,9 @@ const SearchModal = ({ enviarIds }) => {
     }));
   }, [profesionales]);
 
-  // Filtrar doctores solo cuando cambien los filtros o profesionales
+  // Filtrar doctores: mostrar todos si no hay filtros
   const filteredDoctors = useMemo(() => {
     if (!processedProfesionales.length) return [];
-
-    const hasFilters = specialty || searchQuery;
-    if (!hasFilters) return [];
 
     let results = [...processedProfesionales];
 
@@ -54,7 +52,8 @@ const SearchModal = ({ enviarIds }) => {
       results = results.filter((doc) => doc.fullNameNormalized.includes(query));
     }
 
-    return results;
+    // Ordenar alfabéticamente por apellido
+    return results.sort((a, b) => a.apellido.localeCompare(b.apellido));
   }, [processedProfesionales, specialty, searchQuery]);
 
   // Resetear página al cambiar filtros
@@ -72,6 +71,16 @@ const SearchModal = ({ enviarIds }) => {
     setSearchQuery("");
     setPage(1);
     navigate("/");
+  };
+
+  const verTurnos = (id) => {
+    const doctor = processedProfesionales.find((p) => p.id === id);
+    if (doctor && doctor.slug) {
+      navigate(`/turnos/${doctor.slug}`);
+    } else {
+      console.warn("No se encontró el slug del profesional");
+      navigate(`/turnos/id-${id}`);
+    }
   };
 
   return (
@@ -108,7 +117,7 @@ const SearchModal = ({ enviarIds }) => {
               Encuentra a tu Especialista
             </h2>
             <p className="text-gray-600 mt-2 text-sm">
-              Selecciona una especialidad o escribe un nombre para comenzar.
+              Selecciona una especialidad o escribe un nombre para buscar.
             </p>
           </div>
 
@@ -182,90 +191,90 @@ const SearchModal = ({ enviarIds }) => {
 
             {!isLoading && !error && (
               <>
-                {/* Mensaje inicial */}
+                {/* Mensaje cuando no hay filtros */}
                 {!hasSearched && (
-                  <div className="text-center py-16">
-                    <FaUserDoctor className="text-6xl text-indigo-200 mx-auto mb-4" />
-                    <h3 className="text-gray-700 font-semibold text-lg">
-                      ¿A quién estás buscando?
+                  <div className="text-center py-4 mb-6">
+                    <h3 className="text-gray-800 font-bold text-lg">
+                      Todos los especialistas ({filteredDoctors.length})
                     </h3>
-                    <p className="text-gray-500 mt-2 max-w-md mx-auto">
-                      Usa los filtros para encontrar médicos por especialidad o nombre.
+                    <p className="text-gray-500 text-sm mt-1 max-w-md mx-auto">
+                      Selecciona uno para ver disponibilidad de turnos.
                     </p>
                   </div>
                 )}
 
                 {/* Resultados encontrados */}
-                {hasSearched && filteredDoctors.length > 0 && (
+                {filteredDoctors.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
                     {displayedDoctors.map((doctor) => {
-                      // Validar que el doctor tenga ID válido
                       if (!doctor || !doctor.id) return null;
 
                       return (
                         <div
-                          key={doctor.id}
-                          className="bg-white rounded-3xl shadow-md border border-gray-100 hover:shadow-lg transform transition-all duration-300 hover:scale-[1.02] flex flex-col h-full overflow-hidden"
-                        >
-                          <div className="p-6 pb-4 border-b border-gray-100">
-                            <div className="flex items-start gap-4">
-                              <div className="bg-gradient-to-br from-indigo-500 to-blue-600 p-3 rounded-xl text-white flex-shrink-0">
-                                <FaUserDoctor className="text-2xl" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-bold text-gray-900 capitalize">
-                                  {doctor.apellido}, {doctor.nombre}
-                                </h3>
-                                <p className="text-indigo-700 font-medium text-sm mt-1">
-                                  {doctor.especialidad}
-                                </p>
-                                <p className="text-gray-500 text-xs mt-1">
-                                  MP {doctor.matricula}
-                                </p>
-                                {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
-                                  <div className="mt-2 flex flex-wrap gap-1">
-                                    {doctor.consultorios.slice(0, 2).map((consultorio) => (
-                                      <span
-                                        key={consultorio.id}
-                                        className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-semibold truncate max-w-[120px]"
-                                        title={consultorio.nombre}
-                                      >
-                                        {consultorio.nombre}
-                                      </span>
-                                    ))}
-                                    {doctor.consultorios.length > 2 && (
-                                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                        +{doctor.consultorios.length - 2}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                        key={doctor.id}
+                        className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-indigo-200 transition-all duration-300 transform hover:scale-102 flex flex-col h-full overflow-hidden w-full md:min-w-[200px] shadow-black"
+                      >
+                        {/* Encabezado con gradiente y avatar */}
+                        <div className="p-5 pb-4 bg-gradient-to-br from-white to-gray-50 border-b border-gray-100">
+                          <div className="flex items-start gap-4">
+                            {/* Avatar con fondo degradado */}
+                            <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-3 rounded-xl text-white flex-shrink-0 shadow-md group-hover:from-purple-500 group-hover:to-pink-500 transition-colors duration-300">
+                              <FaUserDoctor className="text-2xl" />
+                            </div>
+                      
+                            {/* Info principal */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-bold text-gray-900 leading-tight capitalize group-hover:text-indigo-700 transition-colors duration-200">
+                                {doctor.apellido}, {doctor.nombre}
+                              </h3>
+                              <p className="text-indigo-600 font-semibold text-sm mt-1 flex items-center">
+                                {doctor.especialidad}
+                              </p>
+                              <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1">
+                                <span className="bg-gray-100 px-1.5 py-0.5 rounded">MP {doctor.matricula}</span>
+                              </p>
+                      
+                              {/* Consultorios */}
+                              {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
+                                <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                  {doctor.consultorios.slice(0, 2).map((consultorio) => (
+                                    <span
+                                      key={consultorio.id}
+                                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-800 border border-indigo-100 shadow-sm hover:shadow transition-shadow duration-200"
+                                      title={`Consultorio: ${consultorio.nombre}`}
+                                    >
+                                      {consultorio.tipo === "Particular" ? (
+                                        <FaHome className="text-[0.6rem]" />
+                                      ) : (
+                                        <FaHospital className="text-[0.6rem]" />
+                                      )}
+                                      {consultorio.nombre}
+                                    </span>
+                                  ))}
+                                  {doctor.consultorios.length > 2 && (
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                                      +{doctor.consultorios.length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="p-4 bg-gray-50 rounded-b-3xl border-t border-gray-100">
-                            <BotonesConsultorios idProfesional={doctor.id} enviarIds={enviarIds} nombreProfesional={`${doctor?.nombre}-${doctor?.apellido}`}/>
-                          </div>
                         </div>
+                      
+                        {/* Botón de acción */}
+                        <button
+                          onClick={() => verTurnos(doctor.id)}
+                          className="w-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-sm tracking-wide rounded-b-2xl transition-all duration-200 shadow-sm hover:shadow-md group-hover:shadow-lg"
+                        >
+                          Ver disponibilidad
+                        </button>
+                      </div>
                       );
                     })}
                   </div>
-                )}
-
-                {/* Botón cargar más */}
-                {hasSearched && filteredDoctors.length > 0 && hasMore && (
-                  <div className="text-center mt-8">
-                    <button
-                      onClick={() => setPage((p) => p + 1)}
-                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors duration-200"
-                    >
-                      Cargar más
-                    </button>
-                  </div>
-                )}
-
-                {/* Sin resultados */}
-                {hasSearched && filteredDoctors.length === 0 && (
+                ) : (
+                  /* Sin resultados */
                   <div className="text-center py-16">
                     <p className="text-gray-600 text-lg">
                       No se encontraron médicos con esos criterios.
@@ -273,6 +282,18 @@ const SearchModal = ({ enviarIds }) => {
                     <p className="text-gray-500 mt-1">
                       Intenta con otra especialidad o nombre.
                     </p>
+                  </div>
+                )}
+
+                {/* Botón cargar más */}
+                {hasSearched && hasMore && (
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={() => setPage((p) => p + 1)}
+                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors duration-200"
+                    >
+                      Cargar más
+                    </button>
                   </div>
                 )}
               </>

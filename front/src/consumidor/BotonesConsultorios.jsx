@@ -21,10 +21,7 @@ const BotonesConsultorios = ({ idProfesional: profesionalId }) => {
 
     const profesional = prof[0];
 
-    const slug = profesional?.slug;
-
-    console.log(slug)
-    
+    const slug = profesional?.slug;    
 
   // ✅ Manejar caso de ID inválido
   if (!isValidId) {
