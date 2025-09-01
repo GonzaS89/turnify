@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
+import {format, parseISO} from 'date-fns';
+import {es} from 'date-fns/locale';
 
 const GenerarTurnosModal = () => {
   const [selectedDate, setSelectedDate] = useState('');
@@ -120,15 +122,12 @@ const GenerarTurnosModal = () => {
     } 
   };
 
-  // Formato de fecha legible
+
+
+      // Formato de fecha legible
   const formattedDate = selectedDate
-    ? new Date(selectedDate).toLocaleDateString('es-AR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '';
+  ? format(parseISO(selectedDate), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
+  : "";
 
   return (
     <>
