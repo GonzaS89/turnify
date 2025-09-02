@@ -172,7 +172,7 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
           />
         ) : (
           <PanelCentroMedico
-            consultorioData={perfilEnUso}
+            perfilData={perfilEnUso}
             password={password}
             profesionalVinculado={medicoID}
           />

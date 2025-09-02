@@ -125,6 +125,10 @@ useEffect(() => {
     onClose?.();
   };
 
+  useEffect(() => {
+    setFechaSeleccionada("");
+  },[consultorioSelec])
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[300] p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform max-h-[90vh] flex flex-col overflow-hidden">
@@ -154,46 +158,60 @@ useEffect(() => {
       </div>
 
       {/* Consultorios */}
-      {Array.isArray(consultorios) && consultorios.length > 0 && !isLoadingProfesional && !errorProfesional && (
-        <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-100">
+      {Array.isArray(consultorios) && 
+  consultorios.length > 0 && 
+  !isLoadingProfesional && 
+  !errorProfesional && (
+    <div className="mt-4">
+      {/* Subtítulo: solo si hay más de 1 consultorio */}
+      {consultorios.length > 1 && (
+        <p className="text-sm text-white/90 mb-2 font-medium">
+          Seleccioná un consultorio
+        </p>
+      )}
+
+      {/* Lista de consultorios */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         {consultorios.map((cons) => (
- <div
-  key={cons.id}
-  className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-xs transition-all duration-200
-    ${cons.id === consultorioSelec
-      ? "bg-white/40 backdrop-blur border border-white/50 scale-100 shadow-lg shadow-white/10"
-      : "bg-white/15 hover:bg-white/25 border border-white/30 cursor-pointer hover:scale-102"}
-  `}
-  onClick={() => setConsultorioSelec(cons.id)}
->
-  {/* Icono pequeño */}
-  <div className={`
-    w-5 h-5 flex items-center justify-center rounded-full
-    ${cons.id === consultorioSelec 
-      ? "bg-indigo-100 text-indigo-700" 
-      : "bg-white/30 text-indigo-100"}
-    text-[0.6rem] transition-colors
-  `}>
-    {cons.tipo === "Particular" ? (
-      <FaHome />
-    ) : (
-      <FaHospital />
-    )}
-  </div>
+          <div
+            key={cons.id}
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-xs transition-all duration-200
+              ${
+                cons.id === consultorioSelec
+                  ? "bg-white/60 backdrop-blur border border-white/50 scale-100 shadow-lg shadow-white/10 text-gray-900 font-semibold"
+                  : "bg-white/15 hover:bg-white/25 border border-white/30 cursor-pointer hover:scale-105"
+              }
+            `}
+            onClick={() => setConsultorioSelec(cons.id)}
+          >
+            {/* Icono pequeño */}
+            <div
+              className={`
+                w-5 h-5 flex items-center justify-center rounded-full text-[0.6rem] transition-colors
+                ${
+                  cons.id === consultorioSelec
+                    ? "bg-indigo-100 text-indigo-700"
+                    : "bg-white/30 text-indigo-100"
+                }
+              `}
+            >
+              {cons.tipo === "Particular" ? <FaHome /> : <FaHospital />}
+            </div>
 
-  {/* Texto mínimo */}
-  <span className="text-white font-medium max-w-[120px]">
-    {cons.direccion}
-  </span>
+            {/* Dirección */}
+            <span className="font-medium">
+              {cons.direccion}
+            </span>
 
-  {/* Solo localidad si hay espacio (opcional en mobile) */}
-  <span className="sm:inline text-white/80 text-[0.65rem]">
-    {cons.localidad}
-  </span>
-</div>
+            {/* Localidad (solo en pantallas medianas o mayores) */}
+            <span className={`${cons.id === consultorioSelec ? 'text-black/70' : 'text-white/70'} text-[0.65rem]`}>
+              {cons.localidad}
+            </span>
+          </div>
         ))}
       </div>
-      )}
+    </div>
+  )}
 
       {/* Estado de carga o error para consultorios (opcional) */}
       {isLoadingProfesional && (

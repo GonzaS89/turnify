@@ -20,17 +20,11 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perfilID, perfilTipo, actualizarConsultorio }) => {
+const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
   const [direccion, setDireccion] = useState("");
   const [localidad, setLocalidad] = useState("");
   const [telefono, setTelefono] = useState("");
   const [nombre, setNombre] = useState("");
-  const [banco, setBanco] = useState("");
-  const [cbu, setCbu] = useState("");
-  const [alias, setAlias] = useState("");
-  const [titular, setTitular] = useState("");
-  const [seña, setSeña] = useState(false);
-  const [importe, setImporte] = useState("");
   const [idProvinciaSelected, setIdProvinciaSelected] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -57,24 +51,11 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       setLocalidad("");
       setTelefono("");
       setNombre("");
-      setBanco("");
-      setCbu("");
-      setAlias("");
-      setTitular("");
-      setSeña(false);
-      setImporte("");
       setIdProvinciaSelected("");
       setError("");
       setMensaje("");
     }
   }, [isOpen]);
-
-  // Desactivar seña si es centro médico
-  useEffect(() => {
-    if (perfilTipo === "centro médico") {
-      setSeña(false);
-    }
-  }, [perfilTipo]);
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -95,19 +76,6 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
     return;
   }
 
-  
-
-  // Validación de importe si seña está activa
-  let importeValue = null;
-  if (seña) {
-    importeValue = parseFloat(importe);
-    if (isNaN(importeValue) || importeValue <= 0) {
-      setError("El importe de la seña debe ser un número válido mayor a 0.");
-      setCreando(false);
-      return;
-    }
-  }
-
   try {
     const nuevoConsultorio = {
       perfilTipo,
@@ -115,27 +83,17 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       localidad,
       provincia: idProvinciaSelected,
       telefono: telefono || null,
-      nombre,
-      seña,
-      importe: seña ? importeValue : null,
-      banco: seña ? banco : null,
-      cbu: seña ? cbu : null,
-      alias: seña ? alias : null,
-      titular: seña ? titular : null,
+      nombre: nombre || null,
     };
 
     const response = await axios.post(
-      `${API_URL}/api/crear-y-unir-consultorio-a-perfil/${perfilID}/${profesionalID}`,
+      `${API_URL}/api/crear-y-unir-centromedico-a-perfil/${perfilId}`,
       nuevoConsultorio
     );
 
-    if (typeof actualizarProfesionales === "function") {
-      actualizarConsultorio();
-    }
-
     window.location.reload();
 
-    toast.success("✅ ¡Consultorio creado exitosamente!");
+    toast.success("✅ ¡Centro médico creado exitosamente!");
     setCreando(false);
     onSuccess?.(response.data); // Callback de éxito
     onClose(); // Cierra el modal
@@ -146,7 +104,7 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       "Error de conexión al servidor";
 
     setError(`❌ ${errorMessage}`);
-    toast.error("Error al crear el consultorio");
+    toast.error("Error al crear el centro médico");
     setCreando(false);
   }
 };
@@ -159,7 +117,6 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       {/* Overlay oscuro */}
       <div
         className="fixed inset-0 bg-black bg-opacity-90 z-40"
-        onClick={onClose}
       ></div>
 
       {/* Modal */}
@@ -170,14 +127,8 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
         >
           {/* Encabezado del modal */}
           <div className="flex justify-between items-center p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Crear Consultorio</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition"
-              aria-label="Cerrar"
-            >
-              <FaTimes size={20} />
-            </button>
+            <h2 className="text-2xl font-bold text-gray-800">Crear centro médico</h2>
+        
           </div>
 
           {/* Cuerpo del modal */}
@@ -199,21 +150,21 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
             {/* Sección: Datos del Establecimiento */}
             <section>
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <FaBuilding className="text-indigo-500" /> Datos del consultorio
+                <FaBuilding className="text-indigo-500" /> Datos del establecimiento
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre (opcional)
+                    Nombre 
                   </label>
                   <input
                     type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Consultorio Dra. Pérez"
+                    placeholder="Centro médico SaludVida"
                   />
                 </div>
               </div>
@@ -232,7 +183,7 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
                       value={direccion}
                       onChange={(e) => setDireccion(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Av. Libertador 1000"
+                      placeholder="Av. Sarmiento 1000"
                     />
                   </div>
                 </div>

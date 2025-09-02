@@ -41,7 +41,6 @@ const AsociarProfesionalAPerfil = ({
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  console.log(perfil.tipo)
 
   const handleSelect = async (e) => {
     e.preventDefault();
@@ -63,7 +62,7 @@ const AsociarProfesionalAPerfil = ({
         `${API_URL}/api/unionprofesionalperfil`,
         {
           profesionalID: selectedProfesional,
-          consultorioID: perfilID,
+          perfilID: perfilID,
         }
       );
 
@@ -72,6 +71,8 @@ const AsociarProfesionalAPerfil = ({
       // Personalizar el toast según el caso
 
       toast.info("✅ Revinculando profesional");
+
+      window.location.reload();
 
       // Refrescar lista tras breve espera
       setTimeout(() => {

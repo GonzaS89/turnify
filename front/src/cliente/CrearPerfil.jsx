@@ -207,7 +207,7 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  <FaHome className="inline mr-1" /> Particular
+                  <FaHome className="inline mr-1" /> Consultorio Particular
                 </span>
               </label>
               <label className="flex items-center cursor-pointer">
