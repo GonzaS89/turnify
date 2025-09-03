@@ -1683,15 +1683,14 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", asyn
   }
 
   try {
-    // Obtener conexión y comenzar transacción
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
     // 1. Insertar nuevo consultorio
     const [insertResult] = await connection.execute(
       `INSERT INTO consultorios 
-        (tipo,nombre, direccion, localidad, provincia, telefono, sena, importe_sena, banco, cbu, alias, cuenta_nombre) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (tipo, nombre, direccion, localidad, provincia, telefono, sena, importe_sena, banco, cbu, alias, cuenta_nombre) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         perfilTipo,
         nombre,
@@ -1726,7 +1725,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", asyn
       }
     }
 
-    // 3. Asociar el profesional al consultorio (clave: profesional_consultorio)
+    // 3. Asociar el profesional al consultorio
     try {
       await connection.execute(
         "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
@@ -1735,16 +1734,15 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", asyn
       console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`);
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
-        console.log(`Advertencia: El profesional ya está asociado a este consultorio.`);
+        console.log("Advertencia: El profesional ya está asociado a este consultorio.");
       } else {
-        throw error; // Otro error rompe la transacción
+        throw error;
       }
     }
 
     // 4. Confirmar transacción
     await connection.commit();
 
-    // Respuesta exitosa
     return res.status(201).json({
       message: "Consultorio creado, asociado al perfil y al profesional correctamente.",
       consultorio: {
@@ -1765,15 +1763,15 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", asyn
       },
     });
   } catch (error) {
-    // Revertir transacción
     if (connection) {
-      await connection.rollback().catch((err) => console.error("Error en rollback:", err));
+      await connection.rollback().catch((err) =>
+        console.error("Error en rollback:", err)
+      );
       connection.release();
     }
 
     console.error("Error en crear y vincular consultorio:", error);
 
-    // Manejo de duplicados
     if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({
         message: "Este consultorio ya está asociado al profesional o perfil.",
@@ -1785,6 +1783,7 @@ app.post("/api/crear-y-unir-consultorio-a-perfil/:perfilID/:profesionalID", asyn
     });
   }
 });
+
 
 
 // CREAR Y VINCULAR CENTRO MEDICO CON PERFIL //

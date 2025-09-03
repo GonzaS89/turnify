@@ -20,7 +20,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
+const CrearConsultorioModal = ({ isOpen ,perfilId, perfilTipo, onSuccess, actualizarConsultorios }) => {
   const [direccion, setDireccion] = useState("");
   const [localidad, setLocalidad] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -58,56 +58,64 @@ const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
   }, [isOpen]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setCreando(true);
-  setError("");
+    e.preventDefault();
+    setCreando(true);
+    setError("");
+  
+    // 🔎 Validación de campos obligatorios
+    if (!nombre || !direccion || !localidad || !idProvinciaSelected || !telefono) {
+      setError("Todos los campos marcados con * son obligatorios.");
+      setCreando(false);
+      return;
+    }
+  
+    // 🔎 Validación de teléfono (exactamente 10 dígitos)
+    if (telefono.replace(/\D/g, "").length !== 10) {
+      setError("El teléfono debe tener 10 dígitos.");
+      setCreando(false);
+      return;
+    }
+  
+    try {
+      const nuevoConsultorio = {
+        perfilTipo,
+        direccion,
+        localidad,
+        provincia: idProvinciaSelected,
+        telefono, // ✅ obligatorio, ya validado
+        nombre,
+      };
+  
+      const response = await axios.post(
+        `${API_URL}/api/crear-y-unir-centromedico-a-perfil/${perfilId}`,
+        nuevoConsultorio
+      );
+  
+      // ✅ Si llega acá, el backend respondió 201
+      toast.success("✅ ¡Centro médico creado exitosamente!");
+      setCreando(false);
 
-  // Validación de campos obligatorios
-  if (!nombre || !direccion || !localidad || !idProvinciaSelected) {
-    setError("Todos los campos marcados con * son obligatorios.");
-    setCreando(false);
-    return;
-  }
-
-  // Validación de teléfono (opcional, 10 dígitos si se ingresa)
-  if (telefono && telefono.replace(/\D/g, "").length !== 10) {
-    setError("El teléfono debe tener 10 dígitos.");
-    setCreando(false);
-    return;
-  }
-
-  try {
-    const nuevoConsultorio = {
-      perfilTipo,
-      direccion,
-      localidad,
-      provincia: idProvinciaSelected,
-      telefono: telefono || null,
-      nombre: nombre || null,
-    };
-
-    const response = await axios.post(
-      `${API_URL}/api/crear-y-unir-centromedico-a-perfil/${perfilId}`,
-      nuevoConsultorio
-    );
-
-    window.location.reload();
-
-    toast.success("✅ ¡Centro médico creado exitosamente!");
-    setCreando(false);
-    onSuccess?.(response.data); // Callback de éxito
-    onClose(); // Cierra el modal
-  } catch (err) {
-    const errorMessage =
-      err.response?.data?.message ||
-      err.response?.statusText ||
-      "Error de conexión al servidor";
-
-    setError(`❌ ${errorMessage}`);
-    toast.error("Error al crear el centro médico");
-    setCreando(false);
-  }
-};
+      setTimeout(() => {
+        onSuccess?.(response.data.consultorio);
+        actualizarConsultorios()
+      }, 2000);
+  
+      // Callback para actualizar lista de consultorios en el padre
+     
+  
+      // Cierra el modal
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Error de conexión al servidor";
+  
+      setError(`❌ ${errorMessage}`);
+      toast.error("Error al crear el centro médico");
+      setCreando(false);
+    }
+  };
+  
 
   // Si no está abierto, no renderizamos nada
   if (!isOpen) return null;
@@ -157,7 +165,7 @@ const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre 
+                    Nombre *
                   </label>
                   <input
                     type="text"
@@ -190,7 +198,7 @@ const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono (10 dígitos)
+                    Teléfono (10 dígitos) *
                   </label>
                   <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -363,7 +371,7 @@ const CrearConsultorioModal = ({ isOpen,  perfilId, perfilTipo }) => {
       </div>
 
       {/* Toastify */}
-      <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="bottom-right" autoClose={1500} hideProgressBar={false} />
     </>
   );
 };
