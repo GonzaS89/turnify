@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 // CARGA DE ICONOS
-
 import {
   FaInfoCircle,
   FaCalendarAlt,
@@ -15,7 +14,6 @@ import {
 import { TbRefresh } from "react-icons/tb";
 
 // CARGA DE HOOKS
-
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
@@ -23,7 +21,6 @@ import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsult
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
 // CARGA DE LAYOUTS
-
 import BorrarTurno from "./BorrarTurno";
 import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
 import TurnoInterno from "./TurnoInterno";
@@ -42,65 +39,39 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
 
+  // Formatear fecha corta (ej: "lun 5 may")
   function formatearFechaCorta(fechaStr) {
     const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
     const meses = [
-      "ene",
-      "feb",
-      "mar",
-      "abr",
-      "may",
-      "jun",
-      "jul",
-      "ago",
-      "sep",
-      "oct",
-      "nov",
-      "dic",
+      "ene", "feb", "mar", "abr", "may", "jun",
+      "jul", "ago", "sep", "oct", "nov", "dic",
     ];
-
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
-
     return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
   }
 
+  // Formatear fecha larga (ej: "Lunes 5")
   function formatearFechaLarga(fechaStr) {
     const dias = [
-      "Domingo",
-      "Lunes",
-      "Martes",
-      "Miércoles",
-      "Jueves",
-      "Viernes",
-      "Sábado",
+      "Domingo", "Lunes", "Martes", "Miércoles",
+      "Jueves", "Viernes", "Sábado",
     ];
-    const meses = [
-      "ene",
-      "feb",
-      "mar",
-      "abr",
-      "may",
-      "jun",
-      "jul",
-      "ago",
-      "sep",
-      "oct",
-      "nov",
-      "dic",
-    ];
-
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
-
     return `${dias[diaSemana]} ${day}`;
   }
+
+  // Formatear mes (ej: "Abril 2025")
+  const formatearMes = (fechaStr) => {
+    const fecha = new Date(fechaStr);
+    const opciones = { year: 'numeric', month: 'long' };
+    return fecha.toLocaleDateString('es-AR', opciones).replace(/^\w/, c => c.toUpperCase());
+  };
 
   const datesListRef = useRef(null);
 
@@ -109,7 +80,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     const interval = setInterval(() => {
       setRefreshTrigger((prev) => prev + 1);
     }, 300000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -125,10 +95,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const { consultorio } = useConsultorioxId(consultorioId);
 
   const consultorioObtenido = consultorio?.[0];
-
-  const {nombre, direccion } = consultorioObtenido || {};
-
-  console.log(nombre, direccion)
+  const { nombre, direccion } = consultorioObtenido || {};
 
   const { coberturas: coberturasConsultorio } =
     useCoberturaxIdConsultorio(consultorioId);
@@ -136,9 +103,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [finalizando, setFinalizando] = useState(false);
 
   const medico = profesional?.[0];
-  const nombreMedico = `${medico?.nombre || ""} ${
-    medico?.apellido || ""
-  }`.trim();
+  const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
 
   // Agrupar turnos por fecha
   const turnosAgrupados = turnos.reduce((acc, turno) => {
@@ -149,9 +114,39 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
-  const fechasOrdenadas = Object.keys(turnosAgrupados).sort(
-    (a, b) => new Date(b) - new Date(a)
-  );
+  // Agrupar por mes
+  const turnosPorMes = Object.keys(turnosAgrupados).reduce((acc, fecha) => {
+    const mes = fecha.slice(0, 7); // "YYYY-MM"
+    if (!acc[mes]) acc[mes] = [];
+    acc[mes].push(fecha);
+    return acc;
+  }, {});
+
+  // Ordenar meses de más reciente a más antiguo
+  const mesesOrdenados = Object.keys(turnosPorMes).sort((a, b) => new Date(b) - new Date(a));
+
+  // Ordenar fechas dentro de cada mes (más reciente primero)
+  mesesOrdenados.forEach(mes => {
+    turnosPorMes[mes].sort((a, b) => new Date(b) - new Date(a));
+  });
+
+  // Estado para meses expandidos (solo en desktop)
+  const [mesesExpandidos, setMesesExpandidos] = useState(() => {
+    const primerMes = mesesOrdenados[0] || "";
+    return new Set([primerMes]);
+  });
+
+  const toggleMes = (mes) => {
+    setMesesExpandidos(prev => {
+      const nuevo = new Set(prev);
+      if (nuevo.has(mes)) {
+        nuevo.delete(mes);
+      } else {
+        nuevo.add(mes);
+      }
+      return nuevo;
+    });
+  };
 
   // Scroll automático al centro en mobile
   useEffect(() => {
@@ -196,7 +191,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   const handleModificarEstadoTurno = async (idTurno) => {
     setFinalizandoIds((prev) => new Set([...prev, idTurno]));
-
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`
@@ -204,20 +198,18 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       setTimeout(() => {
         handleActualizarTurnos();
         setFinalizandoIds((prev) => {
-        const next = new Set(prev);
-        next.delete(idTurno);
-        return next;
-      });
+          const next = new Set(prev);
+          next.delete(idTurno);
+          return next;
+        });
       }, 1500);
-      
     } catch (error) {
       console.error("Error al modificar estado del turno:", error);
-    } 
+    }
   };
 
   const handleLiberarTurno = async (idTurno) => {
     setLiberandoIds((prev) => new Set([...prev, idTurno]));
-
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`
@@ -226,16 +218,13 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       setTimeout(() => {
         handleActualizarTurnos();
         setLiberandoIds((prev) => {
-        const next = new Set(prev);
-        next.delete(idTurno);
-        return next;
-      });
+          const next = new Set(prev);
+          next.delete(idTurno);
+          return next;
+        });
       }, 1500);
-      
     } catch (error) {
       console.error("Error al liberar turno:", error);
-    } finally {
-      
     }
   };
 
@@ -269,7 +258,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-          {/* Encabezado con gradiente */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-3">
               <FaCalendarAlt /> Tu Agenda
@@ -282,8 +270,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               <FaTimes size={20} />
             </button>
           </div>
-
-          {/* Cuerpo */}
           <div className="p-8 text-center space-y-6">
             <div className="flex justify-center">
               <div className="bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center">
@@ -370,66 +356,90 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
             {/* Sidebar de fechas */}
             <div className="w-full md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-              {/* <div className="p-6 border-b border-gray-200">
-                <h4 className="font-bold text-gray-800 text-lg">Fechas</h4>
-              </div> */}
               <div
                 ref={datesListRef}
                 className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-4 py-3 gap-3 custom-scrollbar"
               >
-                {fechasOrdenadas.map((fecha) => {
-                  const turnos = turnosAgrupados[fecha];
-                  const ocupados = turnos.filter(
-                    (t) => t.estado === "reservado"
-                  ).length;
-                  const finalizados = turnos.filter(
-                    (t) => t.estado === "finalizado"
-                  ).length;
-                  const disponibles = turnos.length - ocupados - finalizados;
-                  const isSelected = fecha === fechaSeleccionada;
+                {mesesOrdenados.map((mes) => {
+                  const expandido = mesesExpandidos.has(mes);
+                  const nombreMes = formatearMes(`${mes}-01`);
 
                   return (
-                    <button
-                      key={fecha}
-                      data-date={fecha}
-                      onClick={() => setFechaSeleccionada(fecha)}
-                      className={`min-w-36 md:min-w-0 p-4 rounded-xl text-left transition-all ${
-                        isSelected
-                          ? "bg-blue-500 text-white shadow-md"
-                          : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
-                      }`}
-                    >
-                      <div className="font-semibold">
-                        {formatearFechaCorta(fecha)}
-                      </div>
+                    <div key={mes} className="mb-6">
+                      {/* Encabezado del mes (solo en desktop) */}
                       <div
-                        className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
-                          isSelected
-                            ? "bg-white text-blue-600"
-                            : disponibles > 0
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                        className="md:block hidden px-4 py-3 bg-gray-200 rounded-lg mb-2 cursor-pointer hover:bg-gray-300 transition flex items-center justify-between"
+                        onClick={() => toggleMes(mes)}
+                      >
+                        <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide">
+                          {nombreMes}
+                        </h4>
+                        <span className={`transform transition-transform duration-300 ${expandido ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </div>
+
+                      {/* Contenedor animado de fechas */}
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          expandido ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
-                        {disponibles} disp.
-                      </div>
-                      {turnos.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {turnos.map((t) => (
-                            <div
-                              key={t.id}
-                              className={`w-3 h-3 rounded-full ${
-                                t.estado === "reservado"
-                                  ? "bg-red-400"
-                                  : t.estado === "disponible"
-                                  ? "bg-green-400"
-                                  : "bg-blue-400"
-                              }`}
-                            />
-                          ))}
+                        <div className="flex md:flex-col gap-3">
+                          {turnosPorMes[mes].map((fecha) => {
+                            const turnos = turnosAgrupados[fecha];
+                            const ocupados = turnos.filter((t) => t.estado === "reservado").length;
+                            const finalizados = turnos.filter((t) => t.estado === "finalizado").length;
+                            const disponibles = turnos.length - ocupados - finalizados;
+                            const isSelected = fecha === fechaSeleccionada;
+
+                            return (
+                              <button
+                                key={fecha}
+                                data-date={fecha}
+                                onClick={() => setFechaSeleccionada(fecha)}
+                                className={`min-w-36 md:min-w-0 p-4 rounded-xl text-left transition-all ${
+                                  isSelected
+                                    ? "bg-blue-500 text-white shadow-md"
+                                    : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
+                                }`}
+                              >
+                                <div className="font-semibold">
+                                  {formatearFechaCorta(fecha)}
+                                </div>
+                                <div
+                                  className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
+                                    isSelected
+                                      ? "bg-white text-blue-600"
+                                      : disponibles > 0
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {disponibles} disp.
+                                </div>
+                                {turnos.length > 0 && (
+                                  <div className="flex gap-1 mt-2">
+                                    {turnos.map((t) => (
+                                      <div
+                                        key={t.id}
+                                        className={`w-3 h-3 rounded-full ${
+                                          t.estado === "reservado"
+                                            ? "bg-red-400"
+                                            : t.estado === "disponible"
+                                            ? "bg-green-400"
+                                            : "bg-blue-400"
+                                        }`}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
-                      )}
-                    </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
