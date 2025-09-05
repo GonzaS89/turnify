@@ -129,16 +129,18 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       nuevoConsultorio
     );
 
-    if (typeof actualizarProfesionales === "function") {
-      actualizarConsultorio();
-    }
-
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+      setCreando(false);
+      onSuccess?.(response.data); // Callback de éxito
+      onClose();
+      if (typeof actualizarProfesionales === "function") {
+        actualizarConsultorio();
+      }
+    }, 1500);
 
     toast.success("✅ ¡Consultorio creado exitosamente!");
-    setCreando(false);
-    onSuccess?.(response.data); // Callback de éxito
-    onClose(); // Cierra el modal
+    // Cierra el modal
   } catch (err) {
     const errorMessage =
       err.response?.data?.message ||
@@ -412,7 +414,7 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
       </div>
 
       {/* Toastify */}
-      <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="bottom-right" autoClose={2000} hideProgressBar={false} />
     </>
   );
 };

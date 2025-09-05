@@ -4,8 +4,9 @@ import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamat
 import { toast, ToastContainer } from "react-toastify";
 import {format, parseISO} from 'date-fns';
 import {es} from 'date-fns/locale';
+import useObtenerCnsultorioxId from '../../customHooks/useConsultorioxId';
 
-const GenerarTurnosModal = () => {
+const GenerarTurnosModal = (consultorioTipo) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -18,6 +19,12 @@ const GenerarTurnosModal = () => {
 
   const consultorioIdParsed = parseInt(consultorioId, 10);
   const profesionalIdParsed = parseInt(profesionalId, 10);
+
+  const { consultorio, isLoading, error } = useObtenerCnsultorioxId(consultorioIdParsed);
+
+  const consultorioObtenido = consultorio[0] || null;
+
+  const { tipo } = consultorioObtenido || {};
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -112,6 +119,8 @@ const GenerarTurnosModal = () => {
 
       // Redirigir tras éxito
       setTimeout(() => {
+        tipo === 'centro médico' ?
+        navigate(`/micuenta/panelturnos-centromedico/${consultorioId}/${profesionalId}`) :
         navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
         
       }, 1500);
