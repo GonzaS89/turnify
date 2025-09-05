@@ -1273,6 +1273,17 @@ app.post("/api/unionprofesionalperfil", async (req, res) => {
 
 // CREAR Y VINCULAR PROFESIONAL CON CONSULTORIO //
 
+const normalizarSlug = (str) => {
+  return str
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
 app.post("/api/crear-y-vincular-profesional", async (req, res) => {
   const {
     nombre,
@@ -1281,86 +1292,103 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
     especialidad,
     titulo,
     telefono,
+    slug: slugEntrada,
     consultorioID,
   } = req.body;
 
   console.log("Datos recibidos:", req.body);
 
-  // Validación de campos obligatorios
-  if (!nombre || !apellido || !matricula || !especialidad || !consultorioID) {
+  console.log(slugEntrada)
+
+  // Validación básica
+  if (!nombre || !apellido || !matricula || !especialidad || !consultorioID || !slugEntrada) {
     return res.status(400).json({
       message:
-        "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o consultorioID.",
+        "Faltan campos obligatorios: nombre, apellido, matricula, especialidad, consultorioID o slug.",
     });
   }
 
   let connection;
 
   try {
-    // Obtener conexión directa para manejar transacción
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    // 1. Verificar si ya existe un profesional con esa matrícula
-    const [existing] = await connection.execute(
-      "SELECT id FROM profesionales WHERE matricula = ?",
+    // ✅ Validar que el consultorio exista
+    const [consultorioExistente] = await connection.execute(
+      "SELECT id FROM consultorios WHERE id = ?",
+      [consultorioID]
+    );
+    if (consultorioExistente.length === 0) {
+      return res.status(404).json({ message: "El consultorio especificado no existe." });
+    }
+
+    // 1. Buscar por matrícula
+    const [existingByMatricula] = await connection.execute(
+      "SELECT id, slug FROM profesionales WHERE matricula = ?",
       [matricula]
     );
 
     let profesionalID;
+    let finalSlug = normalizarSlug(slugEntrada); // ✅ Normalizado
 
-    if (existing.length > 0) {
-      // Si ya existe, usar el ID existente
-      profesionalID = existing[0].id;
-      console.log(
-        `Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`
-      );
+    if (existingByMatricula.length > 0) {
+      profesionalID = existingByMatricula[0].id;
+      finalSlug = existingByMatricula[0].slug;
+      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
     } else {
-      // Si no existe, crear uno nuevo
+      // ✅ Generar slug único
+      let uniqueSlug = finalSlug;
+      let counter = 1;
+      const MAX_ATTEMPTS = 100;
+
+      while (counter < MAX_ATTEMPTS) {
+        const [existing] = await connection.execute(
+          "SELECT id FROM profesionales WHERE slug = ?",
+          [uniqueSlug]
+        );
+        if (existing.length === 0) break;
+        uniqueSlug = `${finalSlug}-${counter}`;
+        counter++;
+      }
+
+      if (counter >= MAX_ATTEMPTS) {
+        return res.status(500).json({
+          message: "No se pudo generar un slug único. Inténtalo con otro nombre.",
+        });
+      }
+
+      finalSlug = uniqueSlug;
+
       const [insertResult] = await connection.execute(
-        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-        [
-          nombre,
-          apellido,
-          especialidad,
-          titulo || null,
-          matricula,
-          telefono || null,
-        ]
+        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono, slug) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null, finalSlug]
       );
       profesionalID = insertResult.insertId;
-      console.log(`Profesional creado con ID: ${profesionalID}`);
+      console.log(`Profesional creado con ID: ${profesionalID}, slug: ${finalSlug}`);
     }
 
-    // 2. Intentar asociar al consultorio
+    // 2. Vincular con consultorio
     try {
       await connection.execute(
         "INSERT INTO profesional_consultorio (profesional_id, consultorio_id) VALUES (?, ?)",
         [profesionalID, consultorioID]
       );
-      console.log(
-        `Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`
-      );
+      console.log(`Profesional ID ${profesionalID} asociado al consultorio ID ${consultorioID}`);
     } catch (error) {
-      // Si ya está vinculado (duplicado), ignoramos el error y continuamos
       if (error.code === "ER_DUP_ENTRY") {
-        console.log(
-          `Advertencia: El profesional ID ${profesionalID} ya está asociado al consultorio ID ${consultorioID}`
-        );
+        console.log(`Advertencia: ya vinculado (profesional ID ${profesionalID}, consultorio ID ${consultorioID})`);
       } else {
-        throw error; // Otro error sí debe romper la transacción
+        throw error;
       }
     }
 
-    // 3. Confirmar transacción
     await connection.commit();
 
-    // Responder con éxito
     return res.status(201).json({
-      message:
-        existing.length > 0
-          ? "Profesional ya existente y asociado correctamente."
-          : "Profesional creado y asociado correctamente.",
+      message: existingByMatricula.length > 0
+        ? "Profesional ya existente y asociado correctamente."
+        : "Profesional creado y asociado correctamente.",
       profesional: {
         id: profesionalID,
         nombre,
@@ -1369,25 +1397,17 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
         matricula,
         titulo,
         telefono,
+        slug: finalSlug,
         consultorioID,
       },
     });
   } catch (error) {
-    // Revertir transacción si falló algo
     if (connection) {
       await connection.rollback().catch(console.error);
       connection.release();
     }
 
     console.error("Error en crear-y-vincular-profesional:", error);
-
-    // Manejo específico de errores
-    if (error.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({
-        message: "Este profesional ya está asociado a este consultorio.",
-      });
-    }
-
     return res.status(500).json({
       message: "Error interno del servidor al crear o vincular el profesional.",
     });
@@ -1971,7 +1991,7 @@ app.get("/api/profesionales/:slug", async (req, res) => {
 });
 
 cron.schedule("* * * * *", async () => {
-  console.log("🔍 Buscando turnos que ocurran en 5 horas o menos...");
+  console.log("🔍 Buscando turnos que ocurran en 12 horas o menos...");
 
   const ahora = dayjs();
 
@@ -2021,6 +2041,8 @@ cron.schedule("* * * * *", async () => {
         continue;
       }
 
+      const fechaFormateada = fechaHoraTurno.format("DD/MM");
+
       // Diferencia en minutos
       const diffMinutos = fechaHoraTurno.diff(ahora, "minute");
       const diffHoras = diffMinutos / 60;
@@ -2036,7 +2058,7 @@ cron.schedule("* * * * *", async () => {
       }
 
       // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
-      if (diffHoras <= 5) {
+      if (diffHoras <= 12) {
         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
         // Formatear hora: HH:mm (sin segundos)
@@ -2055,7 +2077,7 @@ cron.schedule("* * * * *", async () => {
 
   Este es un recordatorio de tu turno con ${pronombre} ${tituloAbrev.toUpperCase()} ${turno.nombre_profesional.toUpperCase()} ${turno.apellido_profesional.toUpperCase()}.
 
-  📅 Hoy a las ${horaFormateada}  
+  📅 El día ${fechaFormateada} a las ${horaFormateada} 
   📍 ${turno.direccion.toUpperCase()}, ${turno.localidad.toUpperCase()}
 
   ⏰ Te pedimos llegar con 10 minutos de anticipación.

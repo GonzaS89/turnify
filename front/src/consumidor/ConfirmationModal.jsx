@@ -2,8 +2,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   FaCheckCircle,
+  FaCheck,
   FaExclamationCircle,
   FaTimes,
+  FaUser,
+  FaIdCard,
+  FaPhone,
+  FaShieldAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaStethoscope,
+  FaMapMarkerAlt,
+  FaAngleLeft,
 } from "react-icons/fa";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
@@ -46,8 +56,6 @@ const ConfirmationModal = ({
       month: "long",
       year: "numeric",
     });
-
-    // Capitalizar la primera letra
     return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
   };
 
@@ -107,46 +115,47 @@ const ConfirmationModal = ({
     }
   };
 
-
-
   return (
     <>
       {/* Overlay oscuro con blur */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
-
+        className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-[300] animate-fade-in"
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[90dvh] sm:max-h-[90vh] flex flex-col"
+          className="bg-white rounded-2xl shadow-xl w-screen sm:max-w-md max-h-[90dvh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-gray-100"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold">
-                {isSuccess ? "¡Éxito!" : "Confirmar Reserva"}
-              </h3>
-              {/* <button
-                onClick={() => !isSubmitting && navigate(-1)}
-                disabled={isSubmitting}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button> */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 relative rounded-t-2xl">
+            <button
+              onClick={() => !isSubmitting && navigate(-1)}
+              disabled={isSubmitting}
+              className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-all duration-300 hover:scale-110 active:scale-95"
+              aria-label="Cerrar"
+            >
+              <FaTimes size={20} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <FaCheckCircle className="text-2xl" />
+              <div>
+                <h3 className="text-2xl font-bold">
+                  {isSuccess ? "¡Turno Confirmado!" : "Revisa tu Reserva"}
+                </h3>
+                <p className="text-blue-100 text-sm opacity-90">
+                  {isSuccess
+                    ? "Tu turno ha sido reservado correctamente."
+                    : "Confirma los datos antes de continuar."}
+                </p>
+              </div>
             </div>
-            <p className="text-blue-100 mt-2 text-sm opacity-90">
-              {isSuccess
-                ? "Tu turno ha sido reservado correctamente."
-                : "Revisa los datos antes de confirmar."}
-            </p>
           </div>
 
           {/* Cuerpo scrollable */}
-          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
             {isSuccess ? (
               // Estado de éxito
-              <div className="text-center py-6">
+              <div className="text-center py-8">
                 <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4 animate-bounce" />
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva Confirmada!</h2>
                 <p className="text-gray-600 text-sm">
@@ -161,76 +170,118 @@ const ConfirmationModal = ({
               <>
                 {/* Detalles del turno */}
                 {selectedTurno && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                    <h4 className="font-semibold text-blue-800 mb-3 text-lg">Detalles del Turno</h4>
-                    <div className="space-y-2 text-sm text-gray-700">
-                      <p>
-                        <span className="font-medium text-blue-600">Fecha:</span>{" "}
-                        {formatearFechaSQL(selectedTurno.fecha)}
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Hora:</span>{" "}
-                        {formatearHora(selectedTurno.hora)}
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Orden:</span>{" "}
-                        {ordenTurno}° turno
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Profesional:</span>{" "}
-                        {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Especialidad:</span>{" "}
-                        {profesional?.especialidad}
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Establecimiento:</span>{" "}
-                        {consultorio?.tipo === "Particular"
-                          ? "Consultorio Particular"
-                          : `Centro médico ${consultorio?.nombre}`}
-                      </p>
-                      <p>
-                        <span className="font-medium text-blue-600">Dirección:</span>{" "}
-                        {consultorio?.direccion}, {consultorio?.localidad}
-                      </p>
+                  <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
+                    <h4 className="font-semibold text-gray-800 mb-4 text-lg flex items-center gap-2">
+                      <FaCalendarAlt className="text-blue-600" /> Detalles del Turno
+                    </h4>
+                    <div className="space-y-3 text-sm text-gray-700">
+                      <div className="flex items-start gap-2">
+                        <FaCalendarAlt className="text-blue-600 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Fecha:</span>{" "}
+                          {formatearFechaSQL(selectedTurno.fecha)}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaClock className="text-orange-500 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Hora:</span>{" "}
+                          {formatearHora(selectedTurno.hora)}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaUser className="text-indigo-600 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Orden:</span>{" "}
+                          {ordenTurno}° turno
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaStethoscope className="text-purple-600 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Profesional:</span>{" "}
+                          {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaStethoscope className="text-purple-500 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Especialidad:</span>{" "}
+                          {profesional?.especialidad}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaMapMarkerAlt className="text-red-500 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Establecimiento:</span>{" "}
+                          {consultorio?.tipo === "Particular"
+                            ? "Consultorio Particular"
+                            : `Centro médico ${consultorio?.nombre}`}
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FaMapMarkerAlt className="text-red-400 mt-1 flex-shrink-0" size={16} />
+                        <div>
+                          <span className="font-medium text-gray-600">Dirección:</span>{" "}
+                          {consultorio?.direccion}, {consultorio?.localidad}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {/* Datos del paciente */}
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                  <h4 className="font-semibold text-gray-800 mb-3 text-lg">Tus Datos</h4>
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <p>
-                      <span className="font-medium text-gray-600">Nombre:</span> {formData.nombre}
-                    </p>
-                    <p>
-                      <span className="font-medium text-gray-600">Apellido:</span> {formData.apellido}
-                    </p>
-                    <p>
-                      <span className="font-medium text-gray-600">DNI:</span> {formData.dni}
-                    </p>
-                    <p>
-                      <span className="font-medium text-gray-600">Teléfono:</span> {formData.telefono}
-                    </p>
-                    <p>
-                      <span className="font-medium text-gray-600">Cobertura:</span>{" "}
-                      {coberturaElegida ? (
-                        coberturaElegida.nombre === coberturaElegida.siglas
-                          ? coberturaElegida.nombre
-                          : `${coberturaElegida.siglas} (${coberturaElegida.nombre})`
-                      ) : "Particular"}
-
-                    </p>
+                <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
+                  <h4 className="font-semibold text-gray-800 mb-4 text-lg flex items-center gap-2">
+                    <FaUser className="text-green-600" /> Tus Datos
+                  </h4>
+                  <div className="space-y-3 text-sm text-gray-700">
+                    <div className="flex items-start gap-2">
+                      <FaUser className="text-blue-600 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <span className="font-medium text-gray-600">Nombre:</span> {formData?.nombre}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FaUser className="text-indigo-600 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <span className="font-medium text-gray-600">Apellido:</span> {formData?.apellido}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FaIdCard className="text-green-600 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <span className="font-medium text-gray-600">DNI:</span> {formData?.dni}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FaPhone className="text-orange-500 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <span className="font-medium text-gray-600">Teléfono:</span> {formData?.telefono}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FaShieldAlt className="text-purple-600 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <span className="font-medium text-gray-600">Cobertura:</span>{" "}
+                        {coberturaElegida ? (
+                          coberturaElegida.nombre === coberturaElegida.siglas
+                            ? coberturaElegida.nombre
+                            : `${coberturaElegida.siglas} - ${coberturaElegida.nombre}`
+                        ) : "Particular"}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Error */}
                 {submitError && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                    <FaExclamationCircle className="text-red-600 mt-0.5" />
-                    <p className="text-red-700 text-sm leading-tight">{submitError}</p>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
+                    <FaExclamationCircle className="mt-0.5 flex-shrink-0" size={20} />
+                    <div>
+                      <p className="font-semibold">Error al reservar</p>
+                      <p className="mt-1">{submitError}</p>
+                    </div>
                   </div>
                 )}
               </>
@@ -238,46 +289,51 @@ const ConfirmationModal = ({
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            {!isSuccess && (
-              <>
+          <div className="p-6 bg-white border-t border-gray-200">
+            {!isSuccess ? (
+              <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
                   disabled={isSubmitting}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 active:bg-gray-300 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-70"
                 >
-                  Editar
+                  <FaAngleLeft size={16} /> Editar
                 </button>
                 <button
                   type="button"
                   onClick={reservarTurno}
                   disabled={isSubmitting}
-                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${isSubmitting
-                      ? "bg-gray-400"
-                      : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
-                    }`}
+                  className={`
+                    flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300
+                    flex items-center justify-center gap-2
+                    ${isSubmitting
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg'
+                    }
+                  `}
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
+                    <>
+                      <div className="animate-spin rounded-full h-2 w-4 border-t-2 border-white"></div>
                       Confirmando...
-                    </div>
+                    </>
                   ) : (
-                    "Confirmar"
+                    <>
+                      <FaCheck size={18} />
+                      Confirmar Reserva
+                    </>
                   )}
                 </button>
-              </>
-              // ) : (
-              //   <button
-              //     type="button"
-              //     onClick={() =>
-              //       navigate('/')
-              //     }
-              //     className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-indigo-700 transition"
-              //   >
-              //     Volver al Panel
-              //   </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <FaAngleLeft size={18} /> Volver al Inicio
+              </button>
             )}
           </div>
         </div>

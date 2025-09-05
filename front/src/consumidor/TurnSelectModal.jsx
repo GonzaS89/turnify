@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import axios from "axios";
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useProfessionalConsultorios from "../../customHooks/useProfessionalConsultorios";
@@ -23,8 +23,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   const navigate = useNavigate();
   const { profesionalSlug } = useParams();
   const [profesionalId, setProfesionalId] = useState(null);
-  
-
+  const fechaRefs = useRef({}); // 👈 Para centrar fechas seleccionadas
 
   // Traer el ID del profesional
   useEffect(() => {
@@ -41,24 +40,23 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     fetchProfesionalId();
   }, [profesionalSlug]);
 
-  
-
-  // Siempre llamamos los hooks aunque profesionalId sea null
+  // Hooks de datos
   const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } =
     useProfesionalxId(profesionalId || 0);
 
-    const { consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } = useProfessionalConsultorios(profesionalId || 0);
+  const { consultorios, isLoading: isLoadingConsultorios, error: errorConsultorios } = 
+    useProfessionalConsultorios(profesionalId || 0);
 
-const [consultorioSelec, setConsultorioSelec] = useState(null);
+  const [consultorioSelec, setConsultorioSelec] = useState(null);
 
-// Cuando los consultorios carguen, establecer el primero como seleccionado
-useEffect(() => {
-  if (!isLoadingConsultorios && Array.isArray(consultorios) && consultorios.length > 0) {
-    setConsultorioSelec(consultorios[0].id);
-  } else if (consultorios?.length === 0) {
-    setConsultorioSelec(null); // o un valor por defecto
-  }
-}, [consultorios, isLoadingConsultorios]);
+  // Establecer primer consultorio al cargar
+  useEffect(() => {
+    if (!isLoadingConsultorios && Array.isArray(consultorios) && consultorios.length > 0) {
+      setConsultorioSelec(consultorios[0].id);
+    } else if (consultorios?.length === 0) {
+      setConsultorioSelec(null);
+    }
+  }, [consultorios, isLoadingConsultorios]);
 
   const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } =
     useProfessionalConsultorioTurnos(profesionalId || 0, consultorioSelec || 0);
@@ -127,203 +125,252 @@ useEffect(() => {
 
   useEffect(() => {
     setFechaSeleccionada("");
-  },[consultorioSelec])
+  }, [consultorioSelec]);
+
+  // 👇 Centrar fecha seleccionada
+  useEffect(() => {
+    if (fechaSeleccionada && fechaRefs.current[fechaSeleccionada]) {
+      fechaRefs.current[fechaSeleccionada].scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest'
+      });
+    }
+  }, [fechaSeleccionada]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[300] p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Encabezado */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
-  <div className="flex items-start justify-between gap-4">
-    {/* Información del médico */}
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-3 mb-3">
-        <FaUserMd className="text-2xl text-white/90" aria-hidden="true" />
-        <div>
-          {isLoadingProfesional ? (
-            <div className="bg-white/30 h-5 rounded w-36 animate-pulse" aria-label="Cargando nombre"></div>
-          ) : errorProfesional ? (
-            <p className="text-red-100 text-sm flex items-center gap-1">
-              <MdOutlineErrorOutline /> <span>Error al cargar médico</span>
-            </p>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold capitalize truncate">
-                {titulo} {medico?.nombre} {medico?.apellido}
-              </h2>
-              <p className="text-blue-100 opacity-90 truncate">{medico?.especialidad}</p>
-            </>
-          )}
-        </div>
-      </div>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[300] xl:p-4 animate-fade-in">
+      {/* Contenedor principal: responsive */}
+      <div className="bg-white xl:rounded-2xl shadow-xl w-screen xl:max-w-6xl h-[100dvh] xl:h-[95vh] flex flex-col lg:flex-row lg:overflow-hidden overflow-auto border border-gray-100">
 
-      {/* Consultorios */}
-      {Array.isArray(consultorios) && 
-  consultorios.length > 0 && 
-  !isLoadingProfesional && 
-  !errorProfesional && (
-    <div className="mt-4">
-      {/* Subtítulo: solo si hay más de 1 consultorio */}
-      {consultorios.length > 1 && (
-        <p className="text-sm text-white/90 mb-2 font-medium">
-          Seleccioná un consultorio
+        {/* COLUMNA IZQUIERDA — Información del profesional */}
+        <div className="lg:w-2/5 p-6 bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col justify-between">
+          <div>
+            {/* Encabezado médico + Botón de cerrar */}
+<div className="flex items-start justify-between gap-4 mb-6 relative">
+  <div className="flex items-center gap-3 min-w-0">
+    <FaUserMd className="text-3xl text-white/90 flex-shrink-0 mt-1" aria-hidden="true" />
+    <div>
+      {isLoadingProfesional ? (
+        <div className="space-y-2">
+          <div className="bg-white/30 h-5 rounded w-40 animate-pulse"></div>
+          <div className="bg-white/30 h-4 rounded w-28 animate-pulse"></div>
+        </div>
+      ) : errorProfesional ? (
+        <p className="text-red-100 text-sm flex items-center gap-1">
+          <MdOutlineErrorOutline /> <span>Error al cargar médico</span>
         </p>
-      )}
-
-      {/* Lista de consultorios */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        {consultorios.map((cons) => (
-          <div
-            key={cons.id}
-            className={`inline-flex items-center gap-2 px-3 py-2 rounded-2xl text-xs transition-all duration-200
-              ${
-                cons.id === consultorioSelec
-                  ? "bg-white/60 backdrop-blur border border-white/50 scale-100 shadow-lg shadow-white/10 text-gray-900 font-semibold"
-                  : "bg-white/15 hover:bg-white/25 border border-white/30 cursor-pointer hover:scale-105"
-              }
-            `}
-            onClick={() => setConsultorioSelec(cons.id)}
-          >
-            {/* Icono pequeño */}
-            <div
-              className={`
-                w-5 h-5 flex items-center justify-center rounded-full text-[0.6rem] transition-colors
-                ${
-                  cons.id === consultorioSelec
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "bg-white/30 text-indigo-100"
-                }
-              `}
-            >
-              {cons.tipo === "Particular" ? <FaHome /> : <FaHospital />}
-            </div>
-
-            {/* Dirección */}
-            <span className="font-medium">
-              {cons.direccion}
-            </span>
-
-            {/* Localidad (solo en pantallas medianas o mayores) */}
-            <span className={`${cons.id === consultorioSelec ? 'text-black/70' : 'text-white/70'} text-[0.65rem]`}>
-              {cons.localidad}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-
-      {/* Estado de carga o error para consultorios (opcional) */}
-      {isLoadingProfesional && (
-        <div className="flex gap-2 mt-2">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="bg-white/30 h-6 rounded-full w-24 animate-pulse"></div>
-          ))}
-        </div>
+      ) : (
+        <>
+          <h2 className="text-xl md:text-2xl font-bold capitalize leading-tight">
+            {titulo} {medico?.nombre} {medico?.apellido}
+          </h2>
+          <p className="text-blue-100 opacity-90 text-sm md:text-base">{medico?.especialidad}</p>
+        </>
       )}
     </div>
-
-    {/* Botón de cerrar */}
-    <button
-      onClick={() => navigate("/buscarprofesionales")}
-      className="text-white hover:bg-white/20 rounded-full p-1 transition flex-shrink-0"
-      aria-label="Volver al buscador de profesionales"
-    >
-      <FaTimes size={20} />
-    </button>
   </div>
+
+  {/* 👇 BOTÓN DE CERRAR - SIEMPRE VISIBLE */}
+  <button
+    onClick={() => navigate("/buscarprofesionales")}
+    className="absolute top-0 right-0 p-2 text-white hover:bg-white/20 rounded-full transition-all duration-200 z-10"
+    aria-label="Cerrar y volver al buscador"
+  >
+    <FaTimes size={20} />
+  </button>
 </div>
 
-        {/* Cuerpo */}
-        <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-          {/* Selector de Fecha */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-              <FaCalendarAlt className="text-blue-500" /> Seleccionar Fecha *
-            </label>
-
-            {isLoadingTurnos ? (
-              <div className="py-4 text-center bg-blue-50 rounded-xl border border-blue-200">
-                <BiLoaderCircle className="animate-spin mx-auto text-blue-600" size={24} />
-                <p className="text-blue-700 text-sm mt-1">Cargando fechas...</p>
-              </div>
-            ) : errorTurnos ? (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
-                <MdOutlineErrorOutline className="mt-0.5" />
-                <div>
-                  <p className="font-medium">Error al cargar turnos</p>
-                  <p className="mt-1">{errorTurnos.message || "Inténtalo más tarde."}</p>
-                </div>
-              </div>
-            ) : fechasUnicas.length === 0 ? (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-700 text-sm flex items-start gap-2">
-                <FaExclamationTriangle className="mt-0.5" />
-                <div>
-                  <p className="font-medium">Sin disponibilidad</p>
-                  <p className="mt-1">No hay fechas disponibles próximamente.</p>
-                </div>
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  value={fechaSeleccionada}
-                  onChange={handleFechaChange}
-                  className="w-full px-4 py-3 pl-10 pr-10 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition"
-                >
-                  <option value="">Seleccionar fecha</option>
-                  {fechasUnicas.map((fecha, index) => (
-                    <option key={index} value={fecha}>
-                      {obtenerDiaDeLaSemanaCorto(fecha)} {formatearSoloDia(fecha)} de {obtenerMesCorto(fecha)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {/* Turnos */}
-          <div className="space-y-4">
-            {!fechaSeleccionada && !isLoadingTurnos && !errorTurnos && fechasUnicas.length > 0 && (
-              <div className="text-center py-6 bg-blue-50 rounded-xl border border-blue-200">
-                <FaInfoCircle className="mx-auto text-blue-500" size={32} />
-                <p className="mt-2 text-blue-700 font-medium">
-                  Selecciona una fecha para ver los turnos disponibles.
-                </p>
-              </div>
-            )}
-
-            {fechaSeleccionada && (
-              <>
-                <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                  <FaClock className="text-green-500" />
-                  Turnos para el {formatearFechaSQL(fechaSeleccionada)}
-                </h3>
-
-                {turnosFiltrados.length > 0 ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    {turnosFiltrados.map((turno, index) => (
-                      <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <FaClock className="mx-auto text-gray-400" size={32} />
-                    <p className="mt-2 text-sm text-gray-600">No hay turnos disponibles en esta fecha.</p>
-                  </div>
+            {/* Selector de consultorio */}
+            {Array.isArray(consultorios) && consultorios.length > 0 && !isLoadingProfesional && !errorProfesional && (
+              <div className="mt-6">
+                {consultorios.length > 1 && (
+                  <p className="text-sm md:text-base text-white/90 mb-3 font-medium">Seleccioná un consultorio</p>
                 )}
-              </>
+
+                <div className="space-y-3">
+                  {consultorios.map((cons) => (
+                    <div
+                      key={cons.id}
+                      className={`
+                        p-4 rounded-xl border transition-all duration-200 cursor-pointer
+                        ${
+                          cons.id === consultorioSelec
+                            ? "bg-white text-gray-800 border-white shadow-md"
+                            : "bg-white/10 border-white/30 hover:bg-white/20"
+                        }
+                      `}
+                      onClick={() => setConsultorioSelec(cons.id)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`
+                            w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0
+                            ${
+                              cons.id === consultorioSelec
+                                ? "bg-indigo-100 text-indigo-700"
+                                : "bg-white/30 text-white"
+                            }
+                          `}
+                        >
+                          {cons.tipo === "Particular" ? <FaHome size={12} /> : <FaHospital size={12} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {cons.tipo === 'centro médico' && (
+                            <p className="font-medium text-sm truncate">{cons.nombre}</p>
+                          )}
+                          <p className="text-xs truncate">{cons.direccion}</p>
+                          <p className={`text-[0.65rem] ${cons.id === consultorioSelec ? 'text-gray-600' : 'text-white/70'}`}>
+                            {cons.localidad}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isLoadingProfesional && (
+              <div className="mt-6 space-y-3">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="bg-white/30 h-12 rounded-xl animate-pulse"></div>
+                ))}
+              </div>
             )}
           </div>
+
+         
         </div>
 
-        {/* Botón de cierre */}
-        <div className="p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-          <button
-            onClick={() => navigate("/buscarprofesionales")}
-            className="w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
-          >
-            Volver a buscar
-          </button>
+        {/* COLUMNA DERECHA — Selector de fecha + turnos */}
+        <div className="lg:w-3/5 flex flex-col h-full">
+          {/* Encabezado secundario (solo desktop) */}
+          <div className="hidden lg:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-800">Seleccioná tu turno</h3>
+            <button
+              onClick={() => navigate("/buscarprofesionales")}
+              className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition"
+              aria-label="Cerrar"
+            >
+              <FaTimes size={20} />
+            </button>
+          </div>
+
+          {/* Contenido scrollable */}
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
+            
+            {/* Selector de Fecha — ¡AHORA CON BOTONES! */}
+            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+              <label className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <FaCalendarAlt className="text-blue-600" /> Seleccionar Fecha *
+              </label>
+
+              {isLoadingTurnos ? (
+                <div className="py-5 text-center">
+                  <BiLoaderCircle className="animate-spin mx-auto text-blue-600" size={28} />
+                  <p className="text-blue-700 text-sm mt-2 font-medium">Cargando fechas disponibles...</p>
+                </div>
+              ) : errorTurnos ? (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-3">
+                  <MdOutlineErrorOutline className="mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="font-semibold">Error al cargar turnos</p>
+                    <p className="mt-1 text-sm">{errorTurnos.message || "Inténtalo más tarde."}</p>
+                  </div>
+                </div>
+              ) : fechasUnicas.length === 0 ? (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm flex items-start gap-3">
+                  <FaExclamationTriangle className="mt-0.5 flex-shrink-0" size={20} />
+                  <div>
+                    <p className="font-semibold">Sin disponibilidad</p>
+                    <p className="mt-1 text-sm">No hay fechas disponibles próximamente.</p>
+                  </div>
+                </div>
+              ) : (
+                /* 👇 NUEVO: Botones horizontales con centrado automático */
+                <div className="flex gap-2 overflow-x-auto pb-2 px-4 scrollbar-hide">
+                  {fechasUnicas.map((fecha, index) => {
+                    const diaCorto = obtenerDiaDeLaSemanaCorto(fecha);
+                    const diaNumero = formatearSoloDia(fecha);
+                    const mesCorto = obtenerMesCorto(fecha);
+                    const isActive = fecha === fechaSeleccionada;
+
+                    return (
+                      <button
+                        key={index}
+                        ref={el => fechaRefs.current[fecha] = el}
+                        onClick={() => handleFechaChange({ target: { value: fecha } })}
+                        className={`
+                          relative flex-shrink-0 px-5 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap
+                          border-2 flex flex-col items-center justify-center min-w-[72px] sm:min-w-[80px]
+                          ${isActive
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
+                          }
+                        `}
+                        aria-pressed={isActive}
+                        aria-label={`Seleccionar turno para ${diaCorto} ${diaNumero} de ${mesCorto}`}
+                      >
+                        <span className="text-xs uppercase tracking-wide font-bold">{diaCorto}</span>
+                        <span className="text-lg font-bold mt-1">{diaNumero}</span>
+                        <span className="text-xs mt-0.5">{mesCorto}</span>
+
+                        {/* Badge "Hoy" */}
+                        {fecha === todayDate && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[0.6rem] px-1 py-0.5 rounded-full font-bold">Hoy</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Turnos */}
+            <div className="space-y-4">
+              {!fechaSeleccionada && !isLoadingTurnos && !errorTurnos && fechasUnicas.length > 0 && (
+                <div className="text-center py-8 bg-blue-50 rounded-xl border border-blue-200">
+                  <FaInfoCircle className="mx-auto text-blue-500" size={36} />
+                  <p className="mt-3 text-blue-700 font-medium text-sm">
+                    Selecciona una fecha para ver los turnos disponibles.
+                  </p>
+                </div>
+              )}
+
+              {fechaSeleccionada && (
+                <>
+                  <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                    <FaClock className="text-green-600" />
+                    Turnos disponibles — {formatearFechaSQL(fechaSeleccionada)}
+                  </h3>
+
+                  {turnosFiltrados.length > 0 ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {turnosFiltrados.map((turno, index) => (
+                        <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-100 rounded-xl border border-dashed border-gray-300">
+                      <FaClock className="mx-auto text-gray-400" size={36} />
+                      <p className="mt-3 text-gray-600 font-medium text-sm">No hay turnos disponibles en esta fecha.</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* PIE */}
+          <div className="p-5 bg-white border-t border-gray-200">
+            <button
+              onClick={() => navigate("/buscarprofesionales")}
+              className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 active:bg-gray-300 transition-colors font-medium text-sm"
+            >
+              ← Volver a buscar profesionales
+            </button>
+          </div>
         </div>
       </div>
     </div>

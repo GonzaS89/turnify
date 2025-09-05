@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import useAllEspecialidades from "../../customHooks/useAllEspecialidades";
 import {
@@ -17,8 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 
 const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
@@ -26,17 +25,50 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
   const [matricula, setMatricula] = useState("");
   const [titulo, setTitulo] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [slug, setSlug] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
   const [creando, setCreando] = useState(false);
 
-  const {
-    especialidades,
-    isLoading: loading,
-    error: hookError,
-  } = useAllEspecialidades();
+  const { especialidades, isLoading: loading, error: hookError } =
+    useAllEspecialidades();
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Función para generar el slug: dr-juan-perez
+  const generarSlug = (titulo, nombre, apellido) => {
+    if (!titulo || !nombre || !apellido) return "";
+
+    const titulosMap = {
+      doctor: "dr",
+      doctora: "dra",
+      licenciado: "lic",
+      licenciada: "lic",
+    };
+
+    const abreviatura = titulosMap[titulo.toLowerCase()] || "prof";
+    const n = nombre.trim().toLowerCase();
+    const a = apellido.trim().toLowerCase();
+
+    // Normalizar: eliminar tildes y caracteres acentuados
+    const normalizar = (str) =>
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    return [abreviatura, normalizar(n), normalizar(a)].join("-");
+  };
+
+  // Actualizar slug cuando cambian título, nombre o apellido
+  useEffect(() => {
+    if (titulo && nombre && apellido) {
+      const nuevoSlug = generarSlug(titulo, nombre, apellido);
+      console.log(nuevoSlug)
+      setSlug(nuevoSlug);
+    } else {
+      setSlug("");
+    }
+  }, [titulo, nombre, apellido]);
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,21 +77,20 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
     setCreando(true);
 
     // Validaciones
-    if (!nombre.trim()) return setMensajeError("El nombre es obligatorio.");
-    if (!apellido.trim()) return setMensajeError("El apellido es obligatorio.");
+    if (!nombre.trim())
+      return setMensajeError("El nombre es obligatorio.");
+    if (!apellido.trim())
+      return setMensajeError("El apellido es obligatorio.");
     if (!especialidad)
       return setMensajeError("Debe seleccionar una especialidad.");
-      if (!matricula.trim()) {
-        return setMensajeError("La matrícula es obligatoria.");
-      }
-      if (matricula.trim().length < 4 || matricula.trim().length > 5) {
-        return setMensajeError("La matrícula debe tener entre 4 y 5 dígitos.");
-      }
+    if (!matricula.trim())
+      return setMensajeError("La matrícula es obligatoria.");
+    if (matricula.trim().length < 4 || matricula.trim().length > 5)
+      return setMensajeError("La matrícula debe tener entre 4 y 5 dígitos.");
 
     const telefonoLimpio = telefono.replace(/\D/g, "");
-    if (telefonoLimpio.length !== 10) {
+    if (telefonoLimpio.length !== 10)
       return setMensajeError("El teléfono debe tener exactamente 10 dígitos.");
-    }
 
     try {
       const nuevoProfesional = {
@@ -70,6 +101,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         matricula: matricula.trim(),
         telefono: telefonoLimpio,
         consultorioID,
+        slug, // ✅ Enviar el slug generado
       };
 
       const response = await axios.post(
@@ -78,16 +110,20 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
       );
       const data = response.data;
 
-      // Reset
+      console.log(nuevoProfesional)
+
+      // Resetear formulario
       setNombre("");
       setApellido("");
       setMatricula("");
       setEspecialidad("");
       setTitulo("");
       setTelefono("");
+      setSlug("");
 
-      toast.success("✅ ¡Profesional creado con éxito");
+      toast.success("✅ ¡Profesional creado con éxito!");
 
+      // Cerrar modal y ejecutar callback
       setTimeout(() => {
         onClose();
         onCreate?.();
@@ -113,18 +149,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
         className="bg-white rounded-2xl shadow-2xl w-full max-h-[100dvh] lg:max-h-[90dvh] max-w-4xl flex overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Imagen decorativa (solo en pantallas grandes) */}
-        {/* <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-blue-500 to-indigo-700 text-white p-12 relative">
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <FaUserMd size={80} className="mb-6 opacity-90" />
-            <h3 className="text-3xl font-bold mb-4">Bienvenido</h3>
-            <p className="text-lg opacity-90">
-              Registra a un nuevo profesional en tu consultorio y comienza a gestionar turnos.
-            </p>
-          </div>
-        </div> */}
-
-        {/* Formulario (siempre visible) */}
+        {/* Formulario */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 flex items-center justify-between">
@@ -132,7 +157,6 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
               <FaUserMd className="text-2xl" />
               <h2 className="text-2xl font-bold">Crear Profesional</h2>
             </div>
-
             <button
               onClick={onClose}
               className="text-white hover:bg-white/20 rounded-full p-1 transition"
@@ -176,7 +200,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Nombre y Apellido en fila (solo en desktop) */}
+                {/* Nombre y Apellido */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -226,8 +250,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                 {/* Especialidad */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaStethoscope className="text-purple-500" /> Especialidad
-                    Médica *
+                    <FaStethoscope className="text-purple-500" /> Especialidad Médica *
                   </label>
                   <select
                     value={especialidad}
@@ -250,12 +273,11 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     <FaIdCard className="text-green-500" /> Matrícula (4-5 dígitos) *
                   </label>
                   <input
-                    type="text" // Usamos "text" para evitar flechas en algunos navegadores, pero solo dejamos números
+                    type="text"
                     inputMode="numeric"
                     value={matricula}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Solo permite números y máximo 5 caracteres
                       if (/^\d{0,5}$/.test(value)) {
                         setMatricula(value);
                       }
@@ -263,7 +285,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                     placeholder="1234"
                     maxLength="5"
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
-      ${matricula && (matricula.length < 4 || matricula.length > 5)
+                      ${matricula && matricula.length > 0 && (matricula.length < 4 || matricula.length > 5)
                         ? "border-red-300 focus:ring-red-500"
                         : "border-gray-300 focus:ring-green-500"
                       }`}
@@ -278,8 +300,7 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                 {/* Teléfono */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaPhone className="text-green-500" /> Teléfono (10 dígitos)
-                    *
+                    <FaPhone className="text-green-500" /> Teléfono (10 dígitos) *
                   </label>
                   <input
                     type="tel"
@@ -303,6 +324,14 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                   )}
                 </div>
 
+                {/* Vista previa del slug */}
+                {slug && (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600">
+                    <strong>Slug generado:</strong>{" "}
+                    <code className="text-blue-600 font-mono">{slug}</code>
+                  </div>
+                )}
+
                 {/* Botones */}
                 <div className="flex gap-3 pt-4">
                   <button
@@ -315,15 +344,15 @@ const CrearProfesionalModal = ({ onClose, onCreate, consultorioID }) => {
                   <button
                     type="submit"
                     className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-                    disabled={telefono.replace(/\D/g, "").length !== 10}
+                    disabled={telefono.replace(/\D/g, "").length !== 10 || creando}
                   >
                     {creando ? (
                       <div className="flex items-center justify-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
-                        <span>Creando ...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+                        <span>Creando...</span>
                       </div>
                     ) : (
-                      "Crea profesional"
+                      "Crear profesional"
                     )}
                   </button>
                 </div>
