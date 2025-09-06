@@ -174,7 +174,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   {/* 👇 BOTÓN DE CERRAR - SIEMPRE VISIBLE */}
   <button
     onClick={() => navigate("/buscarprofesionales")}
-    className="absolute top-0 right-0 p-2 text-white hover:bg-white/20 rounded-full transition-all duration-200 z-10"
+    className="absolute lg:hidden top-0 right-0 p-2 text-white hover:bg-white/20 rounded-full transition-all duration-200 z-10"
     aria-label="Cerrar y volver al buscador"
   >
     <FaTimes size={20} />

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
-// CARGA DE ICONOS
+// ICONOS
 import {
   FaInfoCircle,
   FaCalendarAlt,
@@ -13,14 +13,14 @@ import {
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 
-// CARGA DE HOOKS
+// HOOKS
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import useCoberturaxIdConsultorio from "../../customHooks/useCoberturaxIdConsultorio";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
 
-// CARGA DE LAYOUTS
+// LAYOUTS
 import BorrarTurno from "./BorrarTurno";
 import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
 import TurnoInterno from "./TurnoInterno";
@@ -34,43 +34,36 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [showModalBorrarTurno, setShowModalBorrarTurno] = useState(false);
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
-  const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] =
-    useState(false);
+  const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
 
   // Formatear fecha corta (ej: "lun 5 may")
-  function formatearFechaCorta(fechaStr) {
+  const formatearFechaCorta = (fechaStr) => {
     const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
-    const meses = [
-      "ene", "feb", "mar", "abr", "may", "jun",
-      "jul", "ago", "sep", "oct", "nov", "dic",
-    ];
+    const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
     return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
-  }
+  };
 
   // Formatear fecha larga (ej: "Lunes 5")
-  function formatearFechaLarga(fechaStr) {
-    const dias = [
-      "Domingo", "Lunes", "Martes", "Miércoles",
-      "Jueves", "Viernes", "Sábado",
-    ];
+  const formatearFechaLarga = (fechaStr) => {
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
     return `${dias[diaSemana]} ${day}`;
-  }
+  };
 
   // Formatear mes (ej: "Abril 2025")
   const formatearMes = (fechaStr) => {
     const fecha = new Date(fechaStr);
-    const opciones = { year: 'numeric', month: 'long' };
-    return fecha.toLocaleDateString('es-AR', opciones).replace(/^\w/, c => c.toUpperCase());
+    const opciones = { year: "numeric", month: "long" };
+    return fecha.toLocaleDateString("es-AR", opciones).replace(/^\w/, (c) => c.toUpperCase());
   };
 
   const datesListRef = useRef(null);
@@ -97,10 +90,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const consultorioObtenido = consultorio?.[0];
   const { nombre, direccion } = consultorioObtenido || {};
 
-  const { coberturas: coberturasConsultorio } =
-    useCoberturaxIdConsultorio(consultorioId);
-  const [liberando, setLiberando] = useState(false);
-  const [finalizando, setFinalizando] = useState(false);
+  const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
 
   const medico = profesional?.[0];
   const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
@@ -126,54 +116,36 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const mesesOrdenados = Object.keys(turnosPorMes).sort((a, b) => new Date(b) - new Date(a));
 
   // Ordenar fechas dentro de cada mes (más reciente primero)
-  mesesOrdenados.forEach(mes => {
+  mesesOrdenados.forEach((mes) => {
     turnosPorMes[mes].sort((a, b) => new Date(b) - new Date(a));
   });
 
-  // Estado para meses expandidos (solo en desktop)
-  const [mesesExpandidos, setMesesExpandidos] = useState(() => {
-    const primerMes = mesesOrdenados[0] || "";
-    return new Set([primerMes]);
-  });
+  // Solo mostrar fechas al hacer clic en el mes. Por defecto, NINGUNO está expandido.
+  const [mesesExpandidos, setMesesExpandidos] = useState(new Set());
 
   const toggleMes = (mes) => {
-    setMesesExpandidos(prev => {
-      const nuevo = new Set(prev);
-      if (nuevo.has(mes)) {
-        nuevo.delete(mes);
-      } else {
-        nuevo.add(mes);
+    setMesesExpandidos((prev) => {
+      const nuevo = new Set();
+      if (!prev.has(mes)) {
+        nuevo.add(mes); // Solo este mes
       }
       return nuevo;
     });
   };
 
-  // Scroll automático al centro en mobile
+  // 👇 Scroll automático al mes expandido en mobile
   useEffect(() => {
-    if (fechaSeleccionada && datesListRef.current && window.innerWidth < 768) {
-      requestAnimationFrame(() => {
-        const button = datesListRef.current.querySelector(
-          `[data-date="${fechaSeleccionada}"]`
-        );
-        if (button) {
-          const container = datesListRef.current;
-          const offset =
-            button.offsetLeft -
-            container.offsetWidth / 2 +
-            button.offsetWidth / 2;
-          container.scrollTo({ left: offset, behavior: "smooth" });
-        }
-      });
+    if (mesesExpandidos.size > 0 && datesListRef.current) {
+      const firstExpandedButton = datesListRef.current.querySelector(".bg-blue-600");
+      if (firstExpandedButton) {
+        firstExpandedButton.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
-  }, [fechaSeleccionada]);
+  }, [mesesExpandidos]);
 
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
-  };
-
-  const recibirConfirmacionLiberacion = () => {
-    setLiberando(true);
   };
 
   const handleAgregarTurnoClick = () => {
@@ -192,9 +164,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const handleModificarEstadoTurno = async (idTurno) => {
     setFinalizandoIds((prev) => new Set([...prev, idTurno]));
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`
-      );
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
       setTimeout(() => {
         handleActualizarTurnos();
         setFinalizandoIds((prev) => {
@@ -211,9 +181,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const handleLiberarTurno = async (idTurno) => {
     setLiberandoIds((prev) => new Set([...prev, idTurno]));
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`
-      );
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`);
       toast.success("Turno liberado");
       setTimeout(() => {
         handleActualizarTurnos();
@@ -242,11 +210,11 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     };
   }, []);
 
-  // Estado vacío
+  // Estado de carga
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all ">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando tu agenda...</p>
         </div>
@@ -254,6 +222,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     );
   }
 
+  // Estado vacío
   if (turnos.length === 0) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]">
@@ -276,12 +245,8 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                 <FaCalendarAlt className="text-blue-500 w-10 h-10" />
               </div>
             </div>
-            <p className="text-gray-700 text-lg font-medium">
-              No tenés turnos agendados.
-            </p>
-            <p className="text-gray-500 text-sm">
-              Habilitá tu agenda para recibir pacientes.
-            </p>
+            <p className="text-gray-700 text-lg font-medium">No tenés turnos agendados.</p>
+            <p className="text-gray-500 text-sm">Habilitá tu agenda para recibir pacientes.</p>
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAgregarTurnoClick}
@@ -306,7 +271,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   return (
     <>
-      {/* Overlay oscuro con blur */}
+      {/* Overlay oscuro */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4 z-[200]"
         onClick={() => navigate("/micuenta")}
@@ -315,13 +280,11 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           className="bg-white xl:rounded-3xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[90dvh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Encabezado */}
+          {/* Encabezado — estilo coherente con TurnSelectModal */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-3">
-              <FaCalendarAlt />{" "}
-              {tipoConsultorio === "propio"
-                ? "Tu Agenda"
-                : `Agenda de consultorio de ${direccion}`}
+              <FaCalendarAlt />
+              {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de consultorio de ${direccion}`}
             </h2>
             <div className="flex items-center gap-2">
               <button
@@ -352,40 +315,53 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
             </div>
           </div>
 
-          {/* Contenido principal */}
+          {/* Contenido principal — estilo TurnSelectModal */}
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-            {/* Sidebar de fechas */}
+            {/* Sidebar de fechas — estilo vertical mobile-first */}
             <div className="w-full md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
+              <div className="p-4 border-b border-gray-200 bg-white">
+                <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide">
+                  Seleccioná un mes
+                </h4>
+              </div>
+
+              {/* 👇 LISTA DE MESES — ESTILO APLICADO */}
               <div
                 ref={datesListRef}
-                className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-4 py-3 gap-3 custom-scrollbar"
+                className="flex flex-col overflow-y-auto px-4 py-3 gap-4 custom-scrollbar"
+                style={{ maxHeight: "calc(100dvh - 180px)" }}
               >
                 {mesesOrdenados.map((mes) => {
                   const expandido = mesesExpandidos.has(mes);
                   const nombreMes = formatearMes(`${mes}-01`);
 
                   return (
-                    <div key={mes} className="mb-6">
-                      {/* Encabezado del mes (solo en desktop) */}
-                      <div
-                        className="md:block hidden px-4 py-3 bg-gray-200 rounded-lg mb-2 cursor-pointer hover:bg-gray-300 transition flex items-center justify-between"
+                    <div key={mes} className="mb-2">
+                      {/* Botón de mes — estilo TurnSelectModal */}
+                      <button
                         onClick={() => toggleMes(mes)}
+                        className={`
+                          w-full text-left px-4 py-3 sm:px-5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base
+                          uppercase tracking-wide transition-all flex items-center justify-between
+                          ${expandido
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:shadow-sm"
+                          }
+                        `}
                       >
-                        <h4 className="font-bold text-gray-700 text-sm uppercase tracking-wide">
-                          {nombreMes}
-                        </h4>
-                        <span className={`transform transition-transform duration-300 ${expandido ? 'rotate-180' : ''}`}>
+                        {nombreMes}
+                        <span
+                          className={`transform transition-transform duration-300 ${
+                            expandido ? "rotate-180" : ""
+                          }`}
+                        >
                           ▼
                         </span>
-                      </div>
+                      </button>
 
-                      {/* Contenedor animado de fechas */}
-                      <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          expandido ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
-                        }`}
-                      >
-                        <div className="flex md:flex-col gap-3">
+                      {/* Fechas del mes — solo si está expandido */}
+                      {expandido && (
+                        <div className="flex flex-col gap-3 mt-3 animate-fadeIn">
                           {turnosPorMes[mes].map((fecha) => {
                             const turnos = turnosAgrupados[fecha];
                             const ocupados = turnos.filter((t) => t.estado === "reservado").length;
@@ -398,15 +374,13 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                                 key={fecha}
                                 data-date={fecha}
                                 onClick={() => setFechaSeleccionada(fecha)}
-                                className={`min-w-36 md:min-w-0 p-4 rounded-xl text-left transition-all ${
+                                className={`w-full p-4 rounded-xl text-left transition-all ${
                                   isSelected
                                     ? "bg-blue-500 text-white shadow-md"
                                     : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
                                 }`}
                               >
-                                <div className="font-semibold">
-                                  {formatearFechaCorta(fecha)}
-                                </div>
+                                <div className="font-semibold">{formatearFechaCorta(fecha)}</div>
                                 <div
                                   className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
                                     isSelected
@@ -438,15 +412,16 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                             );
                           })}
                         </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
+                <div className="pb-8"></div>
               </div>
             </div>
 
-            {/* Detalles de turnos */}
-            <div className="w-full md:w-2/3 p-6 overflow-y-auto">
+            {/* Detalles de turnos — estilo TurnSelectModal */}
+            <div className="w-full md:w-2/3 p-6 overflow-y-auto bg-gray-50">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
                   {fechaSeleccionada
@@ -464,21 +439,21 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               </div>
 
               {!fechaSeleccionada ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">
-                    Seleccioná una fecha para ver los turnos.
+                <div className="text-center py-12 bg-blue-50 rounded-xl border border-blue-200">
+                  <FaInfoCircle className="mx-auto text-blue-500" size={36} />
+                  <p className="mt-3 text-blue-700 font-medium text-sm">
+                    Selecciona una fecha para ver los turnos disponibles.
                   </p>
                 </div>
               ) : turnosDeLaFecha.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-500 mb-5">
-                    No hay turnos para este día.
+                <div className="text-center py-12 bg-gray-100 rounded-xl border border-dashed border-gray-300">
+                  <FaClock className="mx-auto text-gray-400" size={36} />
+                  <p className="mt-3 text-gray-600 font-medium text-sm">
+                    No hay turnos disponibles en esta fecha.
                   </p>
                   <button
                     onClick={handleAgregarTurnoClick}
-                    className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
+                    className="mt-5 px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
                   >
                     <FaPlus /> Agregar Turnos
                   </button>
@@ -505,7 +480,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                         handleModificarEstadoTurno={handleModificarEstadoTurno}
                         handleLiberarTurno={handleLiberarTurno}
                         coberturaElegida={coberturaElegida}
-                        confirmarLiberacion={recibirConfirmacionLiberacion}
                         liberando={liberandoIds.has(turno.id)}
                         finalizando={finalizandoIds.has(turno.id)}
                       />
@@ -535,6 +509,31 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
+
+      {/* Estilo de animación opcional */}
+      <style jsx>{`
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #ccc;
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #aaa;
+        }
+      `}</style>
     </>
   );
 };
