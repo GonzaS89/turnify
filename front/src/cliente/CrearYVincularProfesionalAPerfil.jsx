@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import useAllEspecialidades from "../../customHooks/useAllEspecialidades";
 import {
@@ -29,6 +29,40 @@ const CrearYVincularProfesionalAPerfil = ({ onClose, onCreate, perfilID }) => {
   const [mensajeError, setMensajeError] = useState(null);
   const [mensaje, setMensaje] = useState(null);
   const [creando, setCreando] = useState(false);
+  const [slug, setSlug] = useState("");
+
+    // Función para generar el slug: dr-juan-perez
+    const generarSlug = (titulo, nombre, apellido) => {
+      if (!titulo || !nombre || !apellido) return "";
+  
+      const titulosMap = {
+        doctor: "dr",
+        doctora: "dra",
+        licenciado: "lic",
+        licenciada: "lic",
+      };
+  
+      const abreviatura = titulosMap[titulo.toLowerCase()] || "prof";
+      const n = nombre.trim().toLowerCase();
+      const a = apellido.trim().toLowerCase();
+  
+      // Normalizar: eliminar tildes y caracteres acentuados
+      const normalizar = (str) =>
+        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+      return [abreviatura, normalizar(n), normalizar(a)].join("-");
+    };
+  
+    // Actualizar slug cuando cambian título, nombre o apellido
+    useEffect(() => {
+      if (titulo && nombre && apellido) {
+        const nuevoSlug = generarSlug(titulo, nombre, apellido);
+        console.log(nuevoSlug)
+        setSlug(nuevoSlug);
+      } else {
+        setSlug("");
+      }
+    }, [titulo, nombre, apellido]);
 
   const {
     especialidades,
@@ -70,6 +104,7 @@ const CrearYVincularProfesionalAPerfil = ({ onClose, onCreate, perfilID }) => {
         matricula: matricula.trim(),
         telefono: telefonoLimpio,
         perfilID,
+        slug, // ✅ 
       };
 
       const response = await axios.post(

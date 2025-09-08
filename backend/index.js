@@ -359,7 +359,7 @@ WHERE id = ?
 
 app.get("/api/todoslosturnos/:turnoID", async (req, res) => {
   const { turnoID } = req.params;
-  const query = `SELECT t.id, CONCAT(t.nombre_paciente, ' ', t.apellido_paciente) AS paciente, t.dni,t.estado,t.fecha, t.hora, CONCAT(p.nombre, ' ', p.apellido) AS profesional, p.especialidad FROM turnos AS t JOIN profesionales AS p ON t.profesional_id = p.id
+  const query = `SELECT t.id, CONCAT(t.nombre_paciente, ' ', t.apellido_paciente) AS paciente, t.dni,t.estado,t.fecha, t.hora, p.id AS profesionalID ,CONCAT(p.nombre, ' ', p.apellido) AS profesional, p.especialidad FROM turnos AS t JOIN profesionales AS p ON t.profesional_id = p.id
      WHERE t.id = ?`;
 
   try {
@@ -493,83 +493,13 @@ app.put("/api/reservarturno/:turnoId", async (req, res) => {
         .json({ message: `Turno con ID ${turnoId} no encontrado.` });
     }
 
-    // ✅ Si el estado es "reservado", enviamos WhatsApp al admin
-    if (estado === "reservado") {
-      const [datosConsultorio] = await pool.execute(
-        "SELECT c.nombre, c.direccion,l.nombre AS localidad, c.tipo, c.telefono, c.sena AS seña, c.importe_sena AS importe, c.banco, c.cbu, c.alias, c.cuenta_nombre AS titular FROM consultorios AS c JOIN localidades AS l ON l.id = c.localidad WHERE c.id = ?",
-        [consultorioID]
-      );
-
-      const [datosProfesional] = await pool.execute(
-        "SELECT nombre, apellido FROM profesionales WHERE id = ?",
-        [profesionalID]
-      );
-
-      const linkCancelar = `https://turnate.site/cancelar-turno/${turnoId}`; // Cambia "tusitio.com" por tu dominio real
-
-      const mensaje = `
-🔔 *¡Nuevo Turno Reservado!* 🔔
-
-✅ *Paciente:* ${nombre_paciente} ${apellido_paciente}
-🆔 *DNI:* ${DNI} || 
-📞 *Teléfono:* ${telefono}
-
-📅 *Fecha:* ${fecha}
-⏰ *Hora:* ${hora}
-👨‍⚕️ *Profesional:* Dr/a ${datosProfesional[0].nombre} ${
-        datosProfesional[0].apellido
-      }
-🏥 *Consultorio:* ${
-        datosConsultorio[0].tipo === "Particular"
-          ? datosConsultorio[0].tipo
-          : `${datosConsultorio[0].tipo} ${datosConsultorio[0].nombre}`
-      }
-📍 *Dirección:* ${datosConsultorio[0].direccion}, ${
-        datosConsultorio[0].localidad
-      }
-
-${
-  datosConsultorio[0].seña === 1
-    ? `
-💰 *Importe de la seña:* $${datosConsultorio[0].importe}
-🏦 *Banco:* ${datosConsultorio[0].banco}
-🏧 *CBU:* ${datosConsultorio[0].cbu}
-🏷️ *Alias:* ${datosConsultorio[0].alias}
-👤 *Titular de la cuenta:* ${datosConsultorio[0].titular}
-
-Enviar comprobante a ${datosConsultorio[0].telefono} para que se haga efectivo el turno.
-`
-    : ""
-}
-
-❌ *¿Necesitás cancelar?*
-Puedes hacerlo fácilmente aquí:
-${linkCancelar} 
-
-Gracias por confiar en nosotros. ¡Te esperamos! 🙌
-`;
-      // `✅ Turno el ${new Date().toLocaleDateString('es-AR')}`;
-
-      try {
-        await client.messages.create({
-          body: mensaje,
-          from: twilioWhatsApp, // whatsapp:+14155238886
-          to: `whatsapp:+5493815588504`, // Tu número de WhatsApp
-        });
-        console.log("✅ Notificación enviada por WhatsApp al administrador");
-      } catch (error) {
-        console.error("❌ Error al enviar WhatsApp:", error.message);
-      }
-    }
+    // ✅ Se eliminó completamente el envío de WhatsApp aquí
 
     res.status(200).json({
       message: "Turno actualizado exitosamente.",
       updatedId: turnoId,
       changes: result.affectedRows,
-      notified:
-        estado === "reservado"
-          ? "Notificación enviada al admin"
-          : "No se envió notificación",
+      notified: "No se envió notificación", // Opcional: puedes quitar este campo si ya no es relevante
     });
   } catch (error) {
     console.error("Error al actualizar el turno:", error);
@@ -1296,10 +1226,6 @@ app.post("/api/crear-y-vincular-profesional", async (req, res) => {
     consultorioID,
   } = req.body;
 
-  console.log("Datos recibidos:", req.body);
-
-  console.log(slugEntrada)
-
   // Validación básica
   if (!nombre || !apellido || !matricula || !especialidad || !consultorioID || !slugEntrada) {
     return res.status(400).json({
@@ -1545,13 +1471,13 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     especialidad,
     titulo,
     telefono,
+    slug: slugEntrada,
     perfilID,
   } = req.body;
 
-  console.log("Datos recibidos:", req.body);
 
   // Validación de campos obligatorios
-  if (!nombre || !apellido || !matricula || !especialidad || !perfilID) {
+  if (!nombre || !apellido || !matricula || !especialidad || !perfilID || !slugEntrada) {
     return res.status(400).json({
       message:
         "Faltan campos obligatorios: nombre, apellido, matricula, especialidad o perfilID.",
@@ -1566,34 +1492,50 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     await connection.beginTransaction();
 
     // 1. Verificar si ya existe un profesional con esa matrícula
-    const [existing] = await connection.execute(
+    const [existingByMatricula] = await connection.execute(
       "SELECT id FROM profesionales WHERE matricula = ?",
       [matricula]
     );
 
     let profesionalID;
+    let finalSlug = normalizarSlug(slugEntrada); 
 
-    if (existing.length > 0) {
-      // Si ya existe, usar el ID existente
-      profesionalID = existing[0].id;
-      console.log(
-        `Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`
-      );
+    
+
+    if (existingByMatricula.length > 0) {
+      profesionalID = existingByMatricula[0].id;
+      finalSlug = existingByMatricula[0].slug;
+      console.log(`Profesional con matrícula ${matricula} ya existe. ID: ${profesionalID}`);
     } else {
-      // Si no existe, crear uno nuevo
+      // ✅ Generar slug único
+      let uniqueSlug = finalSlug;
+      let counter = 1;
+      const MAX_ATTEMPTS = 100;
+
+      while (counter < MAX_ATTEMPTS) {
+        const [existing] = await connection.execute(
+          "SELECT id FROM profesionales WHERE slug = ?",
+          [uniqueSlug]
+        );
+        if (existing.length === 0) break;
+        uniqueSlug = `${finalSlug}-${counter}`;
+        counter++;
+      }
+
+      if (counter >= MAX_ATTEMPTS) {
+        return res.status(500).json({
+          message: "No se pudo generar un slug único. Inténtalo con otro nombre.",
+        });
+      }
+
+      finalSlug = uniqueSlug;
+
       const [insertResult] = await connection.execute(
-        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono) VALUES (?, ?, ?, ?, ?, ?)",
-        [
-          nombre,
-          apellido,
-          especialidad,
-          titulo || null,
-          matricula,
-          telefono || null,
-        ]
+        "INSERT INTO profesionales (nombre, apellido, especialidad, titulo, matricula, telefono, slug) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [nombre, apellido, especialidad, titulo || null, matricula, telefono || null, finalSlug]
       );
       profesionalID = insertResult.insertId;
-      console.log(`Profesional creado con ID: ${profesionalID}`);
+      console.log(`Profesional creado con ID: ${profesionalID}, slug: ${finalSlug}`);
     }
 
     // 2. Intentar asociar al consultorio
@@ -1622,7 +1564,7 @@ app.post("/api/crear-y-vincular-profesional-perfil", async (req, res) => {
     // Responder con éxito
     return res.status(201).json({
       message:
-        existing.length > 0
+        existingByMatricula.length > 0
           ? "Profesional ya existente y asociado correctamente."
           : "Profesional creado y asociado correctamente.",
       profesional: {

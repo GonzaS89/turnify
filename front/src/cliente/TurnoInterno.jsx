@@ -17,7 +17,6 @@ const TurnoInterno = ({
   handleModificarEstadoTurno,
   handleLiberarTurno,
   coberturaElegida,
-  confirmarLiberacion,
   liberando,
   finalizando
 }) => {
@@ -26,7 +25,6 @@ const TurnoInterno = ({
 
   const liberarTurno = id => {
     handleLiberarTurno(id); 
-    confirmarLiberacion()
   }
 
 

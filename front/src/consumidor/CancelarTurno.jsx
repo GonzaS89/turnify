@@ -5,6 +5,7 @@ import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaArrowLeft } from
 import useObtenerTurnoxID from '../../customHooks/useObtenerTurnoxID';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
+import useProfesionalxId from '../../customHooks/useProfesionalxId';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function CancelarTurno() {
@@ -16,6 +17,13 @@ export default function CancelarTurno() {
 
   const { turno, loading: loadingTurno, error, mensaje: mensajeTurno } = useObtenerTurnoxID(idParseada);
   const turnoObtenido = turno ? turno[0] : null;
+
+ const { profesional, isLoading: loadingProfesional, error: errorProfesional } = useProfesionalxId(turnoObtenido?.profesionalID);
+
+
+ const prof = profesional[0];
+
+ const { slug } = prof || { slug: 'profesional' };
 
   // Validación del ID
   useEffect(() => {
@@ -41,7 +49,7 @@ export default function CancelarTurno() {
     const diferenciaMs = turnoDateTime - ahora;
     const horasRestantes = diferenciaMs / (1000 * 60 * 60);
 
-    return horasRestantes > 24;
+    return horasRestantes > 12;
   };
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -90,7 +98,7 @@ export default function CancelarTurno() {
   };
 
   const handleVolver = () => {
-    navigate('/');
+    navigate(`/turnos/${slug}`);
   };
 
   const formatearFechaSQL = (fecha) => {

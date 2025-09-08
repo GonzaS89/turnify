@@ -36,18 +36,18 @@ const ConfirmationModalInterno = ({
 
   // Formatear fecha y hora
   const formatearFechaSQL = (fecha) => {
-  if (!fecha) return "N/A";
-  const date = new Date(fecha);
-  let fechaFormateada = date.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+    if (!fecha) return "N/A";
+    const date = new Date(fecha);
+    let fechaFormateada = date.toLocaleDateString("es-AR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
-  // Capitalizar la primera letra
-  return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
-};
+    // Capitalizar la primera letra
+    return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  };
 
   const formatearHora = (hora) => {
     if (!hora) return "N/A";
@@ -56,18 +56,18 @@ const ConfirmationModalInterno = ({
   };
 
   const definirTitulo = (value) => {
-  switch (value) {
-    case 'doctor':
-      return 'Dr.';
-    case 'doctora':
-      return 'Dra.';
-    case 'licenciado':
-    case 'licenciada':
-      return 'Lic.'; 
-    default:
-      return ''; 
-  }
-};
+    switch (value) {
+      case 'doctor':
+        return 'Dr.';
+      case 'doctora':
+        return 'Dra.';
+      case 'licenciado':
+      case 'licenciada':
+        return 'Lic.';
+      default:
+        return '';
+    }
+  };
 
   // Reservar turno
   const reservarTurno = async () => {
@@ -94,15 +94,57 @@ const ConfirmationModalInterno = ({
       setIsSuccess(true);
       toast.success("Turno reservado")
 
+      // 🟢 ENLACE DE WHATSAPP AUTOMÁTICO - Mensaje mejorado
+      const nombreProfesional = `${definirTitulo(profesional?.titulo)} ${profesional?.nombre} ${profesional?.apellido}`.trim();
+      const fechaFormateada = formatearFechaSQL(selectedTurno.fecha);
+      const horaFormateada = formatearHora(selectedTurno.hora);
+      const direccionCompleta = `${consultorio?.direccion}, ${consultorio?.localidad}`;
+
+      const mensaje = `
+¡Hola ${formData.nombre}! 
+
+Te agendé el siguiente turno:
+
+ Fecha: ${fechaFormateada}
+Hora: ${horaFormateada}
+Dirección: ${direccionCompleta}
+
+¡Te esperamos! Por favor, llegá 10 minutos antes.
+
+Saludos,
+${nombreProfesional} 
+`.trim();
+
+// Formatear número: asumimos que formData.telefono tiene el número sin + ni espacios
+// Para Argentina, asumimos prefijo 54 y si empieza con 9 o 11, lo ajustamos
+let telefono = formData.telefono.replace(/\D/g, ''); // Solo dígitos
+
+// Si empieza con 9 (celular argentino), agregamos 54 adelante
+if (telefono.startsWith('9')) {
+  telefono = '54' + telefono;
+} 
+// Si empieza con 11 (teléfono de Buenos Aires), también lo convertimos a móvil
+else if (telefono.startsWith('11') && telefono.length === 10) {
+  telefono = '549' + telefono;
+}
+// Si ya tiene 54, lo dejamos tal cual
+else if (!telefono.startsWith('54')) {
+  // Puedes ajustar lógica según tu caso, ejemplo genérico:
+  telefono = '549' + telefono; // asume celular argentino por defecto
+}
+
+const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURI(mensaje)}`;
+
       setTimeout(() => {
         navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
         setIsSubmitting(false);
-      }, 1500 );
+        window.open(whatsappUrl, '_blank');
+      }, 1500);
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error al conectar con el servidor.";
       setSubmitError(errorMessage);
-    } 
+    }
   };
   useEffect(() => {
     // Bloquea el scroll al montar
@@ -119,7 +161,7 @@ const ConfirmationModalInterno = ({
       {/* Overlay oscuro con blur */}
       <div
         className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[200]"
-        
+
       >
         <div
           className="bg-white rounded-2xl shadow-2xl w-screen sm:max-w-md max-h-[100dvh] lg:h-auto sm:max-h-[90vh] flex flex-col"
@@ -183,7 +225,7 @@ const ConfirmationModalInterno = ({
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Profesional:</span>{" "}
-                       {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
+                        {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
                       </p>
                       <p>
                         <span className="font-medium text-blue-600">Especialidad:</span>{" "}
@@ -257,11 +299,10 @@ const ConfirmationModalInterno = ({
                   type="button"
                   onClick={reservarTurno}
                   disabled={isSubmitting}
-                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
-                    isSubmitting
-                      ? "bg-gray-400"
-                      : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
-                  }`}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${isSubmitting
+                    ? "bg-gray-400"
+                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
+                    }`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
@@ -273,7 +314,7 @@ const ConfirmationModalInterno = ({
                   )}
                 </button>
               </>
-            ) 
+            )
             }
           </div>
         </div>
