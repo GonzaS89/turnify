@@ -49,7 +49,7 @@ export default function CancelarTurno() {
     const diferenciaMs = turnoDateTime - ahora;
     const horasRestantes = diferenciaMs / (1000 * 60 * 60);
 
-    return horasRestantes > 12;
+    return horasRestantes > 6;
   };
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -77,7 +77,7 @@ export default function CancelarTurno() {
       setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
 
       setTimeout(() => {
-        navigate('/');
+        navigate(`/turnos/${slug}`);
       }, 2000);
     } catch (err) {
       // Manejamos el error
@@ -98,7 +98,7 @@ export default function CancelarTurno() {
   };
 
   const handleVolver = () => {
-    navigate(`/turnos/${slug}`);
+    navigate('/');
   };
 
   const formatearFechaSQL = (fecha) => {
@@ -192,11 +192,11 @@ export default function CancelarTurno() {
           </div>
 
           {/* Título */}
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">Cancelar Turno</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-3">Reprogramar turno</h1>
 
           {/* Subtítulo */}
           <p className="text-gray-600 leading-relaxed mb-6 px-2">
-            ¿Estás seguro de que deseas cancelar tu turno? Esta acción no se puede deshacer.
+            ¿Estás seguro de que deseas reprogramar el turno? Esta acción no se puede deshacer.
           </p>
 
           {/* Detalles del Turno */}
@@ -229,7 +229,7 @@ export default function CancelarTurno() {
                 <span className="text-gray-500 font-medium">Profesional</span>
                 <span className="text-gray-800">{turnoObtenido?.profesional}</span>
               </div>
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span className="text-gray-500 font-medium">Estado</span>
                 <span
                   className={`font-semibold ${
@@ -244,7 +244,7 @@ export default function CancelarTurno() {
                 >
                   {turnoObtenido?.estado}
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -284,7 +284,7 @@ export default function CancelarTurno() {
               <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-2xl text-sm mb-6 flex items-center gap-2">
                 <FaExclamationTriangle className="text-yellow-500" />
                 <span>
-                  La cancelación solo está permitida con más de 24 horas de anticipación.
+                  La cancelación solo está permitida con más de 6 horas de anticipación.
                 </span>
               </div>
             )}
@@ -320,7 +320,7 @@ export default function CancelarTurno() {
                   'No permitido'
                 )
               ) : (
-                'Sí, Cancelar Turno'
+                'Reprogramar turno'
               )}
             </button>
           </div>

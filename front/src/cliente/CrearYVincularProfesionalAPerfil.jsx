@@ -34,35 +34,37 @@ const CrearYVincularProfesionalAPerfil = ({ onClose, onCreate, perfilID }) => {
     // Función para generar el slug: dr-juan-perez
     const generarSlug = (titulo, nombre, apellido) => {
       if (!titulo || !nombre || !apellido) return "";
-  
+    
       const titulosMap = {
         doctor: "dr",
         doctora: "dra",
         licenciado: "lic",
         licenciada: "lic",
       };
-  
+    
       const abreviatura = titulosMap[titulo.toLowerCase()] || "prof";
       const n = nombre.trim().toLowerCase();
       const a = apellido.trim().toLowerCase();
-  
+    
       // Normalizar: eliminar tildes y caracteres acentuados
       const normalizar = (str) =>
         str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
-      return [abreviatura, normalizar(n), normalizar(a)].join("-");
+    
+      // 👉 devuelve titulo-apellido-nombre
+      return [abreviatura, normalizar(a), normalizar(n)].join("-");
     };
-  
+    
     // Actualizar slug cuando cambian título, nombre o apellido
     useEffect(() => {
       if (titulo && nombre && apellido) {
-        const nuevoSlug = generarSlug(titulo, nombre, apellido);
-        console.log(nuevoSlug)
+        const nuevoSlug = generarSlug(titulo, nombre, apellido); // ✅ orden correcto
+        console.log(nuevoSlug);
         setSlug(nuevoSlug);
       } else {
         setSlug("");
       }
     }, [titulo, nombre, apellido]);
+    
 
   const {
     especialidades,

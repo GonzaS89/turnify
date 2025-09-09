@@ -307,9 +307,9 @@ const formatearSoloDia = (fecha) =>
   return (
     <>
       {/* Overlay oscuro — ESTILO UNIFICADO */}
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[300] xl:p-4 animate-fade-in">
+      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[40] xl:p-4 animate-fade-in">
         {/* Contenedor principal — ESTILO TurnSelectModal */}
-        <div className="bg-white xl:rounded-2xl shadow-xl w-screen xl:max-w-6xl h-[100dvh] xl:h-[95vh] flex flex-col lg:flex-row lg:overflow-hidden overflow-auto border border-gray-100">
+        <div className="bg-white xl:rounded-2xl shadow-xl w-screen xl:max-w-7xl h-[100dvh] xl:h-[95vh] flex flex-col lg:flex-row lg:overflow-hidden overflow-auto border border-gray-100">
 
           {/* COLUMNA IZQUIERDA — Información del consultorio/médico */}
           <div className="lg:w-1/3 p-6 bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col">

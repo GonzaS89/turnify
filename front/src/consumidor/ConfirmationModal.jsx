@@ -81,37 +81,37 @@ const ConfirmationModal = ({
   };
 
   // Reservar turno
- // Reservar turno
-const reservarTurno = async () => {
-  setIsSubmitting(true);
-  setSubmitError(null);
+  // Reservar turno
+  const reservarTurno = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
 
-  try {
-    const response = await axios.put(
-      `${API_URL}/api/reservarturno/${selectedTurno?.id}`,
-      {
-        nombre_paciente: formData.nombre,
-        apellido_paciente: formData.apellido,
-        DNI: formData.dni,
-        cobertura: formData.selectedOption,
-        telefono: formData.telefono,
-        estado: "reservado",
-        fecha: formatearFechaSQL(selectedTurno.fecha),
-        consultorioID: consultorio?.id,
-        profesionalID: profesional?.id,
-        hora: formatearHora(selectedTurno.hora),
-      }
-    );
+    try {
+      const response = await axios.put(
+        `${API_URL}/api/reservarturno/${selectedTurno?.id}`,
+        {
+          nombre_paciente: formData.nombre,
+          apellido_paciente: formData.apellido,
+          DNI: formData.dni,
+          cobertura: formData.selectedOption,
+          telefono: formData.telefono,
+          estado: "reservado",
+          fecha: formatearFechaSQL(selectedTurno.fecha),
+          consultorioID: consultorio?.id,
+          profesionalID: profesional?.id,
+          hora: formatearHora(selectedTurno.hora),
+        }
+      );
 
-    setIsSuccess(true);
+      setIsSuccess(true);
 
-    const nombreProfesional = `${definirTitulo(profesional?.titulo)} ${profesional?.nombre} ${profesional?.apellido}`.trim();
-    const fechaFormateada = formatearFechaSQL(selectedTurno.fecha);
-    const horaFormateada = formatearHora(selectedTurno.hora);
-    const direccionCompleta = `${consultorio?.direccion}, ${consultorio?.localidad}`;
+      const nombreProfesional = `${definirTitulo(profesional?.titulo)} ${profesional?.nombre} ${profesional?.apellido}`.trim();
+      const fechaFormateada = formatearFechaSQL(selectedTurno.fecha);
+      const horaFormateada = formatearHora(selectedTurno.hora);
+      const direccionCompleta = `${consultorio?.direccion}, ${consultorio?.localidad}`;
 
-    // ✅ Mensaje corregido con emojis y formData
-    const mensaje = `
+      // ✅ Mensaje corregido con emojis y formData
+      const mensaje = `
 
 ¡Hola ${nombreProfesional}!
 
@@ -121,37 +121,40 @@ Fecha: ${fechaFormateada}
 Hora: ${horaFormateada}
 Dirección: ${direccionCompleta}
 
-
-
 Saludos,
-${formData.nombre} ${formData.apellido}🩺
-    `.trim();
+${formData.nombre} ${formData.apellido}
 
-    // 📱 Formatear número
-    let telefono = consultorio.telefono.replace(/\D/g, ""); // Solo dígitos
 
-    if (telefono.startsWith("9")) {
-      telefono = "54" + telefono;
-    } else if (telefono.startsWith("11") && telefono.length === 10) {
-      telefono = "549" + telefono;
-    } else if (!telefono.startsWith("54")) {
-      telefono = "549" + telefono;
+¡¡IMPORTANTE!!
+
+Reprogramar turno desde https://turnate.site/cancelar-turno/${selectedTurno?.id}
+`
+
+      // 📱 Formatear número
+      let telefono = consultorio.telefono.replace(/\D/g, ""); // Solo dígitos
+
+      if (telefono.startsWith("9")) {
+        telefono = "54" + telefono;
+      } else if (telefono.startsWith("11") && telefono.length === 10) {
+        telefono = "549" + telefono;
+      } else if (!telefono.startsWith("54")) {
+        telefono = "549" + telefono;
+      }
+
+      // ✅ encodeURIComponent para que lleguen emojis y saltos de línea
+      const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+      setTimeout(() => {
+        navigate("/");
+        window.open(whatsappUrl, "_blank");
+        setIsSubmitting(false);
+      }, 2000);
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Error al conectar con el servidor.";
+      setSubmitError(errorMessage);
     }
-
-    // ✅ encodeURIComponent para que lleguen emojis y saltos de línea
-    const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-
-    setTimeout(() => {
-      navigate("/");
-      window.open(whatsappUrl, "_blank");
-      setIsSubmitting(false);
-    }, 2000);
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Error al conectar con el servidor.";
-    setSubmitError(errorMessage);
-  }
-};
+  };
 
 
   return (

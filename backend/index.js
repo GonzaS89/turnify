@@ -2000,7 +2000,7 @@ cron.schedule("* * * * *", async () => {
       }
 
       // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
-      if (diffHoras <= 12) {
+      if (diffHoras <= 8) {
         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
         // Formatear hora: HH:mm (sin segundos)
@@ -2024,11 +2024,11 @@ cron.schedule("* * * * *", async () => {
 
   ⏰ Te pedimos llegar con 10 minutos de anticipación.
 
-  ❌ Si necesitás cancelar o reprogramar, por favor contactanos al ${
-    turno.telConsultorio
-  } lo antes posible.
+  ❌ Si necesitás reprogramar https://turnate.site/cancelar-turno/${turno.id}
 
-  🙏 ¡Gracias por tu confianza!
+  (SOLO HASTA 2 HORAS LUEGO DE RECIBIR ESTE MENSAJE)
+
+  NO RESPONDAS ESTE MENSAJE, es un sistema automático.
 
   Te esperamos 🩺✨
 `
@@ -2037,7 +2037,7 @@ cron.schedule("* * * * *", async () => {
           .filter((linea) => linea !== "") // Mantiene líneas vacías intencionales como separadores
           .join("\n"); // Vuelve a unirlas con saltos de línea
 
-        console.log(mensaje);
+
 
         try {
           // ✅ Enviar WhatsApp con Twilio

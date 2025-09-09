@@ -15,6 +15,7 @@ import {
   FaClock,
   FaCheckCircle,
   FaPlus,
+  FaShareAlt
 } from "react-icons/fa";
 
 // CARGA DE HOOKS
@@ -55,6 +56,7 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
 
   const medico = profesionalesObtenidos?.[0] || null;
   const medicoID = medico?.id;
+  const medicoSlug = medico?.slug;
 
 
   // Estado persistente: recuperar selección desde localStorage
@@ -178,6 +180,45 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
                         <FaIdCard size={14} /> Matrícula: {medico.matricula}
                       </span>
                     </div>
+                    {consultoriosObtenidos.length > 0 && (
+                      <div className="my-2 p-2">
+                        <p className="mb-2 text-gray-50 font-medium">Enlace público de turnos</p>
+                        <a
+                          href={`https://turnate.site/turnos/${medicoSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={async (e) => {
+                            e.preventDefault(); // Evita abrir el enlace directamente
+                            const url = `https://turnate.site/turnos/${medicoSlug}`;
+                            const text = "¡Reservá tu turno desde este enlace!";
+
+                            if (navigator.share) {
+                              try {
+                                await navigator.share({
+                                  title: "Turnate",
+                                  text,
+                                  url,
+                                });
+                                console.log("Compartido exitosamente");
+                              } catch (err) {
+                                console.error("Error al compartir:", err);
+                              }
+                            } else {
+                              // Fallback: copiar al portapapeles
+                              navigator.clipboard.writeText(url);
+                              alert("Enlace copiado al portapapeles");
+                            }
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-900 font-semibold rounded-lg shadow-md hover:bg-gray-200 hover:scale-95 transition-colors duration-1000 ease-in"
+                        >
+                          <FaShareAlt />
+                          Compartir enlace
+                        </a>
+                      </div>
+                    )}
+
+
+
                   </div>
                 </div>
               ) : (
@@ -462,8 +503,8 @@ const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
   <div
     onClick={clickable ? onClick : undefined}
     className={`flex flex-col items-center p-4 bg-gray-50 rounded-xl transition-all duration-200 ${clickable
-        ? "cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md"
-        : "hover:bg-gray-100"
+      ? "cursor-pointer hover:bg-blue-50 hover:scale-105 hover:shadow-md"
+      : "hover:bg-gray-100"
       }`}
   >
     <Icon className={`w-5 h-5 ${color} mb-2`} />
