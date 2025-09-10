@@ -10,6 +10,7 @@ import {
   FaTimes,
   FaPlus,
   FaTrashAlt,
+  FaClock,
   FaUserMd,
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
@@ -27,6 +28,7 @@ import useConsultorioxId from "../../customHooks/useConsultorioxId";
 import BorrarTurno from "./BorrarTurno";
 import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
 import TurnoInterno from "./TurnoInterno";
+import GenerarTurnosModal from "./GenerarTurnosModal";
 
 const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
@@ -60,6 +62,10 @@ const obtenerMesCorto = (fecha) =>
 
 const formatearSoloDia = (fecha) =>
   parsearFechaLocal(fecha).getDate().toString().padStart(2, "0");
+
+   const handleAgregarTurnoClick = () => {
+    navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
+  };
 
   // Formatear fecha corta (ej: "lun 5 may")
   const formatearFechaCorta = (fechaStr) => {
@@ -181,10 +187,6 @@ const formatearSoloDia = (fecha) =>
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
-  };
-
-  const handleAgregarTurnoClick = () => {
-    navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
   };
 
   const handleBorrarTurno = (id) => {
@@ -321,8 +323,15 @@ const formatearSoloDia = (fecha) =>
                     {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${direccion}`}
                   </h2>
                   <p className="text-blue-100 opacity-90 text-sm md:text-base">{nombreMedico}</p>
+                  <button
+                onClick={handleAgregarTurnoClick}
+                className="flex lg:hidden items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
+              >
+                <FaPlus /> Agregar Turnos
+              </button>
                 </div>
               </div>
+             
 
               {/* Botón de cerrar móvil */}
               <button
@@ -446,6 +455,12 @@ const formatearSoloDia = (fecha) =>
             {/* Encabezado secundario (solo desktop) */}
             <div className="hidden lg:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-800">Turnos del día</h3>
+              <button
+                onClick={handleAgregarTurnoClick}
+                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
+              >
+                <FaPlus /> Agregar Turnos
+              </button>
               <button
                 onClick={() => navigate("/micuenta")}
                 className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition"
