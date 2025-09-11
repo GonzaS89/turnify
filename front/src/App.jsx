@@ -61,6 +61,7 @@ const App = () => {
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null);
   const [ordenTurno, setOrdenTurno] = useState(null);
   const [pass, setPass] = useState(null);
+  const [idTurnoReprogramado, setIdTurnoReprogramado] = useState(null);
 
 
   const { profesional, isLoading, error } = useProfesionalxId(idProfesional);
@@ -86,7 +87,10 @@ const App = () => {
     setPass(data);
   };
 
-
+  const recibirTurnoReprogramado = (turnoId) => {
+    setIdTurnoReprogramado(turnoId);
+    console.log(turnoId)
+  }
 
 
   return (
@@ -140,11 +144,11 @@ const App = () => {
             <Route path="/micuenta" element={<UserDashboard enviarPass={recibirPass} />} />
             <Route path="/crearperfil/:codigo" element={<CrearPerfil handleCrearConsultorio={() => setOpenLoginModal(true)} />} />
             <Route path="/crearprofesional" element={<CrearProfesional />} />
-            <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno />} />
+            <Route path="/cancelar-turno/:turnoId" element={<CancelarTurno idTurnoReprogramado={recibirTurnoReprogramado}/>} />
             <Route path="/buscarprofesionales" element={<SearchModal enviarIds={recibirIds} />} />
             <Route path="turnos/:profesionalSlug" element={<TurnSelectModal consultorio={consultorio} idProfesional={idProfesional} enviarTurnoYOrden={recibirTurnoYOrden} />} />
             <Route path="/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModal onSubmit={recibirDataFormulario} />} />
-            <Route path="/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno} consultorio={consultorio} profesional={profesional?.[0]} />} />
+            <Route path="/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModal formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno} consultorio={consultorio} profesional={profesional?.[0]} idTurnoReprogramado = {idTurnoReprogramado}/>} />
             <Route path="/micuenta/formulario-usuario/:consultorioId/:profesionalId" element={<UserFormModalInterno onSubmit={recibirDataFormulario} />} />
             <Route path="/micuenta/confirmacionturno/:consultorioId/:profesionalId" element={<ConfirmationModalInterno formData={dataFormulario} selectedTurno={turnoSeleccionado} ordenTurno={ordenTurno} consultorio={consultorio} profesional={profesional?.[0]} />} />
             <Route path="/micuenta/panelturnos/:consultorioId/:profesionalId" element={<TurnList enviarTurnoYOrden={recibirTurnoYOrden} />} />

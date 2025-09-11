@@ -19,6 +19,7 @@ import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 import useConsultorioxId from "../../customHooks/useConsultorioxId";
+import useObtenerTurnoxID from "../../customHooks/useObtenerTurnoxID";
 
 const ConfirmationModal = ({
   formData,
@@ -29,6 +30,16 @@ const ConfirmationModal = ({
   const { profesionalId } = useParams();
   const navigate = useNavigate();
 
+  const [turnoReprogramadoId, setTurnoReprogramadoId] = useState(null);
+
+  useEffect(() => {
+    const savedId = sessionStorage.getItem('turnoReprogramadoId');
+    if (savedId) {
+      setTurnoReprogramadoId(savedId);
+    }
+  }, []);
+
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -36,6 +47,11 @@ const ConfirmationModal = ({
   const { coberturas } = useAllCoberturas();
   const { profesional: prof, isLoading: loadingProfesional } = useProfesionalxId(profesionalId);
   const { consultorio: consul, isLoading: loadingConsultorio } = useConsultorioxId(consultorioId);
+  const { turno, isLoading: loadingTurno } = useObtenerTurnoxID(turnoReprogramadoId || null);
+
+  const turnoCancelado = turno?.[0] || null;
+
+  const {fecha: fechaReprogramada, hora: horaReprogramada} = turnoCancelado || {};
 
   const profesional = prof?.[0];
   const consultorio = consul?.[0];
@@ -130,6 +146,24 @@ ${formData.nombre} ${formData.apellido}
 Reprogramar turno desde https://turnate.site/cancelar-turno/${selectedTurno?.id}
 `
 
+const mensajeTurnoReprogramado = `
+*Reprogramación de Turno*
+
+¡Hola ${nombreProfesional}!
+
+He reprogramado mi turno:
+
+*Anterior:* ${formatearFechaSQL(fechaReprogramada)} a las ${formatearHora(horaReprogramada)}
+
+*Nuevo:* ${fechaFormateada} a las ${horaFormateada}
+
+*Lugar:* ${direccionCompleta}
+
+Saludos cordiales,
+*${formData.nombre} ${formData.apellido}*
+`;
+
+
       // 📱 Formatear número
       let telefono = consultorio.telefono.replace(/\D/g, ""); // Solo dígitos
 
@@ -142,7 +176,7 @@ Reprogramar turno desde https://turnate.site/cancelar-turno/${selectedTurno?.id}
       }
 
       // ✅ encodeURIComponent para que lleguen emojis y saltos de línea
-      const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+      const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(turnoReprogramadoId ?  mensajeTurnoReprogramado : mensaje)}`;
 
       setTimeout(() => {
         navigate("/");

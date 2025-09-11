@@ -11,6 +11,8 @@ import {
   FaPlus,
   FaTrashAlt,
   FaClock,
+  FaUserCircle,
+  FaRegClock,
   FaUserMd,
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
@@ -457,7 +459,7 @@ const formatearSoloDia = (fecha) =>
               <h3 className="text-lg font-bold text-gray-800">Turnos del día</h3>
               <button
                 onClick={handleAgregarTurnoClick}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
               >
                 <FaPlus /> Agregar Turnos
               </button>
@@ -507,32 +509,90 @@ const formatearSoloDia = (fecha) =>
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {turnosDeLaFecha
-                      .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                      .map((turno, idx) => (
-                        <TurnoInterno
-                          key={turno.id}
-                          turno={turno}
-                          id={turno.id}
-                          idx={idx}
-                          estado={turno.estado}
-                          hora={turno.hora}
-                          paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
-                          DNI={turno.DNI}
-                          cobertura={turno.cobertura}
-                          duracion={turno.duracion}
-                          telefono={turno.telefono}
-                          tapButtonAsignar={tapButtonAsignar}
-                          handleBorrarTurno={handleBorrarTurno}
-                          handleModificarEstadoTurno={handleModificarEstadoTurno}
-                          handleLiberarTurno={handleLiberarTurno}
-                          coberturaElegida={coberturaElegida}
-                          liberando={liberandoIds.has(turno.id)}
-                          finalizando={finalizandoIds.has(turno.id)}
-                        />
-                      ))}
-                  </div>
+                  <div className="space-y-6">
+                  {/* Sección: Turnos Reservados */}
+                  {turnosDeLaFecha
+                    .filter(turno => turno.estado === "disponible")
+                    .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                    .length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <FaRegClock className="text-green-400" /> Disponibles
+                      </h3>
+                      <div className="space-y-3">
+                        {turnosDeLaFecha
+                          .filter(turno => turno.estado === "disponible")
+                          .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                          .map((turno, idx) => (
+                            <TurnoInterno
+                              key={turno.id}
+                              turno={turno}
+                              id={turno.id}
+                              idx={idx}
+                              estado={turno.estado}
+                              hora={turno.hora}
+                              paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
+                              DNI={turno.DNI}
+                              cobertura={turno.cobertura}
+                              duracion={turno.duracion}
+                              telefono={turno.telefono}
+                              tapButtonAsignar={tapButtonAsignar}
+                              handleBorrarTurno={handleBorrarTurno}
+                              handleModificarEstadoTurno={handleModificarEstadoTurno}
+                              handleLiberarTurno={handleLiberarTurno}
+                              coberturaElegida={coberturaElegida}
+                              liberando={liberandoIds.has(turno.id)}
+                              finalizando={finalizandoIds.has(turno.id)}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Sección: Turnos Disponibles */}
+                  {turnosDeLaFecha
+                    .filter(turno => turno.estado !== "disponible")
+                    .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                    .length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <FaRegClock className="text-red-400" /> Reservados
+                      </h3>
+                      <div className="space-y-3">
+                        {turnosDeLaFecha
+                          .filter(turno => turno.estado !== "disponible")
+                          .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                          .map((turno, idx) => (
+                            <TurnoInterno
+                              key={turno.id}
+                              turno={turno}
+                              id={turno.id}
+                              idx={idx}
+                              estado={turno.estado}
+                              hora={turno.hora}
+                              paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
+                              DNI={turno.DNI}
+                              cobertura={turno.cobertura}
+                              duracion={turno.duracion}
+                              telefono={turno.telefono}
+                              tapButtonAsignar={tapButtonAsignar}
+                              handleBorrarTurno={handleBorrarTurno}
+                              handleModificarEstadoTurno={handleModificarEstadoTurno}
+                              handleLiberarTurno={handleLiberarTurno}
+                              coberturaElegida={coberturaElegida}
+                              liberando={liberandoIds.has(turno.id)}
+                              finalizando={finalizandoIds.has(turno.id)}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                
+                  {/* Mensaje si no hay turnos */}
+                  {turnosDeLaFecha.length === 0 && (
+                    <p className="text-gray-400 italic text-center py-6">No hay turnos para esta fecha.</p>
+                  )}
+                </div>
                 )}
               </div>
             </div>

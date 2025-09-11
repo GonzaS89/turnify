@@ -359,8 +359,24 @@ WHERE id = ?
 
 app.get("/api/todoslosturnos/:turnoID", async (req, res) => {
   const { turnoID } = req.params;
-  const query = `SELECT t.id, CONCAT(t.nombre_paciente, ' ', t.apellido_paciente) AS paciente, t.dni,t.estado,t.fecha, t.hora, p.id AS profesionalID ,CONCAT(p.nombre, ' ', p.apellido) AS profesional, p.especialidad FROM turnos AS t JOIN profesionales AS p ON t.profesional_id = p.id
-     WHERE t.id = ?`;
+  const query = `SELECT t.id, CONCAT(t.nombre_paciente, ' ', t.apellido_paciente) 
+  AS paciente, 
+  t.dni,
+  t.estado,
+  t.fecha, 
+  t.hora, 
+  p.id AS profesionalID ,
+  CONCAT(p.nombre, ' ', p.apellido) AS profesional, 
+  p.especialidad,
+  c.id AS consultorioID,
+  c.direccion,
+  c.telefono as telefono_consultorio,
+  l.nombre AS localidad
+  FROM turnos AS t 
+  JOIN profesionales AS p ON t.profesional_id = p.id
+  JOIN consultorios AS c ON t.consultorio_id = c.id
+  JOIN localidades AS l ON c.localidad = l.id
+       WHERE t.id = ?`;
 
   try {
     const [resultados] = await pool.execute(query, [turnoID]);

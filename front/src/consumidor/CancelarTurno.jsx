@@ -1,11 +1,12 @@
 // src/pages/CancelarTurnoPage.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaArrowLeft } from 'react-icons/fa';
+import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaTimes, FaRegClock } from 'react-icons/fa';
 import useObtenerTurnoxID from '../../customHooks/useObtenerTurnoxID';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import useProfesionalxId from '../../customHooks/useProfesionalxId';
+import useConsultorioxId from '../../customHooks/useConsultorioxId';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function CancelarTurno() {
@@ -13,17 +14,29 @@ export default function CancelarTurno() {
   const idParseada = parseInt(turnoId, 10);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [reprogramando, setReprogramando] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
   const { turno, loading: loadingTurno, error, mensaje: mensajeTurno } = useObtenerTurnoxID(idParseada);
   const turnoObtenido = turno ? turno[0] : null;
 
- const { profesional, isLoading: loadingProfesional, error: errorProfesional } = useProfesionalxId(turnoObtenido?.profesionalID);
+  const { profesional, isLoading: loadingProfesional, error: errorProfesional } = useProfesionalxId(turnoObtenido?.profesionalID);
+
+  const { consultorio, isLoading: loadingConsultorio, error: errorConsultorio } = useConsultorioxId(turnoObtenido?.consultorioID);
+
+  const consultorioObtenido = consultorio[0];
+
+  console.log(turnoObtenido)
+
+  const { direccion, localidad, telefono} = consultorioObtenido || {};
 
 
- const prof = profesional[0];
+  const direccionCompleta = `${direccion || 'N/A'}, ${localidad || 'N/A'}`;
 
- const { slug } = prof || { slug: 'profesional' };
+
+  const prof = profesional[0];
+
+  const { slug, nombre, apellido, titulo } = prof || { slug: 'profesional' };
 
   // Validación del ID
   useEffect(() => {
@@ -56,15 +69,17 @@ export default function CancelarTurno() {
 
   const cancelacionPermitida = puedeCancelar();
 
+  
+
 
   const handleCancelar = async () => {
     if (!turnoId || loading || loadingTurno || !cancelacionPermitida) return;
-  
+
     setLoading(true);
     try {
       // Solo ejecutamos el PUT, axios lanza error si falla
       await axios.put(`${API_URL}/api/cancelarturno/${idParseada}`);
-  
+
       // Si llega aquí, fue exitoso
       toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {
         position: 'top-right',
@@ -76,8 +91,54 @@ export default function CancelarTurno() {
       });
       setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
 
+      const definirTitulo = (value) => {
+        switch (value) {
+          case 'doctor':
+            return 'Dr.';
+          case 'doctora':
+            return 'Dra.';
+          case 'licenciado':
+          case 'licenciada':
+            return 'Lic.';
+          default:
+            return '';
+        }
+      };
+
+      const nombreProfesional = `${definirTitulo(titulo)} ${nombre} ${apellido}`.trim();
+
+      const mensajeCancelacionTurno = `
+¡Hola ${nombreProfesional}!
+
+Lamento informarte que debo *CANCELAR* mi turno:
+
+Fecha: ${formatearFechaSQL(turnoObtenido?.fecha)}
+Hora: ${formatearHora(turnoObtenido?.hora)}
+Direccion: ${direccionCompleta}
+
+Lamento las molestias y agradezco tu comprensión.
+
+Atentamente,
+*${turnoObtenido?.paciente}*
+`;
+
+// 📱 Formatear número
+let telefonoFormateado = telefono?.replace(/\D/g, ""); // Solo dígitos
+
+if (telefonoFormateado.startsWith("9")) {
+  telefonoFormateado = "54" + telefonoFormateado;
+} else if (telefonoFormateado.startsWith("11") && telefonoFormateado.length === 10) {
+  telefonoFormateado = "549" + telefonoFormateado;
+} else if (!telefonoFormateado.startsWith("54")) {
+  telefonoFormateado = "549" + telefonoFormateado;
+}  
+
+
+const whatsappUrl = `https://wa.me/${telefonoFormateado}?text=${encodeURIComponent(mensajeCancelacionTurno)}`;
+
       setTimeout(() => {
-        navigate(`/turnos/${slug}`);
+        window.open(whatsappUrl, "_blank");
+        navigate('/');
       }, 2000);
     } catch (err) {
       // Manejamos el error
@@ -85,7 +146,7 @@ export default function CancelarTurno() {
         err.response?.data?.message ||
         err.message ||
         'No se pudo cancelar el turno.';
-  
+
       toast.error(`❌ Error: ${mensajeError}`, {
         position: 'top-right',
         autoClose: 6000,
@@ -94,6 +155,51 @@ export default function CancelarTurno() {
       setMensaje({ tipo: 'error', texto: mensajeError });
     } finally {
       setLoading(false); // Aseguramos que se detenga el loading
+    }
+  };
+
+  const handleReprogramar = async () => {
+    if (!turnoId || loading || loadingTurno || !cancelacionPermitida) return;
+
+    setReprogramando(true);
+    try {
+      // Solo ejecutamos el PUT, axios lanza error si falla
+      await axios.put(`${API_URL}/api/cancelarturno/${idParseada}`);
+
+      // Si llega aquí, fue exitoso
+      toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {
+        position: 'top-right',
+        autoClose: 1800,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
+
+      sessionStorage.setItem('turnoReprogramadoId', idParseada.toString());
+
+
+
+      setTimeout(() => {
+        navigate(`/turnos/${slug}`);
+        idTurnoReprogramado(idParseada);
+      }, 2000);
+    } catch (err) {
+      // Manejamos el error
+      const mensajeError =
+        err.response?.data?.message ||
+        err.message ||
+        'No se pudo cancelar el turno.';
+
+      toast.error(`❌ Error: ${mensajeError}`, {
+        position: 'top-right',
+        autoClose: 6000,
+        hideProgressBar: false,
+      });
+      setMensaje({ tipo: 'error', texto: mensajeError });
+    } finally {
+      setReprogramando(false); // Aseguramos que se detenga el loading
     }
   };
 
@@ -183,7 +289,7 @@ export default function CancelarTurno() {
 
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50 flex items-center justify-center px-4 py-8">
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-100 transform transition-all hover:shadow-3xl duration-300">
-          
+
           {/* Icono de advertencia */}
           <div className="flex justify-center mb-5">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center animate-pulse">
@@ -251,11 +357,10 @@ export default function CancelarTurno() {
           {/* Mensaje de éxito o error */}
           {mensaje.texto && (
             <div
-              className={`flex items-center justify-center gap-2 p-4 rounded-2xl text-sm mb-6 transition-all duration-300 ${
-                mensaje.tipo === 'exito'
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}
+              className={`flex items-center justify-center gap-2 p-4 rounded-2xl text-sm mb-6 transition-all duration-300 ${mensaje.tipo === 'exito'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+                }`}
             >
               {mensaje.tipo === 'exito' ? (
                 <FaCheckCircle className="text-green-500 text-lg" />
@@ -290,7 +395,7 @@ export default function CancelarTurno() {
             )}
 
           {/* Botones */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col gap-3 justify-center">
             <button
               onClick={handleVolver}
               disabled={isLoading}
@@ -302,11 +407,10 @@ export default function CancelarTurno() {
             <button
               onClick={handleCancelar}
               disabled={isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-medium shadow-sm transition-all duration-200 ${
-                isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
-              }`}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-medium shadow-sm transition-all duration-200 ${isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-red-600 hover:bg-red-700 text-white'
+                }`}
             >
               {isLoading ? (
                 <>
@@ -320,7 +424,36 @@ export default function CancelarTurno() {
                   'No permitido'
                 )
               ) : (
-                'Reprogramar turno'
+                <span className='inline-flex items-center gap-2'>
+                  <FaTimes className="text-white text-xl" />  Cancelar turno
+                </span>
+
+              )}
+            </button>
+            <button
+              onClick={handleReprogramar}
+              disabled={isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida}
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-medium shadow-sm transition-all duration-200 ${isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {reprogramando ? 'Cancelando...' : 'Cargando...'}
+                </>
+              ) : !cancelacionPermitida ? (
+                turnoObtenido.estado !== 'reservado' ? (
+                  `Estado: ${turnoObtenido.estado}`
+                ) : (
+                  'No permitido'
+                )
+              ) : (
+                <span className='inline-flex items-center gap-2'>
+                  <FaRegClock className="text-white text-xl font-bold" /> Reprogramar turno
+                </span>
+
               )}
             </button>
           </div>
