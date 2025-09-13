@@ -179,8 +179,6 @@ const whatsappUrl = `https://wa.me/${telefonoFormateado}?text=${encodeURICompone
 
       sessionStorage.setItem('turnoReprogramadoId', idParseada.toString());
 
-
-
       setTimeout(() => {
         navigate(`/turnos/${slug}`);
         idTurnoReprogramado(idParseada);

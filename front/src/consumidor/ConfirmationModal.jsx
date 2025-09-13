@@ -51,7 +51,7 @@ const ConfirmationModal = ({
 
   const turnoCancelado = turno?.[0] || null;
 
-  const {fecha: fechaReprogramada, hora: horaReprogramada} = turnoCancelado || {};
+  const { fecha: fechaReprogramada, hora: horaReprogramada } = turnoCancelado || {};
 
   const profesional = prof?.[0];
   const consultorio = consul?.[0];
@@ -146,7 +146,7 @@ ${formData.nombre} ${formData.apellido}
 Reprogramar turno desde https://turnate.site/cancelar-turno/${selectedTurno?.id}
 `
 
-const mensajeTurnoReprogramado = `
+      const mensajeTurnoReprogramado = `
 *Reprogramación de Turno*
 
 ¡Hola ${nombreProfesional}!
@@ -176,7 +176,7 @@ Saludos cordiales,
       }
 
       // ✅ encodeURIComponent para que lleguen emojis y saltos de línea
-      const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(turnoReprogramadoId ?  mensajeTurnoReprogramado : mensaje)}`;
+      const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(turnoReprogramadoId ? mensajeTurnoReprogramado : mensaje)}`;
 
       setTimeout(() => {
         navigate("/");
