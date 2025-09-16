@@ -25,6 +25,8 @@ const LoginAdmin = ({ closeLogin }) => {
 
       const { perfil, token } = response.data;
 
+      console.log(response.data)
+
       // ✅ Guardar datos en localStorage (¡solo el token es seguro!)
       localStorage.setItem('authToken', token);
       localStorage.setItem('perfil', JSON.stringify(perfil));
