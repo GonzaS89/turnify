@@ -2000,7 +2000,7 @@ cron.schedule("* * * * *", async () => {
       }
 
       // ¿Faltan 5 horas o menos? (es decir, entre 0 y 5 horas)
-      if (diffHoras <= 8) {
+      if (diffHoras <= 12) {
         console.log(`🟢 Enviando recordatorio para el turno ID ${turno.id}`);
 
         // Formatear hora: HH:mm (sin segundos)
