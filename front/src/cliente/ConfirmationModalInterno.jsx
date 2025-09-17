@@ -111,7 +111,9 @@ const ConfirmationModalInterno = ({
       Si no podés asistir, por favor reprogramá tu turno desde aquí:
       https://turnate.site/cancelar-turno/${selectedTurno?.id}
       
-      ¡Te esperamos! Por favor, llegá 10 minutos antes.
+      Tolerancia de espera: 15 minutos
+
+      ¡Te esperamos! 
       
       Saludos, ${nombreProfesional}
       
