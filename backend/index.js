@@ -137,7 +137,8 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
   const {fecha} = req.params
   try {
     const query = `SELECT  
-    t.nombre_paciente AS nombre,
+    t.id,
+    t.nombre_paciente AS paciente,
     t.DNI,
     t.telefono,
     t.fecha, 
@@ -146,7 +147,7 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
     p.nombre AS nombreProfesional,
     p.apellido AS apellidoProfesional,
     c.direccion,
-    l.nombre
+    l.nombre as localidad
     FROM turnos AS t
     JOIN
     profesionales AS p ON p.id = t.profesional_id
@@ -154,7 +155,7 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
     consultorios AS c ON c.id = t.consultorio_id
     JOIN 
     localidades AS l ON l.id = c.localidad
-    WHERE fecha = ? AND 
+    WHERE fecha >= ? AND 
     estado = ?`;
     const [resultado] = await pool.execute(query, [fecha, 'reservado']);
     res.json(resultado)

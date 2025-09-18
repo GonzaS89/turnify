@@ -28,7 +28,7 @@ const PanelAdmin = () => {
   }, []); // Solo se ejecuta al montar el componente
 
   return (
-    <section>
+    <section className="flex justify-center">
       {openLoginModal && <LoginAdmin closeLogin={() => setOpenLoginModal(false)} />}
       {!openLoginModal && <EnviarRecordatorios />} {/* Solo mostrar si ya cerró login o ya estaba logueado */}
     </section>
