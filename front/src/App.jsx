@@ -37,8 +37,8 @@ import Main from "./landingpage/Main";
 
 // GESTION INTERNA
 
-
 import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
+import PanelAdmin from "./admin/PanelAdmin";
 
 
 
@@ -159,6 +159,7 @@ const App = () => {
             <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />} />
             <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/admin" element={<PanelAdmin />} />
           </Routes>
         </main>
       </div>

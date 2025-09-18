@@ -133,6 +133,38 @@ app.get("/api/provincias", async (req, res) => {
   }
 });
 
+app.get("/api/turnosxfecha/:fecha", async (req, res) => {
+  const {fecha} = req.params
+  try {
+    const query = `SELECT  
+    t.id,
+    t.nombre_paciente AS paciente,
+    t.DNI,
+    t.telefono,
+    t.fecha, 
+    t.hora,
+    p.titulo,
+    p.nombre AS nombreProfesional,
+    p.apellido AS apellidoProfesional,
+    c.direccion,
+    l.nombre as localidad
+    FROM turnos AS t
+    JOIN
+    profesionales AS p ON p.id = t.profesional_id
+    JOIN
+    consultorios AS c ON c.id = t.consultorio_id
+    JOIN 
+    localidades AS l ON l.id = c.localidad
+    WHERE fecha >= ? AND 
+    estado = ?`;
+    const [resultado] = await pool.execute(query, [fecha, 'reservado']);
+    res.json(resultado)
+  } catch {
+    console.error("Error al obtener turnos por fecha");
+    res.status(500).send("Error al obtener turnos por fecha");
+  }
+})
+
 //OBTENER TURNOS DE UN PROFESIONAL POR ID //
 
 app.get(
@@ -806,7 +838,11 @@ app.post("/api/login", async (req, res) => {
     }
 
     const perfil = rows[0];
+
+    console.log(perfil)
     const isValid = await bcrypt.compare(contraseña, perfil.contrasena);
+
+    console.log(isValid)
 
     if (!isValid) {
       return res.status(401).json({ message: "Credenciales inválidas" });
