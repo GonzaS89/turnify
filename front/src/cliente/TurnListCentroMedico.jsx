@@ -277,6 +277,8 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   const disponibles = turnos.length - ocupados - finalizados;
                   const isSelected = fecha === fechaSeleccionada;
 
+                  
+
                   return (
                     <button
                       key={fecha}
@@ -288,13 +290,13 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                           : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
                       }`}
                     >
-                      <div className="font-semibold">
-                        {new Date(fecha).toLocaleDateString("es-AR", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                        })}
-                      </div>
+                   <div className="font-semibold">
+  {new Date(fecha + "T00:00:00-03:00").toLocaleDateString("es-AR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  })}
+</div>
                       <div
                         className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
                           isSelected
