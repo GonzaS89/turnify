@@ -1,20 +1,27 @@
 import { useState, useEffect, useMemo } from "react";
 import { FaUserDoctor } from "react-icons/fa6";
 import { BiFilterAlt, BiSearch } from "react-icons/bi";
+import { FaHome, FaHospital } from "react-icons/fa"; // Asegúrate de importar estos
 import BotonesConsultorios from "./BotonesConsultorios";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
-import useProfesionalxId from "../../customHooks/useProfesionalxId";
+import useAllProvincias from "../../customHooks/useAllProvincias";
+import useAllConsultorios from "../../customHooks/useAllConsultorios";
 import { useNavigate } from "react-router";
 
 const SearchModal = ({ enviarIds }) => {
   const [specialty, setSpecialty] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState(""); // NUEVO: provincia
   const [page, setPage] = useState(1);
   const itemsPerPage = 12;
 
   const navigate = useNavigate();
 
-  const { profesionales, isLoading, error } = useAllProfesionals();
+  const { profesionales, isLoading: isLoadingProf, error: errorProf } = useAllProfesionals();
+  const { consultorios, isLoading: isLoadingCons, error: errorCons } = useAllConsultorios();
+  const { provincias: allProvincias, isLoading: isLoadingProv, error: errorProv } = useAllProvincias();
+
+  console.log(allProvincias)
 
   const normalizeString = (str) => {
     return (
@@ -36,17 +43,49 @@ const SearchModal = ({ enviarIds }) => {
     }));
   }, [profesionales]);
 
-  // Filtrar doctores: mostrar todos si no hay filtros
+  // Lista única de provincias (de los consultorios)
+  const provincias = useMemo(() => {
+    if (!Array.isArray(consultorios)) return [];
+    const unique = [...new Set(consultorios.map((c) => c.provincia))].filter(Boolean).sort();
+    return unique;
+  }, [consultorios]);
+
+  // Mapeo rápido: id de consultorio → provincia
+  const consultorioProvinciaMap = useMemo(() => {
+    if (!Array.isArray(consultorios)) return {};
+    const map = {};
+    consultorios.forEach((c) => {
+      if (c.id && c.provincia) {
+        map[c.id] = c.provincia;
+      }
+    });
+    return map;
+  }, [consultorios]);
+
+  // Filtrar doctores por filtros: provincia, especialidad, búsqueda
   const filteredDoctors = useMemo(() => {
     if (!processedProfesionales.length) return [];
 
     let results = [...processedProfesionales];
 
+    // Filtro por provincia
+    if (selectedProvince) {
+      results = results.filter((doc) => {
+        if (!Array.isArray(doc.consultorios)) return false;
+        return doc.consultorios.some((consId) => {
+          const provincia = consultorioProvinciaMap[consId];
+          return provincia === selectedProvince;
+        });
+      });
+    }
+
+    // Filtro por especialidad
     if (specialty) {
       const normalizedSpec = normalizeString(specialty);
       results = results.filter((doc) => doc.especialidadNormalized === normalizedSpec);
     }
 
+    // Filtro por búsqueda de nombre
     if (searchQuery) {
       const query = normalizeString(searchQuery);
       results = results.filter((doc) => doc.fullNameNormalized.includes(query));
@@ -54,14 +93,14 @@ const SearchModal = ({ enviarIds }) => {
 
     // Ordenar alfabéticamente por apellido
     return results.sort((a, b) => a.apellido.localeCompare(b.apellido));
-  }, [processedProfesionales, specialty, searchQuery]);
+  }, [processedProfesionales, selectedProvince, specialty, searchQuery, consultorioProvinciaMap]);
 
   // Resetear página al cambiar filtros
   useEffect(() => {
     setPage(1);
-  }, [specialty, searchQuery]);
+  }, [specialty, searchQuery, selectedProvince]);
 
-  const hasSearched = !!specialty || !!searchQuery;
+  const hasSearched = !!specialty || !!searchQuery || !!selectedProvince;
 
   const displayedDoctors = filteredDoctors.slice(0, page * itemsPerPage);
   const hasMore = displayedDoctors.length < filteredDoctors.length;
@@ -69,6 +108,7 @@ const SearchModal = ({ enviarIds }) => {
   const cerrarModal = () => {
     setSpecialty("");
     setSearchQuery("");
+    setSelectedProvince("");
     setPage(1);
     navigate("/");
   };
@@ -82,6 +122,9 @@ const SearchModal = ({ enviarIds }) => {
       navigate(`/turnos/id-${id}`);
     }
   };
+
+  const isLoading = isLoadingProf || isLoadingCons;
+  const error = errorProf || errorCons;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center xl:p-4 z-50">
@@ -117,7 +160,7 @@ const SearchModal = ({ enviarIds }) => {
               Encuentra a tu Especialista
             </h2>
             <p className="text-gray-600 mt-2 text-sm">
-              Selecciona una especialidad o escribe un nombre para buscar.
+              Filtra por provincia, especialidad o nombre.
             </p>
           </div>
 
@@ -126,8 +169,31 @@ const SearchModal = ({ enviarIds }) => {
             onSubmit={(e) => e.preventDefault()}
             className="bg-white/60 p-6 rounded-3xl mb-6 mx-6 border border-white/50 shadow-lg"
           >
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4">
               
+              {/* Provincia */}
+              <div className="flex flex-col">
+                <label
+                  htmlFor="province"
+                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
+                >
+                  <BiFilterAlt className="mr-1 text-indigo-500" /> Provincia
+                </label>
+                <select
+                  id="province"
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                  className="p-3 border border-white/50 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white/80 shadow-sm"
+                >
+                  <option value="">Todas</option>
+                  {provincias.map((prov) => (
+                    <option key={prov} value={prov}>
+                      {allProvincias.find((p) => p.id === prov)?.nombre || prov}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Especialidad */}
               <div className="flex flex-col">
                 <label
@@ -185,7 +251,7 @@ const SearchModal = ({ enviarIds }) => {
 
             {error && (
               <p className="text-center text-red-600 text-lg py-4 bg-red-50 rounded-2xl border border-red-200">
-                ⚠️ {error.message || "Error al cargar los profesionales."}
+                ⚠️ {error.message || "Error al cargar los datos."}
               </p>
             )}
 
@@ -211,76 +277,68 @@ const SearchModal = ({ enviarIds }) => {
 
                       return (
                         <div
-                        key={doctor.id}
-                        className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-indigo-200 transition-all duration-300 transform hover:scale-102 flex flex-col h-full overflow-hidden w-full md:min-w-[200px] shadow-black"
-                      >
-                        {/* Encabezado con gradiente y avatar */}
-                        <div className="p-5 pb-4 bg-gradient-to-br from-white to-gray-50 border-b border-gray-100">
-                          <div className="flex items-start gap-4">
-                            {/* Avatar con fondo degradado */}
-                            <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-3 rounded-xl text-white flex-shrink-0 shadow-md group-hover:from-purple-500 group-hover:to-pink-500 transition-colors duration-300">
-                              <FaUserDoctor className="text-2xl" />
-                            </div>
-                      
-                            {/* Info principal */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-bold text-gray-900 leading-tight capitalize group-hover:text-indigo-700 transition-colors duration-200">
-                                {doctor.apellido}, {doctor.nombre}
-                              </h3>
-                              <p className="text-indigo-600 font-semibold text-sm mt-1 flex items-center">
-                                {doctor.especialidad}
-                              </p>
-                              <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1">
-                                <span className="bg-gray-100 px-1.5 py-0.5 rounded">MP {doctor.matricula}</span>
-                              </p>
-                      
-                              {/* Consultorios */}
-                              {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
-                                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                  {doctor.consultorios.slice(0, 2).map((consultorio) => (
-                                    <span
-                                      key={consultorio.id}
-                                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-800 border border-indigo-100 shadow-sm hover:shadow transition-shadow duration-200"
-                                      title={`Consultorio: ${consultorio.nombre}`}
-                                    >
-                                      {consultorio.tipo === "Particular" ? (
-                                        <FaHome className="text-[0.6rem]" />
-                                      ) : (
-                                        <FaHospital className="text-[0.6rem]" />
-                                      )}
-                                      {consultorio.nombre}
-                                    </span>
-                                  ))}
-                                  {doctor.consultorios.length > 2 && (
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
-                                      +{doctor.consultorios.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                          key={doctor.id}
+                          className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-indigo-200 transition-all duration-300 transform hover:scale-102 flex flex-col h-full overflow-hidden w-full md:min-w-[200px]"
+                        >
+                          <div className="p-5 pb-4 bg-gradient-to-br from-white to-gray-50 border-b border-gray-100">
+                            <div className="flex items-start gap-4">
+                              <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-3 rounded-xl text-white flex-shrink-0 shadow-md">
+                                <FaUserDoctor className="text-2xl" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-bold text-gray-900 leading-tight capitalize">
+                                  {doctor.apellido}, {doctor.nombre}
+                                </h3>
+                                <p className="text-indigo-600 font-semibold text-sm mt-1">
+                                  {doctor.especialidad}
+                                </p>
+                                <p className="text-gray-500 text-xs mt-0.5">
+                                  <span className="bg-gray-100 px-1.5 py-0.5 rounded">MP {doctor.matricula}</span>
+                                </p>
+
+                                {/* Mostrar provincias de los consultorios */}
+                                {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
+                                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                                    {doctor.consultorios.slice(0, 2).map((consId) => {
+                                      const provincia = consultorioProvinciaMap[consId];
+                                      return (
+                                        <span
+                                          key={consId}
+                                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-800 border border-indigo-100 shadow-sm"
+                                          title={`Provincia: ${provincia || "N/A"}`}
+                                        >
+                                          {provincia || "Sin provincia"}
+                                        </span>
+                                      );
+                                    })}
+                                    {doctor.consultorios.length > 2 && (
+                                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                                        +{doctor.consultorios.length - 2}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
+
+                          <button
+                            onClick={() => verTurnos(doctor.id)}
+                            className="w-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-sm tracking-wide rounded-b-2xl transition-all duration-200 shadow-sm hover:shadow-md"
+                          >
+                            Ver disponibilidad
+                          </button>
                         </div>
-                      
-                        {/* Botón de acción */}
-                        <button
-                          onClick={() => verTurnos(doctor.id)}
-                          className="w-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-sm tracking-wide rounded-b-2xl transition-all duration-200 shadow-sm hover:shadow-md group-hover:shadow-lg"
-                        >
-                          Ver disponibilidad
-                        </button>
-                      </div>
                       );
                     })}
                   </div>
                 ) : (
-                  /* Sin resultados */
                   <div className="text-center py-16">
                     <p className="text-gray-600 text-lg">
                       No se encontraron médicos con esos criterios.
                     </p>
                     <p className="text-gray-500 mt-1">
-                      Intenta con otra especialidad o nombre.
+                      Intenta con otra provincia, especialidad o nombre.
                     </p>
                   </div>
                 )}
