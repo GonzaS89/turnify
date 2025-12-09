@@ -50,6 +50,8 @@ const EnviarRecordatorios = () => {
   const fechaHoy = obtenerFechaHoy();
   const { turnos, loading, error } = useObtenerTurnosxFecha(fechaHoy);
 
+  console.log(turnos)
+
   // Agrupa turnos por fecha
   const turnosAgrupados = turnos?.reduce((acc, turno) => {
     const fecha = turno.fecha;
@@ -58,7 +60,6 @@ const EnviarRecordatorios = () => {
     return acc;
   }, {}) || {};
 
-  console.log(turnos[0])
 
   // Genera el mensaje de WhatsApp para cada turno
   const mensajeRecordatorio = (turno) => {
@@ -180,6 +181,7 @@ Te esperamos
                             className="p-5 hover:bg-gray-50 transition-colors duration-150"
                           >
                             <div className="flex items-center justify-between flex-wrap gap-4">
+                              <p>{turno.nombreProfesional} {turno.apellidoProfesional}</p>
                               <div>
                                 <span className="inline-block px-3 py-1 text-slate-900 text-lg font-semibold rounded-full">
                                   {formatearHora(turno.hora)}
@@ -193,7 +195,7 @@ Te esperamos
                                   className="flex items-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
                                 >
                                   <IoLogoWhatsapp className="text-xl mr-2" />
-                                  Enviar recordatorio
+                                  Enviar a {turno.telefono}
                                 </a>
                               </div>
                             </div>
