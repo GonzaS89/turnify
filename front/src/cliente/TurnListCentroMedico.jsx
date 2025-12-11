@@ -333,7 +333,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
             {/* Detalles de turnos */}
             <div className="w-full md:w-2/3 p-6 overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">
+                {/* <h3 className="text-xl font-bold text-gray-800">
                   {fechaSeleccionada
                     ? new Date(fechaSeleccionada).toLocaleDateString("es-AR", {
                         weekday: "long",
@@ -342,7 +342,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                         year: "numeric",
                       })
                     : "Seleccioná una fecha"}
-                </h3>
+                </h3> */}
                 {fechaSeleccionada && (
                   <button
                     onClick={handleBorrarTodosLosTurnos}
