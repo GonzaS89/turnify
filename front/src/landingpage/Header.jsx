@@ -1,176 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoMdMenu } from 'react-icons/io';
 import { IoClose } from 'react-icons/io5';
+import { motion, AnimatePresence } from 'framer-motion';
 import logo from '/logo.png';
 import { Link } from 'react-scroll';
 
 export const Header = ({ openLogin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  // Manejador de scroll para cambiar el estilo
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const menuItems = [
+    { to: 'hero-section', label: 'Inicio', offset: -150, emoji: '🏠' },
+    { to: 'info', label: 'Proceso', offset: -150, emoji: '⚡' },
+    { to: 'beneficios', label: 'Beneficios', offset: -150, emoji: '✨' },
+    { to: 'videos', label: 'Tour', offset: -150, emoji: '🎥' },
+    { to: 'preguntas-frecuentes', label: 'FAQ', offset: -150, emoji: '❓' },
+  ];
 
   return (
-    <header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/90 shadow-sm py-4 transition-all duration-300 backdrop-blur-sm"
-      role="banner"
-    >
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between relative max-w-7xl">
-        {/* Logo */}
-        <a
-          href="#inicio"
-          onClick={closeMobileMenu}
-          className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-lg lg:scale-[1.3]"
-          aria-label="Ir a la página de inicio"
-        >
+    <header className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500 flex justify-center p-4 lg:p-6 pointer-events-none">
+      <motion.div
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`
+          w-full max-w-7xl flex items-center justify-between px-6 py-3 
+          transition-all duration-500 pointer-events-auto
+          ${scrolled 
+            ? 'bg-white/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-[2rem] border border-white/20' 
+            : 'bg-transparent rounded-none border-transparent'
+          }
+        `}
+      >
+        {/* LOGO */}
+        <Link to="hero-section" smooth className="cursor-pointer group">
           <img
             src={logo}
-            alt="Turnate - Plataforma de reservas médicas"
-            className="w-20 h-auto transition-transform duration-300 hover:scale-105"
+            alt="Turnate"
+            className={`transition-all duration-500 ${scrolled ? 'w-16 lg:w-20' : 'w-24 lg:w-28'} group-hover:scale-105`}
           />
-        </a>
+        </Link>
 
-        {/* Navegación Desktop */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <ul className="flex items-center gap-3 md:gap-4 xl:gap-10">
-            {[
-              { to: 'hero-section', label: 'Inicio', offset: -150 },
-              { to: 'info', label: '¿Como funciona?', offset: -150 },
-              { to: 'beneficios', label: 'Beneficios', offset: -150 },
-                 { to: 'videos', label: 'Videos', offset: -150 },
-              { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150 },
-            
-            ].map((item) => (
-              <li key={item.to}>
-                <Link
-                  to={item.to}
-                  smooth
-                  duration={800}
-                  offset={item.offset}
-                  className="text-gray-700 hover:text-indigo-600 sm:text-sm xl:text-base font-medium cursor-pointer transition-colors duration-200 relative group"
-                  aria-label={`Ir a ${item.label}`}
-                >
-                  {item.label}
-                  {/* Línea decorativa animada */}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Botón de Iniciar Sesión */}
-          <button
-            onClick={() => {
-              openLogin(true);
-              closeMobileMenu();
-            }}
-            className="text-xs sm:text-sm xl:text-base px-4 py-1 md:px-6 md:py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
-            aria-label="Abrir formulario de inicio de sesión"
-          >
-            Acceso para afiliados
-          </button>
+        {/* NAV DESKTOP - Estilo Pill */}
+        <nav className="hidden md:flex items-center gap-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-md">
+          {menuItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              smooth
+              duration={800}
+              offset={item.offset}
+              className="px-5 py-2 text-sm font-black text-slate-600 hover:text-indigo-600 rounded-xl transition-all hover:bg-white cursor-pointer"
+              activeClass="bg-white !text-indigo-600 shadow-sm"
+              spy={true}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
-        {/* Botón de menú móvil */}
-        <button
-          onClick={toggleMobileMenu}
-          className="md:hidden p-2 rounded-full text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors duration-200"
-          aria-expanded={isMobileMenuOpen}
-          aria-controls="mobile-menu"
-          aria-label={isMobileMenuOpen ? "Cerrar menú móvil" : "Abrir menú móvil"}
-        >
-          {isMobileMenuOpen ? (
-            <IoClose className="text-3xl" />
-          ) : (
-            <IoMdMenu className="text-3xl" />
-          )}
-        </button>
-      </div>
+        {/* ACCIONES */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => openLogin(true)}
+            className="hidden sm:flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+          >
+            <span className="text-xs opacity-50">🔐</span> Acceso Afiliados
+          </button>
 
-      {/* Menú Móvil */}
-      <div
-        id="mobile-menu"
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300 ease-out h-screen flex flex-col  ${
-          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        } md:hidden`}
-        onClick={closeMobileMenu}
-        aria-hidden={!isMobileMenuOpen}
-      >
-        <div
-          className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-2xl transform transition-transform duration-400 ease-cubic-bezier ${
-            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          } flex flex-col`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Cabecera del menú */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800">
-              <img src={logo} className='w-20 h-auto transition-transform duration-300 hover:scale-105' alt="" />
-            </h2>
-            <button
-              onClick={closeMobileMenu}
-              className="p-2 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-colors"
-              aria-label="Cerrar menú móvil"
+          {/* MENÚ MÓVIL TRIGGER */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-3 bg-slate-100 rounded-xl text-slate-900 hover:bg-slate-200 transition-colors"
+          >
+            <IoMdMenu size={24} />
+          </button>
+        </div>
+      </motion.div>
+
+      {/* MOBILE MENU OVERLAY */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[110] md:hidden flex justify-end pointer-events-auto"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-[85%] max-w-sm bg-white h-screen shadow-2xl p-8 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
             >
-              <IoClose className="text-2xl" />
-            </button>
-          </div>
+              <div className="flex items-center justify-between mb-12">
+                <img src={logo} className="w-20" alt="" />
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-slate-100 rounded-full">
+                  <IoClose size={24} />
+                </button>
+              </div>
 
-          {/* Navegación */}
-          <nav className="flex-1 p-6 bg-white">
-            <ul className="space-y-4">
-              {[
-                { to: 'hero-section', label: 'Inicio', offset: -150, emoji: '🏡' },
-                { to: 'info', label: 'Como funciona', offset: -150, emoji: 'ℹ️' },
-                { to: 'beneficios', label: 'Beneficios de afiliarte', offset: -150, emoji: '✨' },
-                 { to: 'videos', label: 'Videos explicativos', offset: -150, emoji: '🎥' },
-                { to: 'preguntas-frecuentes', label: 'Preguntas Frecuentes', offset: -150, emoji: '❓' },
-                
-              ].map((item) => (
-                <li key={item.to}>
+              <nav className="flex-1 space-y-2">
+                {menuItems.map((item) => (
                   <Link
+                    key={item.to}
                     to={item.to}
                     smooth
-                    duration={600}
-                    offset={item.offset}
-                    onClick={closeMobileMenu}
-                    className="block text-gray-700 hover:text-indigo-600 font-medium text-lg py-3 px-4 rounded-xl hover:bg-indigo-50 transition-all duration-200"
+                    className="flex items-center gap-4 p-4 text-xl font-black text-slate-900 hover:bg-indigo-50 rounded-2xl transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {item.emoji} {item.label} 
+                    <span className="text-2xl">{item.emoji}</span>
+                    {item.label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+                ))}
+              </nav>
 
-          {/* CTA en el footer */}
-          <div className="p-6 border-t border-gray-200 bg-white h-full">
-            <button
-              onClick={() => {
-                openLogin(true);
-                closeMobileMenu();
-              }}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105"
-            >
-               🔐 Acceso para afiliados
-            </button>
-          </div>
-        </div>
-      </div>
+              <button
+                onClick={() => {
+                  openLogin(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-indigo-200 mt-auto"
+              >
+                🔐 Acceso Privado
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
 
 export default Header;
-
-// === Estilos custom para animaciones ===
-<style jsx>{`
-  .ease-cubic-bezier {
-    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-`}</style>

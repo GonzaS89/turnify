@@ -9,15 +9,13 @@ import {
   FaCalendarAlt,
   FaTimes,
   FaPlus,
-  FaTrashAlt,
   FaClock,
-  FaUserCircle,
   FaRegClock,
-  FaUserMd,
+  FaChevronRight,
+  FaChevronDown,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
-import { TbRefresh } from "react-icons/tb";
 import { BiLoaderCircle } from "react-icons/bi";
-import { MdOutlineErrorOutline } from "react-icons/md";
 
 // HOOKS
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
@@ -30,12 +28,10 @@ import useConsultorioxId from "../../customHooks/useConsultorioxId";
 import BorrarTurno from "./BorrarTurno";
 import BorrarTodosLosTurnosModal from "./BorrarTodosLosTurnosModal";
 import TurnoInterno from "./TurnoInterno";
-import GenerarTurnosModal from "./GenerarTurnosModal";
 
 const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
-  const { consultorioId } = useParams();
-  const { profesionalId } = useParams();
+  const { consultorioId, profesionalId } = useParams();
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
@@ -44,177 +40,86 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
-
-  // 👇 FUNCIONES AUXILIARES COPIADAS DE TurnSelectModal
-
-  const parsearFechaLocal = (fechaStr) => {
-    const [año, mes, dia] = fechaStr.split("-").map(Number);
-    return new Date(año, mes - 1, dia); // Mes es 0-indexado en JS
-  };
-
-  const obtenerDiaDeLaSemanaCorto = (fecha) =>
-  parsearFechaLocal(fecha)
-    .toLocaleDateString("es-ES", { weekday: "short" })
-    .replace(".", "");
-
-const obtenerMesCorto = (fecha) =>
-  parsearFechaLocal(fecha)
-    .toLocaleDateString("es-ES", { month: "short" })
-    .replace(".", "");
-
-const formatearSoloDia = (fecha) =>
-  parsearFechaLocal(fecha).getDate().toString().padStart(2, "0");
-
-   const handleAgregarTurnoClick = () => {
-    navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
-  };
-
-  // Formatear fecha corta (ej: "lun 5 may")
-  const formatearFechaCorta = (fechaStr) => {
-    const dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
-    const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-    const [datePart] = fechaStr.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    const diaSemana = date.getUTCDay();
-    return `${dias[diaSemana]} ${day} ${meses[month - 1]}`;
-  };
-
-  // Formatear fecha larga (ej: "Lunes 5")
-  const formatearFechaLarga = (fechaStr) => {
-    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const [datePart] = fechaStr.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
-    const diaSemana = date.getUTCDay();
-    return `${dias[diaSemana]} ${day}`;
-  };
-
-  // Formatear mes (ej: "Abril 2025")
-  const formatearMes = (fechaStr) => {
-    const [yearStr, monthStr] = fechaStr.split("-");
-    const year = parseInt(yearStr, 10);
-    const monthIndex = parseInt(monthStr, 10) - 1;
-
-    if (isNaN(year) || isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
-      console.error("Fecha inválida:", fechaStr);
-      return "Fecha inválida";
-    }
-
-    const meses = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-
-    return `${meses[monthIndex]} ${year}`;
-  };
+  const [mesesExpandidos, setMesesExpandidos] = useState(new Set());
 
   const datesListRef = useRef(null);
 
-  // Refresco automático cada 5 minutos
+  // --- LÓGICA DE DATOS (Mantenida) ---
+  const { turnos, isLoading } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
+  const { coberturas } = useAllCoberturas();
+  const { profesional } = useProfesionalxId(profesionalId);
+  const { consultorio } = useConsultorioxId(consultorioId);
+  const medico = profesional?.[0];
+  const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
+  const consultorioObtenido = consultorio?.[0];
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTrigger((prev) => prev + 1);
-    }, 300000);
+    const interval = setInterval(() => setRefreshTrigger((prev) => prev + 1), 300000);
     return () => clearInterval(interval);
   }, []);
 
   const handleActualizarTurnos = () => setRefreshTrigger((prev) => prev + 1);
 
-  const { turnos, isLoading } = useProfessionalConsultorioTurnos(
-    profesionalId,
-    consultorioId,
-    refreshTrigger
-  );
-  const { coberturas } = useAllCoberturas();
-  const { profesional } = useProfesionalxId(profesionalId);
-  const { consultorio } = useConsultorioxId(consultorioId);
+  // Helpers de formateo
+  const parsearFechaLocal = (f) => { const [y, m, d] = f.split("-").map(Number); return new Date(y, m - 1, d); };
+  const obtenerDiaDeLaSemanaCorto = (f) => parsearFechaLocal(f).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
+  const obtenerMesCorto = (f) => parsearFechaLocal(f).toLocaleDateString("es-ES", { month: "short" }).replace(".", "");
+  const formatearSoloDia = (f) => parsearFechaLocal(f).getDate().toString().padStart(2, "0");
+  const formatearFechaLarga = (f) => {
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const [y, m, d] = f.split("-").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return `${dias[date.getUTCDay()]} ${d}`;
+  };
+  const formatearMes = (f) => {
+    const [y, m] = f.split("-");
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    return `${meses[parseInt(m) - 1]} ${y}`;
+  };
 
-  const consultorioObtenido = consultorio?.[0];
-  const { nombre, direccion } = consultorioObtenido || {};
-
-  const { coberturas: coberturasConsultorio } = useCoberturaxIdConsultorio(consultorioId);
-
-  const medico = profesional?.[0];
-  const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
-
-  // Agrupar turnos por fecha
-  const turnosAgrupados = turnos.reduce((acc, turno) => {
-    const [datePart] = turno.fecha.split("T"); // "2025-09-05"
-    if (!acc[datePart]) acc[datePart] = [];
-    acc[datePart].push(turno);
+  // Agrupación de turnos
+  const turnosAgrupados = turnos.reduce((acc, t) => {
+    const [date] = t.fecha.split("T");
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(t);
     return acc;
   }, {});
 
-  // Agrupar por mes
-  const turnosPorMes = Object.keys(turnosAgrupados).reduce((acc, fecha) => {
-    const mes = fecha.slice(0, 7); // "YYYY-MM"
+  const turnosPorMes = Object.keys(turnosAgrupados).reduce((acc, f) => {
+    const mes = f.slice(0, 7);
     if (!acc[mes]) acc[mes] = [];
-    acc[mes].push(fecha);
+    acc[mes].push(f);
     return acc;
   }, {});
 
-
-  // Ordenar meses de más reciente a más antiguo
   const mesesOrdenados = Object.keys(turnosPorMes).sort((a, b) => new Date(b) - new Date(a));
-
-  // Ordenar fechas dentro de cada mes (más reciente primero)
-  mesesOrdenados.forEach((mes) => {
-    turnosPorMes[mes].sort((a, b) => new Date(b) - new Date(a));
-  });
-
-  // Solo mostrar fechas al hacer clic en el mes. Por defecto, NINGUNO está expandido.
-  const [mesesExpandidos, setMesesExpandidos] = useState(new Set());
+  mesesOrdenados.forEach(m => turnosPorMes[m].sort((a, b) => new Date(b) - new Date(a)));
 
   const toggleMes = (mes) => {
-    setMesesExpandidos((prev) => {
+    setMesesExpandidos(prev => {
       const nuevo = new Set();
-      if (!prev.has(mes)) {
-        nuevo.add(mes); // Solo este mes
-      }
+      if (!prev.has(mes)) nuevo.add(mes);
       return nuevo;
     });
   };
 
-  // 👇 Scroll automático al mes expandido en mobile
-  useEffect(() => {
-    if (mesesExpandidos.size > 0 && datesListRef.current) {
-      const firstExpandedButton = datesListRef.current.querySelector(".bg-blue-600");
-      if (firstExpandedButton) {
-        firstExpandedButton.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  }, [mesesExpandidos]);
-
+  const handleAgregarTurnoClick = () => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`);
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
   };
 
-  const handleBorrarTurno = (id) => {
-    setIdTurnoSeleccionado(id);
-    setShowModalBorrarTurno(true);
-  };
-
-  const handleBorrarTodosLosTurnos = () => {
-    setShowModalBorrarTodosLosTurnos(true);
-  };
-
+  const handleBorrarTurno = (id) => { setIdTurnoSeleccionado(id); setShowModalBorrarTurno(true); };
+  
   const handleModificarEstadoTurno = async (idTurno) => {
     setFinalizandoIds((prev) => new Set([...prev, idTurno]));
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
       setTimeout(() => {
         handleActualizarTurnos();
-        setFinalizandoIds((prev) => {
-          const next = new Set(prev);
-          next.delete(idTurno);
-          return next;
-        });
+        setFinalizandoIds(prev => { const n = new Set(prev); n.delete(idTurno); return n; });
       }, 1500);
-    } catch (error) {
-      console.error("Error al modificar estado del turno:", error);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleLiberarTurno = async (idTurno) => {
@@ -224,83 +129,22 @@ const formatearSoloDia = (fecha) =>
       toast.success("Turno liberado");
       setTimeout(() => {
         handleActualizarTurnos();
-        setLiberandoIds((prev) => {
-          const next = new Set(prev);
-          next.delete(idTurno);
-          return next;
-        });
+        setLiberandoIds(prev => { const n = new Set(prev); n.delete(idTurno); return n; });
       }, 1500);
-    } catch (error) {
-      console.error("Error al liberar turno:", error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  const coberturaElegida = (value) => {
-    if (value === "particular") return "Particular";
-    const cobertura = coberturas?.find((c) => c.id == value);
-    return cobertura ? cobertura.siglas : "Particular";
+  const coberturaElegida = (v) => {
+    if (v === "particular") return "Particular";
+    return coberturas?.find(c => c.id == v)?.siglas || "Particular";
   };
 
-  // Previene scroll del fondo
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
-  // Estado de carga
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[300]">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-          <BiLoaderCircle className="animate-spin mx-auto text-blue-600" size={28} />
-          <p className="text-blue-700 text-sm mt-2 font-medium">Cargando tu agenda...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Estado vacío
-  if (turnos.length === 0) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[300]">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <FaCalendarAlt /> Tu Agenda
-            </h2>
-            <button
-              onClick={() => navigate("/micuenta")}
-              className="text-white hover:bg-white/20 rounded-full p-1 transition"
-              aria-label="Cerrar"
-            >
-              <FaTimes size={20} />
-            </button>
-          </div>
-          <div className="p-8 text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center">
-                <FaCalendarAlt className="text-blue-500 w-10 h-10" />
-              </div>
-            </div>
-            <p className="text-gray-700 text-lg font-medium">No tenés turnos agendados.</p>
-            <p className="text-gray-500 text-sm">Habilitá tu agenda para recibir pacientes.</p>
-            <div className="space-y-3 pt-2">
-              <button
-                onClick={handleAgregarTurnoClick}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
-              >
-                <FaPlus /> Habilitar Turnos
-              </button>
-              <button
-                onClick={() => navigate("/micuenta")}
-                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition"
-              >
-                Volver a Mi Cuenta
-              </button>
-            </div>
-          </div>
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[500]">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+          <BiLoaderCircle className="animate-spin text-indigo-600 mb-4" size={45} />
+          <p className="text-slate-600 font-semibold">Sincronizando agenda...</p>
         </div>
       </div>
     );
@@ -310,313 +154,254 @@ const formatearSoloDia = (fecha) =>
 
   return (
     <>
-      {/* Overlay oscuro — ESTILO UNIFICADO */}
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[40] xl:p-4 animate-fade-in">
-        {/* Contenedor principal — ESTILO TurnSelectModal */}
-        <div className="bg-white xl:rounded-2xl shadow-xl w-screen xl:max-w-7xl h-[100dvh] xl:h-[95vh] flex flex-col lg:flex-row lg:overflow-hidden overflow-auto border border-gray-100">
-
-          {/* COLUMNA IZQUIERDA — Información del consultorio/médico */}
-          <div className="lg:w-1/3 p-6 bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col">
-            <div className="flex items-start justify-between gap-4 mb-6 relative">
-              <div className="flex items-center gap-3 min-w-0">
-                <FaCalendarAlt className="text-3xl text-white/90 flex-shrink-0 mt-1" aria-hidden="true" />
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[40] p-0 md:p-6">
+        <div className="bg-slate-50 w-full max-w-6xl h-full md:h-[90vh] md:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/20">
+          
+          {/* SIDEBAR: CALENDARIO Y MESES */}
+          <div className="md:w-[380px] bg-slate-900 text-white flex flex-col shadow-xl">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold capitalize leading-tight">
-                    {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${direccion}`}
-                  </h2>
-                  <p className="text-blue-100 opacity-90 text-sm md:text-base">{nombreMedico}</p>
-                  <button
-                onClick={handleAgregarTurnoClick}
-                className="flex lg:hidden items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
-              >
-                <FaPlus /> Agregar Turnos
-              </button>
+                  <h2 className="text-2xl font-bold tracking-tight">Agenda</h2>
+                  <div className="flex items-center gap-2 text-slate-400 mt-1">
+                    <FaMapMarkerAlt size={12} />
+                    <span className="text-xs uppercase font-medium truncate max-w-[200px]">
+                      {consultorioObtenido?.direccion || "Consultorio"}
+                    </span>
+                  </div>
+                </div>
+                <button onClick={() => navigate("/micuenta")} className="p-2 hover:bg-white/10 rounded-full transition-colors md:hidden">
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/10 mb-6">
+                <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-lg font-bold">
+                  {nombreMedico.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Profesional</p>
+                  <p className="text-sm font-semibold truncate">{nombreMedico}</p>
                 </div>
               </div>
-             
-
-              {/* Botón de cerrar móvil */}
-              <button
-                onClick={() => navigate("/micuenta")}
-                className="absolute lg:hidden top-0 right-0 p-2 text-white hover:bg-white/20 rounded-full transition-all duration-200 z-10"
-                aria-label="Cerrar y volver a mi cuenta"
-              >
-                <FaTimes size={20} />
-              </button>
             </div>
 
-            {/* Lista de meses */}
-            <div className="mt-6 flex-1 flex flex-col h-[1000px] min-h-0">
-              <p className="text-sm md:text-base text-white/90 mb-3 font-medium">Seleccioná un mes</p>
+            <div className="flex-1 overflow-y-auto px-4 pb-6 custom-scrollbar">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-4 px-2">Historial de Turnos</p>
+              
+              {mesesOrdenados.map((mes) => {
+                const isExpanded = mesesExpandidos.has(mes);
+                return (
+                  <div key={mes} className="mb-3">
+                    <button
+                      onClick={() => toggleMes(mes)}
+                      className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${
+                        isExpanded ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20" : "bg-white/5 text-slate-300 hover:bg-white/10"
+                      }`}
+                    >
+                      <span className="font-semibold text-sm">{formatearMes(`${mes}-01`)}</span>
+                      {isExpanded ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
+                    </button>
 
-              <div
-  ref={datesListRef}
-  className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-2 custom-scrollbar"
->
-                {mesesOrdenados.map((mes) => {
-                  const expandido = mesesExpandidos.has(mes);
-                  const nombreMes = formatearMes(`${mes}-01`);
+                    {isExpanded && (
+                      <div className="mt-3 grid grid-cols-1 gap-2 animate-fadeIn px-1">
+                        <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
+                          {turnosPorMes[mes].map((fecha) => {
+                            const tDia = turnosAgrupados[fecha];
+                            const disponibles = tDia.filter(t => t.estado === "disponible").length;
+                            const isSelected = fecha === fechaSeleccionada;
 
-                  return (
-                    <div key={mes} className="mb-2">
-                      {/* Botón de mes — estilo coherente */}
-                      <button
-                        onClick={() => toggleMes(mes)}
-                        className={`
-                          w-full text-left px-4 py-3 sm:px-5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base
-                          uppercase tracking-wide transition-all flex items-center justify-between
-                          ${expandido
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white/10 text-white border border-white/30 hover:bg-white/20"
-                          }
-                        `}
-                      >
-                        {nombreMes}
-                        <span
-                          className={`transform transition-transform duration-300 ${
-                            expandido ? "rotate-180" : ""
-                          }`}
-                        >
-                          ▼
-                        </span>
-                      </button>
-
-                      {/* Fechas del mes — solo si está expandido */}
-                  {/* Fechas del mes — solo si está expandido */}
-{expandido && (
-  <div className="mt-3 animate-fadeIn">
-    <div
-      className={`
-        flex
-        md:flex-col
-        gap-2
-        md:gap-3
-        overflow-x-auto
-        md:overflow-x-visible
-        pb-2
-        md:pb-0
-        px-2
-        scrollbar-hide
-        whitespace-nowrap
-      `}
-      style={{
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
-      }}
-    >
-      {turnosPorMes[mes].map((fecha) => {
-        const turnos = turnosAgrupados[fecha];
-        const ocupados = turnos.filter((t) => t.estado === "reservado").length;
-        const finalizados = turnos.filter((t) => t.estado === "finalizado").length;
-        const disponibles = turnos.length - ocupados - finalizados;
-        const isSelected = fecha === fechaSeleccionada;
-
-        return (
-          <button
-            key={fecha}
-            onClick={() => setFechaSeleccionada(fecha)}
-            className={`
-              flex-shrink-0 px-5 py-3 rounded-xl font-medium transition-all duration-200 whitespace-nowrap
-              border-2 flex flex-col items-center justify-center min-w-[72px] sm:min-w-[80px]
-              ${isSelected
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                : 'bg-white/10 text-white border-white/30 hover:border-blue-400 hover:bg-white/20 hover:text-blue-100'
-              }
-            `}
-            aria-pressed={isSelected}
-          >
-            <span className="text-xs uppercase tracking-wide font-bold">
-              {obtenerDiaDeLaSemanaCorto(fecha)}
-            </span>
-            <span className="text-lg font-bold mt-1">{formatearSoloDia(fecha)}</span>
-            <span className="text-xs mt-0.5">{obtenerMesCorto(fecha)}</span>
-
-            {/* Badge de disponibilidad */}
-            {/* <span className={`
-              absolute -top-2 -right-2 text-[0.6rem] px-1 py-0.5 rounded-full font-bold
-              ${disponibles > 0 ? 'bg-green-500' : 'bg-red-500'} text-white
-            `}>
-              {disponibles}
-            </span> */}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
-                    </div>
-                  );
-                })}
-                <div className="pb-8"></div>
-              </div>
+                            return (
+                              <button
+                                key={fecha}
+                                onClick={() => setFechaSeleccionada(fecha)}
+                                className={`flex-shrink-0 md:w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                                  isSelected 
+                                    ? "bg-white border-white text-slate-900 shadow-md transform scale-[1.02]" 
+                                    : "bg-transparent border-white/10 text-slate-400 hover:border-white/30"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-10 h-10 rounded-lg flex flex-col items-center justify-center ${isSelected ? "bg-indigo-100 text-indigo-600" : "bg-white/5"}`}>
+                                    <span className="text-[9px] uppercase font-bold">{obtenerDiaDeLaSemanaCorto(fecha)}</span>
+                                    <span className="text-sm font-bold leading-none">{formatearSoloDia(fecha)}</span>
+                                  </div>
+                                  <div className="text-left hidden md:block">
+                                    <p className={`text-[10px] font-bold uppercase ${isSelected ? "text-indigo-500" : "text-slate-500"}`}>
+                                      {obtenerMesCorto(fecha)}
+                                    </p>
+                                  </div>
+                                </div>
+                                {disponibles > 0 && (
+                                  <span className={`px-2 py-1 rounded-md text-[10px] font-black ${isSelected ? "bg-emerald-100 text-emerald-600" : "bg-emerald-500/20 text-emerald-400"}`}>
+                                    {disponibles} DISP.
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* COLUMNA DERECHA — Detalles de turnos */}
-          <div className="lg:w-2/3 flex flex-col h-full">
-            {/* Encabezado secundario (solo desktop) */}
-            <div className="hidden lg:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-800">Turnos del día</h3>
-              <button
-                onClick={handleAgregarTurnoClick}
-                className="flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
-              >
-                <FaPlus /> Agregar Turnos
-              </button>
-              <button
-                onClick={() => navigate("/micuenta")}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button>
+          {/* MAIN CONTENT: LISTA DE TURNOS */}
+          <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
+            {/* Header Escritorio */}
+            <div className="hidden md:flex items-center justify-between p-6 bg-white border-b border-slate-200">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Panel de Atención</h3>
+                <p className="text-sm text-slate-500">Gestiona las citas y disponibilidad</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAgregarTurnoClick}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-200"
+                >
+                  <FaPlus size={12} /> Generar Turnos
+                </button>
+                <button onClick={() => navigate("/micuenta")} className="p-2.5 bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-colors">
+                  <FaTimes size={20} />
+                </button>
+              </div>
             </div>
 
-            {/* Contenido scrollable */}
-            <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
-              {/* Selector de fecha — informativo */}
-              <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                <label className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                  <FaCalendarAlt className="text-blue-600" /> Fecha seleccionada
-                </label>
-                {fechaSeleccionada ? (
-                  <p className="text-lg font-bold text-gray-800">{formatearFechaLarga(fechaSeleccionada)}</p>
-                ) : (
-                  <p className="text-gray-500 italic">Selecciona una fecha para ver turnos.</p>
-                )}
-              </div>
+            {/* Lista Scrollable */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar-light">
+              {!fechaSeleccionada ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-300">
+                    <FaCalendarAlt size={40} />
+                  </div>
+                  <div>
+                    <h4 className="text-slate-800 font-bold text-lg">Tu agenda te espera</h4>
+                    <p className="text-slate-500 text-sm max-w-xs">Selecciona una fecha del panel izquierdo para ver y gestionar los turnos.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
+                  {/* Banner de Fecha Seleccionada */}
+                  <div className="bg-indigo-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-100 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                        <FaCalendarAlt size={24} />
+                      </div>
+                      <div>
+                        <p className="text-indigo-100 text-xs font-bold uppercase tracking-widest">Fecha Seleccionada</p>
+                        <h2 className="text-xl font-bold">{formatearFechaLarga(fechaSeleccionada)}</h2>
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Lista de turnos */}
-              <div className="space-y-4">
-                {!fechaSeleccionada ? (
-                  <div className="text-center py-8 bg-blue-50 rounded-xl border border-blue-200">
-                    <FaInfoCircle className="mx-auto text-blue-500" size={36} />
-                    <p className="mt-3 text-blue-700 font-medium text-sm">
-                      Selecciona una fecha para ver los turnos disponibles.
-                    </p>
-                  </div>
-                ) : turnosDeLaFecha.length === 0 ? (
-                  <div className="text-center py-8 bg-gray-100 rounded-xl border border-dashed border-gray-300">
-                    <FaClock className="mx-auto text-gray-400" size={36} />
-                    <p className="mt-3 text-gray-600 font-medium text-sm">
-                      No hay turnos en esta fecha.
-                    </p>
-                    <button
-                      onClick={handleAgregarTurnoClick}
-                      className="mt-5 px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
-                    >
-                      <FaPlus /> Agregar Turnos
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                  {/* Sección: Turnos Reservados */}
-                  {turnosDeLaFecha
-                    .filter(turno => turno.estado === "disponible")
-                    .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                    .length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                        <FaRegClock className="text-green-400" /> Disponibles
-                      </h3>
-                      <div className="space-y-3">
-                        {turnosDeLaFecha
-                          .filter(turno => turno.estado === "disponible")
-                          .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                          .map((turno, idx) => (
-                            <TurnoInterno
-                              key={turno.id}
-                              turno={turno}
-                              id={turno.id}
-                              idx={idx}
-                              estado={turno.estado}
-                              hora={turno.hora}
-                              paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
-                              DNI={turno.DNI}
-                              cobertura={turno.cobertura}
-                              duracion={turno.duracion}
-                              telefono={turno.telefono}
-                              tapButtonAsignar={tapButtonAsignar}
-                              handleBorrarTurno={handleBorrarTurno}
-                              handleModificarEstadoTurno={handleModificarEstadoTurno}
-                              handleLiberarTurno={handleLiberarTurno}
-                              coberturaElegida={coberturaElegida}
-                              liberando={liberandoIds.has(turno.id)}
-                              finalizando={finalizandoIds.has(turno.id)}
-                            />
-                          ))}
-                      </div>
+                  {turnosDeLaFecha.length === 0 ? (
+                    <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
+                      <FaRegClock className="mx-auto text-slate-300 mb-4" size={48} />
+                      <p className="text-slate-600 font-bold">No hay turnos creados para este día</p>
+                      <button onClick={handleAgregarTurnoClick} className="mt-4 text-indigo-600 font-bold text-sm hover:underline">
+                        + Crear nueva franja horaria
+                      </button>
                     </div>
-                  )}
-                
-                  {/* Sección: Turnos Disponibles */}
-                  {turnosDeLaFecha
-                    .filter(turno => turno.estado !== "disponible")
-                    .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                    .length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                        <FaRegClock className="text-red-400" /> Reservados
-                      </h3>
-                      <div className="space-y-3">
-                        {turnosDeLaFecha
-                          .filter(turno => turno.estado !== "disponible")
-                          .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                          .map((turno, idx) => (
-                            <TurnoInterno
-                              key={turno.id}
-                              turno={turno}
-                              id={turno.id}
-                              idx={idx}
-                              estado={turno.estado}
-                              hora={turno.hora}
-                              paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
-                              DNI={turno.DNI}
-                              cobertura={turno.cobertura}
-                              duracion={turno.duracion}
-                              telefono={turno.telefono}
-                              tapButtonAsignar={tapButtonAsignar}
-                              handleBorrarTurno={handleBorrarTurno}
-                              handleModificarEstadoTurno={handleModificarEstadoTurno}
-                              handleLiberarTurno={handleLiberarTurno}
-                              coberturaElegida={coberturaElegida}
-                              liberando={liberandoIds.has(turno.id)}
-                              finalizando={finalizandoIds.has(turno.id)}
-                            />
-                          ))}
-                      </div>
+                  ) : (
+                    <div className="space-y-10">
+                      {/* SECCIÓN DISPONIBLES */}
+                      {turnosDeLaFecha.some(t => t.estado === "disponible") && (
+                        <section>
+                          <div className="flex items-center gap-3 mb-4 px-2">
+                            <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                            <h3 className="text-slate-800 font-extrabold uppercase tracking-tight text-sm">Cupos Disponibles</h3>
+                          </div>
+                          <div className="grid gap-3">
+                            {turnosDeLaFecha
+                              .filter(t => t.estado === "disponible")
+                              .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                              .map((turno, idx) => (
+                                <TurnoInterno 
+                                  key={turno.id} 
+                                  turno={turno} 
+                                  id={turno.id} 
+                                  idx={idx} 
+                                  estado={turno.estado}
+                                  hora={turno.hora}
+                                  paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
+                                  DNI={turno.DNI}
+                                  cobertura={turno.cobertura}
+                                  duracion={turno.duracion}
+                                  telefono={turno.telefono}
+                                  tapButtonAsignar={tapButtonAsignar}
+                                  handleBorrarTurno={handleBorrarTurno}
+                                  handleModificarEstadoTurno={handleModificarEstadoTurno}
+                                  handleLiberarTurno={handleLiberarTurno}
+                                  coberturaElegida={coberturaElegida}
+                                  liberando={liberandoIds.has(turno.id)}
+                                  finalizando={finalizandoIds.has(turno.id)}
+                                />
+                              ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {/* SECCIÓN RESERVADOS */}
+                      {turnosDeLaFecha.some(t => t.estado !== "disponible") && (
+                        <section>
+                          <div className="flex items-center gap-3 mb-4 px-2">
+                            <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
+                            <h3 className="text-slate-800 font-extrabold uppercase tracking-tight text-sm">Pacientes Agendados</h3>
+                          </div>
+                          <div className="grid gap-3">
+                            {turnosDeLaFecha
+                              .filter(t => t.estado !== "disponible")
+                              .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                              .map((turno, idx) => (
+                                <TurnoInterno 
+                                  key={turno.id} 
+                                  turno={turno} 
+                                  id={turno.id} 
+                                  idx={idx} 
+                                  estado={turno.estado}
+                                  hora={turno.hora}
+                                  paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`}
+                                  DNI={turno.DNI}
+                                  cobertura={turno.cobertura}
+                                  duracion={turno.duracion}
+                                  telefono={turno.telefono}
+                                  tapButtonAsignar={tapButtonAsignar}
+                                  handleBorrarTurno={handleBorrarTurno}
+                                  handleModificarEstadoTurno={handleModificarEstadoTurno}
+                                  handleLiberarTurno={handleLiberarTurno}
+                                  coberturaElegida={coberturaElegida}
+                                  liberando={liberandoIds.has(turno.id)}
+                                  finalizando={finalizandoIds.has(turno.id)}
+                                />
+                              ))}
+                          </div>
+                        </section>
+                      )}
                     </div>
-                  )}
-                
-                  {/* Mensaje si no hay turnos */}
-                  {turnosDeLaFecha.length === 0 && (
-                    <p className="text-gray-400 italic text-center py-6">No hay turnos para esta fecha.</p>
                   )}
                 </div>
-                )}
-              </div>
+              )}
             </div>
 
-            {/* PIE */}
-            <div className="p-5 bg-white border-t border-gray-200">
+            {/* Footer móvil / Volver */}
+            <div className="p-4 bg-white border-t border-slate-200 md:hidden">
               <button
                 onClick={() => navigate("/micuenta")}
-                className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 active:bg-gray-300 transition-colors font-medium text-sm"
+                className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm"
               >
-                ← Volver a Mi Cuenta
+                Volver al Panel
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modales */}
+      {/* Modales (Mantenidos) */}
       {showModalBorrarTurno && (
-        <BorrarTurno
-          idTurno={IdTurnoSeleccionado}
-          onClose={() => setShowModalBorrarTurno(false)}
-          actualizarTurnos={handleActualizarTurnos}
-        />
+        <BorrarTurno idTurno={IdTurnoSeleccionado} onClose={() => setShowModalBorrarTurno(false)} actualizarTurnos={handleActualizarTurnos} />
       )}
       {showModalBorrarTodosLosTurnos && (
         <BorrarTodosLosTurnosModal
@@ -629,36 +414,19 @@ const formatearSoloDia = (fecha) =>
         />
       )}
 
-      {/* Estilos personalizados */}
       <style jsx>{`
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #ccc;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #aaa;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .custom-scrollbar-light::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar-light::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar-light::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </>
   );

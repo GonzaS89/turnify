@@ -3,203 +3,128 @@ import { motion, useInView } from "framer-motion";
 
 const DualYouTubeSection = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
 
-  // Animaciones
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  // IDs de los videos de YouTube (reemplazalos con los reales)
-  const videoConsultorios = "G5VylYGq3_k"; // ← Video para médicos individuales
-  const videoCentros = "eEzls-hZghY"; // ← Video para centros médicos
+  const videoConsultorios = "G5VylYGq3_k"; 
+  const videoCentros = "eEzls-hZghY";
 
   const embedUrl = (id) =>
-    `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&showinfo=0&modestbranding=1`;
+    `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&modestbranding=1&controls=1`;
 
   return (
-    <section
-      className="py-16 md:py-24 px-6 sm:px-8 lg:px-12 relative max-w-7xl mx-auto"
-      aria-labelledby="dual-video-title"
-      id="videos"
-    >
-      {/* Fondos decorativos sutiles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-l from-pink-100 to-rose-100 rounded-full opacity-25 blur-3xl"></div>
-      </div>
+    <section ref={ref} id="videos" className="py-24 relative overflow-hidden bg-white">
+      {/* Luces de fondo dinámicas */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-50/50 blur-[120px] rounded-full" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-50/50 blur-[120px] rounded-full" />
 
-      <motion.div
-        ref={ref}
-        variants={containerVariants}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        className="relative z-10"
-      >
-        {/* Badge diferenciada */}
-        <motion.div
-  variants={itemVariants}
-  className="flex justify-center mb-6"
->
-  <div className="inline-flex justify-center items-center gap-3 px-6 py-3 backdrop-blur-md 
-    border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider 
-    rounded-full shadow-md bg-white/70"
-  >
-    {/* Punto animado */}
-    <span className="relative flex h-2.5 w-2.5">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-    </span>
-    
-    {/* Texto */}
-    <span>Videos explicativos</span>
-  </div>
-</motion.div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Header de Sección */}
+        <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"
+          >
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+            Experiencia Turnate
+          </motion.div>
+          
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]"
+          >
+            Diseñado para <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              cada escala.
+            </span>
+          </motion.h2>
+        </div>
 
-        {/* Título principal */}
-        <motion.h2
-          id="video-title"
-          variants={itemVariants}
-          className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 text-center mb-6 leading-tight"
-        >
-          Conocé en acción cómo funciona{" "}
-          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Turnate
-          </span>
-        </motion.h2>
-
-        <motion.p
-          variants={itemVariants}
-          className="text-lg md:text-base xl:text-xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
-        >
-          Elegí el camino que mejor se adapta a tu modelo: desde el consultorio
-          individual hasta el centro médico con múltiples especialistas. Te
-          mostramos cómo funciona en ambos casos.
-        </motion.p>
-
-        {/* Grid de videos */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 max-w-6xl mx-auto"
-        >
-          {/* Video - Consultorios */}
-          <div className="flex flex-col">
-            <div className="bg-white p-1 rounded-3xl shadow-xl border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="aspect-video rounded-2xl overflow-hidden">
-                <iframe
-                  src={embedUrl(videoConsultorios)}
-                  title="Tutorial para consultorios médicos - Turnate"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                  loading="lazy"
-                ></iframe>
-              </div>
+        {/* Grid Dual Estilo 2026 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          
+          {/* OPCIÓN 1: CONSULTORIOS */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="group space-y-8"
+          >
+            <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-2xl transition-transform duration-500 group-hover:-translate-y-2">
+              <iframe
+                src={embedUrl(videoConsultorios)}
+                className="w-full h-full object-cover"
+                allowFullScreen
+                loading="lazy"
+                title="Consultorios"
+              />
             </div>
-            <div className="mt-5 text-center">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Para{" "}
-                <span className="text-indigo-600">
-                  consultorios individuales
-                </span>
-              </h3>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Gestioná tu agenda con total autonomía, mejorá la comunicación
-                con tus pacientes y aumentá tu visibilidad en la plataforma.
-                Ideal para médicos independientes que buscan profesionalizar su
-                práctica sin complicaciones.
+            <div className="px-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-[10px] font-black uppercase rounded-lg">Individual</span>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Consultorios Médicos</h3>
+              </div>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Autonomía total para el profesional independiente. Gestioná tu agenda, reducibilidad y recordatorios automáticos en un solo panel intuitivo.
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Video - Centros Médicos */}
-          <div className="flex flex-col">
-            <div className="bg-white p-1 rounded-3xl shadow-xl border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="aspect-video rounded-2xl overflow-hidden">
-                <iframe
-                  src={embedUrl(videoCentros)}
-                  title="Tutorial para centros médicos - Turnate"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                  loading="lazy"
-                ></iframe>
-              </div>
+          {/* OPCIÓN 2: CENTROS MÉDICOS */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="group space-y-8"
+          >
+            <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-2xl transition-transform duration-500 group-hover:-translate-y-2">
+              <iframe
+                src={embedUrl(videoCentros)}
+                className="w-full h-full object-cover"
+                allowFullScreen
+                loading="lazy"
+                title="Centros Médicos"
+              />
             </div>
-            <div className="mt-5 text-center">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Para <span className="text-purple-600">centros médicos</span>
-              </h3>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Gestioná múltiples profesionales, especialidades y turnos
-                simultáneos. Con panel administrativo y sincronización en tiempo
-                real.
+            <div className="px-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-purple-100 text-purple-600 text-[10px] font-black uppercase rounded-lg">Enterprise</span>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Centros de Salud</h3>
+              </div>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Potencia multi-especialidad. Control administrativo centralizado, gestión de múltiples agendas y analíticas avanzadas de rendimiento por médico.
               </p>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* CTA opcional debajo */}
-        <motion.div variants={itemVariants} className="mt-16 text-center">
+        </div>
+
+        {/* Footer CTA con estilo Floating Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.6 }}
+          className="mt-20 p-8 md:p-12 rounded-[3rem] bg-slate-900 text-white flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden"
+        >
+          <div className="relative z-10 text-center md:text-left">
+            <h4 className="text-3xl font-black tracking-tight mb-2">¿Necesitás una demo guiada?</h4>
+            <p className="text-slate-400 font-medium tracking-wide">Nuestro equipo te ayuda a configurar tu flujo de trabajo ideal.</p>
+          </div>
+          
           <a
-            href="https://wa.me/5493815588504?text=Hola,%20quiero%20más%20información%20para%20mi%20consultorio%20o%20centro%20médico"
+            href="https://wa.me/5493815588504"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="relative z-10 px-10 py-5 bg-white text-slate-900 rounded-[1.5rem] font-black text-lg hover:bg-indigo-50 transition-all active:scale-95 shadow-xl shadow-white/10"
           >
-            Comunicáte con nosotros
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
+            Hablar con un asesor
           </a>
-          <p className="text-sm text-gray-500 mt-4">
-            Asesoramiento gratuito y personalizado según tu modelo de negocio.
-          </p>
-        </motion.div>
-      </motion.div>
 
-      {/* Animación de brillo (compartida) */}
-      <style jsx>{`
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        .animate-shine {
-          animation: shine 2s infinite;
-        }
-      `}</style>
+          {/* Decoración abstracta interna */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[80px] -z-0" />
+        </motion.div>
+      </div>
     </section>
   );
 };

@@ -97,17 +97,11 @@ const App = () => {
     <BrowserRouter>
      
       <div className="flex flex-col min-h-screen 
-                     bg-gradient-to-r from-cyan-200 to-violet-200
-                     dark:from-gray-900 dark:to-gray-800
+                    
+                    bg-[#fafafa]
                      rounded-xl shadow relative
                      transition-colors duration-700 ease-in-out"
-                     style={{
-        // Fondo: degradado suave + patrón de ondas tenue (base64)
-        backgroundImage: `
-          url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230ea5e9' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='40' cy='40' r='20'/%3E%3C/g%3E%3C/svg%3E"),
-          linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #ffffff 100%)
-        `,
-      }}>
+                     >
         
         {/* Botón de modo oscuro usando contexto */}
         {/* <button

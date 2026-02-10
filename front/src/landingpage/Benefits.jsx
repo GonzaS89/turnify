@@ -1,241 +1,108 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  FcCalendar,
-  FcSmartphoneTablet,
-  FcOvertime,
-  FcSms,
-  FcLeave,
-} from "react-icons/fc";
 
-// Componente Benefit (refactorizado para máxima elegancia)
-const Benefit = ({ icono, titulo, contenido }) => {
-  return (
-    <motion.div
-      className="group bg-white p-8 rounded-3xl shadow-lg border border-gray-100 hover:shadow-2xl hover:border-indigo-200 transition-all duration-300 h-full flex flex-col text-center"
-      whileHover={{ y: -8, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.4 }}
-    >
-      {/* Icono con fondo animado */}
-      <div className="inline-flex justify-center items-center w-16 lg:w-12 h-16 lg:h-12 xl:w-20 xl:h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 rounded-2xl group-hover:from-indigo-100 group-hover:to-indigo-200 group-hover:scale-110 transition-transform duration-300">
-        {React.cloneElement(icono, { className: "w-8 h-8 xl:w-12 xl:h-12" })}
+const BenefitCard = ({ icon, title, text, delay }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.7, delay }}
+    whileHover={{ y: -10 }}
+    className="relative p-[1px] rounded-[2.5rem] bg-gradient-to-b from-white/50 to-transparent group"
+  >
+    <div className="h-full bg-white/80 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-500">
+      <div className="w-14 h-14 mb-6 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-xl shadow-slate-200">
+        {icon}
       </div>
-
-      {/* Título */}
-      <h3 className="text-xl md:text-lg xl:text-xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-indigo-700 transition-colors">
-        {titulo}
-      </h3>
-
-      {/* Descripción */}
-      <p className="text-gray-600 leading-relaxed flex-grow md:text-sm xl:text-lg">
-        {contenido}
-      </p>
-    </motion.div>
-  );
-};
+      <h3 className="text-xl font-black text-slate-900 mb-3 tracking-tight">{title}</h3>
+      <p className="text-slate-500 leading-relaxed text-sm font-medium">{text}</p>
+      
+      {/* Decorative tag */}
+      <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+      </div>
+    </div>
+  </motion.div>
+);
 
 const Benefits = () => {
-  const mensaje =
-    "Hola, vine de Turnate y quiero afiliar mi consultorio o centro médico. ¿Pueden ayudarme?";
-  const whatsappLink = `https://wa.me/5493815588504?text=${encodeURIComponent(
-    mensaje
-  )}`;
-
+  const whatsappLink = "https://wa.me/5493815588504?text=Hola! Quiero afiliar mi consultorio.";
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-150px" });
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
 
-  // Variants para animaciones
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.12,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
+  const benefitsData = [
+    { title: "Gestión 24/7", text: "Tu agenda nunca duerme. Recibe reservas mientras descansas.", icon: "🌙" },
+    { title: "Multi-dispositivo", text: "Control total desde tu smartphone, tablet o desktop.", icon: "📱" },
+    { title: "WhatsApp Sync", text: "Recordatorios automáticos que reducen el ausentismo un 70%.", icon: "💬" },
+    { title: "Cero Burocracia", text: "Simplifica el alta de pacientes y la gestión de historias.", icon: "⚡" },
+    { title: "Reportes Pro", text: "Analiza el crecimiento de tu consultorio con datos reales.", icon: "📊" }
+  ];
 
   return (
-    <section
-      id="beneficios"
-      className="relative py-8 md:py-14 lg:y-16 px-6 sm:px-8 lg:px-12 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] max-w-7xl lg:max-w-4xl xl:max-w-7xl mx-auto"
-      aria-labelledby="benefits-title"
-    >
-      {/* Fondo decorativo con blobs animados */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/4 -left-20 w-96 h-96 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full opacity-30 blur-3xl animate-pulse-slow"
-          style={{ animationDuration: "8s" }}
-        ></div>
-        <div
-          className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-l from-pink-100 to-rose-100 rounded-full opacity-25 blur-3xl animate-pulse-slow"
-          style={{ animationDuration: "10s", animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute -top-20 right-1/3 w-72 h-72 bg-gradient-to-t from-blue-100 to-indigo-100 rounded-full opacity-20 blur-3xl animate-pulse-slow"
-          style={{ animationDuration: "12s", animationDelay: "4s" }}
-        ></div>
-      </div>
+    <section ref={ref} className="py-24 relative overflow-hidden bg-[#f8fafc]">
+      {/* Ambient Light Shapes */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-100/40 blur-[120px] rounded-full -z-0" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-100/40 blur-[120px] rounded-full -z-0" />
 
-      {/* Contenido principal */}
-      <motion.div
-        ref={ref}
-        variants={containerVariants}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        className="max-w-7xl mx-auto relative z-10"
-        aria-labelledby="benefits-title"
-      >
-        {/* Badge con efecto de brillo */}
-        <motion.div
-  variants={itemVariants}
-  className="flex justify-center items-center w-full mb-8"
->
-  <div className="inline-flex justify-center items-center gap-3 px-6 py-3 backdrop-blur-md 
-    border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider 
-    rounded-full shadow-md bg-white/70"
-  >
-    <span className="relative flex h-2.5 w-2.5">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-    </span>
-    <span>Beneficios de Afiliarte</span>
-  </div>
-</motion.div>
-
-        {/* Título principal */}
-        <motion.h2
-          id="benefits-title"
-          variants={itemVariants}
-          className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight"
-        >
-          Optimiza tu gestión y expande tu{" "}
-          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-            práctica profesional
-          </span>
-        </motion.h2>
-
-        {/* Subtítulo */}
-        <motion.p
-          variants={itemVariants}
-          className="text-lg md:text-base xl:text-2xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
-        >
-          Para médicos y centros de salud, nuestra plataforma es la herramienta
-          clave para{" "}
-          <span className="font-semibold text-gray-800">simplificar procesos</span>,{" "}
-          <span className="font-semibold text-gray-800">atraer nuevos pacientes</span>{" "}
-          y{" "}
-          <span className="font-semibold text-gray-800">mejorar la experiencia</span>.
-        </motion.p>
-
-        {/* Grid de beneficios */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 lg:gap-6 auto-rows-fr"
-        >
-          <Benefit
-            icono={<FcCalendar />}
-            titulo="Gestión 24/7"
-            contenido="Agenda online siempre activa. Reduce carga administrativa y mantén tu calendario perfectamente organizado."
-          />
-        <Benefit
-  icono={<FcOvertime />}
-  titulo="Gestioná desde cualquier lugar"
-  contenido="Accedé a tu agenda médica desde tu celular, tablet o computadora. Tu consultorio siempre disponible, las 24 horas."
-/>
-          <Benefit
-            icono={<FcSms />}
-            titulo="Recordatorios Smart"
-            contenido="Envía notificaciones automáticas por WhatsApp para reducir ausencias y mejorar la comunicación."
-          />
-          <Benefit
-            icono={<FcSmartphoneTablet />}
-            titulo="Reserva Móvil"
-            contenido="Tus pacientes reservan, modifican o cancelan turnos desde cualquier dispositivo, con solo unos toques."
-          />
-          <Benefit
-            icono={<FcLeave />}
-            titulo="Minimiza Ausencias"
-            contenido="Reduce hasta un 70% las faltas gracias a recordatorios proactivos y confirmaciones automáticas."
-          />
-        </motion.div>
-
-        {/* Call to Action – Botón premium con animación */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-20 text-center"
-        >
-          <motion.a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Contactar por WhatsApp para afiliarte"
-            className="group inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-semibold text-white rounded-full shadow-xl relative overflow-hidden transition-all duration-300"
-            whileHover={{
-              scale: 1.08,
-              boxShadow: "0 25px 35px -10px rgba(0, 0, 0, 0.2)",
-            }}
-            whileTap={{ scale: 0.97 }}
-            animate={{
-              scale: [1, 1.02, 1],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            className="px-4 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em]"
           >
-            {/* Fondo gradiente animado */}
-            <span
-              className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"
-            ></span>
-            {/* Efecto de brillo lateral */}
-            <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 group-hover:animate-shine"></span>
-
-            {/* Contenido */}
-            <span className="relative z-10 flex items-center gap-2">
-              Conectá tu consultorio hoy
-              <svg
-                className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
+            Partnership
+          </motion.span>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none"
+          >
+            Escalá tu <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+              práctica médica.
             </span>
-          </motion.a>
-
-          {/* Texto secundario opcional */}
-          <motion.p
-            variants={itemVariants}
-            className="text-sm text-gray-500 mt-4"
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            className="text-slate-500 text-lg font-medium"
           >
-            Soporte rápido y asistencia personalizada en cada paso del proceso.
+            Herramientas de nivel empresarial para profesionales independientes.
           </motion.p>
-        </motion.div>
-      </motion.div>
+        </div>
 
-   
+        {/* Bento-Inspired Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {benefitsData.map((b, i) => (
+            <BenefitCard key={i} title={b.title} text={b.text} icon={b.icon} delay={i * 0.1} />
+          ))}
+          
+          {/* Tarjeta de CTA integrada en el Grid */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            className="lg:col-span-1 p-8 rounded-[2.5rem] bg-indigo-600 text-white flex flex-col justify-center items-center text-center space-y-6 shadow-2xl shadow-indigo-200"
+          >
+            <h3 className="text-2xl font-bold italic">"El cambio que tu secretaría necesitaba."</h3>
+            <a 
+              href={whatsappLink}
+              className="w-full py-4 bg-white text-indigo-600 rounded-2xl font-black hover:bg-indigo-50 transition-colors shadow-lg"
+            >
+              Contactar ahora
+            </a>
+          </motion.div>
+        </div>
+
+        {/* Social Proof Sutil */}
+        <div className="mt-20 flex justify-center items-center gap-12 opacity-40 grayscale">
+          <span className="font-black text-2xl tracking-widest uppercase">Seguro</span>
+          <span className="font-black text-2xl tracking-widest uppercase">Rápido</span>
+          <span className="font-black text-2xl tracking-widest uppercase">Global</span>
+        </div>
+      </div>
     </section>
   );
 };

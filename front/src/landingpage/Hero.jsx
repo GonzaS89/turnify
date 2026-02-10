@@ -8,10 +8,9 @@ import img2 from "../assets/medic2.png";
 import img3 from "../assets/medic4.png";
 import img4 from "../assets/medic3.png";
 
-const Hero = ({ enviarIds, openModalProf }) => {
+const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
-
   const images = [img, img2, img3, img4];
 
   useEffect(() => {
@@ -21,122 +20,108 @@ const Hero = ({ enviarIds, openModalProf }) => {
     return () => clearInterval(interval);
   }, [images.length]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.4,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
   return (
-    <section
-      id="hero-section"
-      className="relative mx-auto overflow-hidden flex items-center mt-32 md:max-w-4xl xl:max-w-7xl px-8"
-      aria-labelledby="hero-title"
-    >
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#fafafa] pt-20 px-4 md:px-8">
+      {/* --- ELEMENTOS DE FONDO (Diseño Orgánico) --- */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] bg-blue-100/50 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[60%] bg-purple-100/40 blur-[120px] rounded-full" />
+      </div>
 
-
-      {/* Contenido */}
-      <div className="relative z-10 w-full">
-        <div className="container mx-auto">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col-reverse md:flex-row items-center justify-center gap-12 lg:gap-16"
+      <div className="max-w-7xl mx-auto w-full relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          
+          {/* BLOQUE DE TEXTO (7 Columnas) */}
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="lg:col-span-7 space-y-8 text-left"
           >
-            {/* Texto: 50% en lg+ */}
-            <motion.div
-              variants={itemVariants}
-              className="lg:w-1/2 lg:max-w-none max-w-xl mx-auto lg:mx-0 flex flex-col justify-center"
-            >
-              <h1
-                id="hero-title"
-                className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 leading-tight mb-5 text-center"
-              >
-                Turnos médicos{" "}
-                <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  sin complicaciones
-                </span>
-              </h1>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              <span className="text-xs font-bold tracking-widest text-slate-500 uppercase">Tecnología en Salud</span>
+            </div>
 
-              <p className="text-lg lg:text-base xl:text-xl text-gray-600 leading-relaxed mb-8 text-center">
-                Consultá profesionales disponibles y reservá tu cita en solo unos clics. Rápido, claro y seguro.
-              </p>
+            <h1 className="text-6xl md:text-7xl xl:text-8xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+              Turnos médicos <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">
+                re-imaginados.
+              </span>
+            </h1>
 
+            <p className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed">
+              Eliminamos la fricción entre vos y tu salud. Una interfaz fluida para conectar con los mejores especialistas del país.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
               <motion.button
                 onClick={() => navigate("/buscarprofesionales")}
-                className="group mx-auto inline-flex items-center gap-3 px-8 py-4 lg:py-3 xl:py-5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white font-semibold text-lg lg:text-base rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-cyan-300 text-center"
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-2xl shadow-blue-200 transition-all hover:bg-slate-800"
               >
-                <span className="flex items-center gap-2 uppercase text-base  md:text-sm lg:text-base xl:text-xl">
-                  🔍 Reservar turnos aquí
-                  <svg
-                    className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
-                </span>
+                Reservar ahora
               </motion.button>
-            </motion.div>
+              <button className="px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all">
+                Ver especialistas
+              </button>
+            </div>
+          </motion.div>
 
-            {/* Imagen: 50% en lg+ */}
-            <motion.div
-              variants={itemVariants}
-              className="lg:w-1/2 w-full flex justify-center"
-            >
-              <div className="relative w-full max-w-[340px] sm:max-w-[380px] md:max-w-[420px] lg:max-w-none aspect-[4/5] max-h-[520px] rounded-3xl overflow-hidden">
-                <AnimatePresence initial={false} mode="wait">
+          {/* BLOQUE DE IMAGEN (5 Columnas - Estilo Bento) */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="lg:col-span-5 relative"
+          >
+            <div className="relative aspect-[4/5] bg-white rounded-[2.5rem] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] p-4 border border-slate-100">
+              <div className="relative h-full w-full overflow-hidden rounded-[2rem] bg-slate-50">
+                <AnimatePresence mode="wait">
                   <motion.img
                     key={currentIndex}
                     src={images[currentIndex]}
-                    alt={`Profesional médico - ${currentIndex + 1}`}
-                    className="absolute inset-0 w-full h-full object-contain object-center rounded-3xl"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.05 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.6, ease: "circOut" }}
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </AnimatePresence>
 
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentIndex(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                          ? "bg-white scale-125 shadow-md"
-                          : "bg-white/50 hover:bg-white/75"
-                        }`}
-                      aria-label={`Ver imagen ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                {/* Glass Card Flotante */}
+                <motion.div 
+                   animate={{ y: [0, -10, 0] }}
+                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                   className="absolute bottom-6 right-6 left-6 p-4 backdrop-blur-xl bg-white/70 border border-white/20 rounded-2xl shadow-xl z-20"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">✓</div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-tighter">Próxima Disponibilidad</p>
+                      <p className="text-sm font-black text-slate-900">Hoy, 14:30 hs</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
+
+              {/* Controles de Imagen Minimalistas */}
+              <div className="absolute -right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentIndex(i)}
+                    className={`w-1.5 transition-all duration-300 rounded-full ${i === currentIndex ? "h-8 bg-blue-600" : "h-4 bg-slate-300"}`}
+                  />
+                ))}
+              </div>
+            </div>
           </motion.div>
+
         </div>
       </div>
     </section>

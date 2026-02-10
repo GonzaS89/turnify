@@ -1,195 +1,135 @@
-import React, { useState, useEffect } from "react";
-import { motion, useAnimation, useInView } from "framer-motion";
-
-// Si no usas un componente externo "Step", lo integramos directamente
-// Aquí no necesitas importarlo, lo creamos inline
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 const Steps = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = React.useRef(null);
-  const inView = useInView(ref, { threshold: 0.15 });
-
-  const controls = useAnimation();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
 
   const steps = [
     {
-      titulo: "1. Busca a tu médico",
-      contenido:
-        "Usa nuestro buscador inteligente para filtrar por especialidad, nombre y encuentra al profesional de la salud ideal.",
+      titulo: "Encuentra tu especialista",
+      contenido: "Nuestra IA analiza tu necesidad para conectarte con el profesional ideal en segundos.",
       icon: "🔍",
-      color: "from-blue-500 to-blue-600",
+      gradient: "from-blue-500/20 to-cyan-500/20",
+      border: "hover:border-blue-400/50",
     },
     {
-      titulo: "2. Elige un horario",
-      contenido:
-        "Selecciona el turno que mejor se adapte a tu agenda de entre los horarios disponibles. Es rápido y sencillo.",
+      titulo: "Sincroniza tu agenda",
+      contenido: "Visualiza la disponibilidad real. Elegir un horario nunca fue tan fluido y visual.",
       icon: "📅",
-      color: "from-teal-500 to-emerald-600",
+      gradient: "from-indigo-500/20 to-purple-500/20",
+      border: "hover:border-indigo-400/50",
     },
     {
-      titulo: "3. Confirma tu reserva",
-      contenido:
-        "Completa tus datos personales y recibe la confirmación de tu turno al instante por WhatsApp.",
-      icon: "✅",
-      color: "from-green-500 to-teal-500",
+      titulo: "Gestión instantánea",
+      contenido: "Confirmación encriptada y recordatorios vía WhatsApp para que no pierdas nada.",
+      icon: "⚡",
+      gradient: "from-emerald-500/20 to-teal-500/20",
+      border: "hover:border-emerald-400/50",
     },
   ];
 
-  useEffect(() => {
-    if (inView) {
-      controls.start("visible");
-    }
-  }, [inView, controls]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.4,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.8, ease: "easeOut" },
-    },
-  };
-
   return (
-    <section
-      id="info"
-      ref={ref}
-      className="py-8 md:py-12 lg:py-16  lg:max-w-4xl xl:max-w-7xl mx-auto relative overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] px-4"
-      aria-labelledby="steps-title"
-    >
-      <div>
-        {/* === Fondo decorativo con blobs animados === */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/3 -left-20 w-96 h-96 bg-gradient-to-r from-indigo-100 to-blue-100 rounded-full opacity-30 blur-3xl animate-pulse-slow"
-          style={{ animationDuration: "7s" }}
-        ></div>
-        <div
-          className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-l from-teal-100 to-emerald-100 rounded-full opacity-25 blur-3xl animate-pulse-slow"
-          style={{ animationDuration: "9s", animationDelay: "2s" }}
-        ></div>
+    <section ref={ref} className="py-24 bg-[#fafafa] relative overflow-hidden">
+      {/* Elementos decorativos de fondo (Blobs) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+        <div className="absolute top-1/4 left-[-10%] w-[400px] h-[400px] bg-blue-200/30 blur-[100px] rounded-full animate-pulse" />
+        <div className="absolute bottom-1/4 right-[-10%] w-[400px] h-[400px] bg-purple-200/20 blur-[100px] rounded-full" />
       </div>
 
-      {/* === CONTENIDO PRINCIPAL === */}
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
-        {/* Encabezado animado */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="text-center max-w-3xl mx-auto mb-20"
-        >
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Header con estilo 2026 */}
+        <div className="text-left mb-20 space-y-4">
           <motion.div
-            variants={itemVariants}
-            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-md border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider rounded-full shadow-md mx-auto mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            className="flex items-center gap-2 text-blue-600 font-bold tracking-[0.2em] uppercase text-xs"
           >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-            </span>
-            <span>¿CÓMO FUNCIONA?</span>
+            <span className="w-8 h-[2px] bg-blue-600"></span>
+            El proceso
           </motion.div>
-
+          
           <motion.h2
-            id="steps-title"
-            variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 leading-tight mb-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]"
           >
-            Agenda tu turno en{" "}
-            <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-teal-500 bg-clip-text text-transparent">
-              3 simples pasos
+            Tu salud en <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">
+              tres movimientos.
             </span>
           </motion.h2>
+        </div>
 
-          <motion.p
-            variants={itemVariants}
-            className="text-lg md:text-base xl:text-2xl text-gray-600 leading-relaxed max-w-2xl mx-auto"
-          >
-            Rápido, fácil y sin complicaciones. Tu salud merece lo mejor, y tu tiempo también.
-          </motion.p>
-        </motion.div>
-
-        {/* Contenedor de pasos */}
-        <div className="max-w-6xl mx-auto relative">
-          {/* Línea de progreso (solo desktop) */}
-          <div className="hidden md:block absolute top-1/2 left-12 right-12 h-0.5 bg-gray-200 -translate-y-1/2 z-0">
+        {/* Grid de Pasos (Estilo Bento) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {steps.map((step, i) => (
             <motion.div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-400 to-blue-500 rounded-full"
-              initial={{ width: 0 }}
-              animate={inView ? { width: "90%" } : { width: 0 }}
-              transition={{ duration: 1.5, ease: "easeOut", delay: 0.8 }}
-            />
-          </div>
-
-          {/* Grid de pasos */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative z-10"
-          >
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                custom={index}
-                className="relative"
-                whileHover={{ y: -10 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                {/* Número del paso (decorativo) */}
-                <div
-                  className={`absolute -top-6 -left-6 w-12 xl:w-16 h-12 xl:h-16 rounded-full bg-gradient-to-br ${step.color} text-white font-bold text-lg xl:text-3xl flex items-center justify-center shadow-lg z-20`}
-                >
-                  {index + 1}
-                </div>
-
-                {/* Tarjeta del paso */}
-                <motion.div
-                  className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 hover:shadow-3xl transition-all duration-500 h-full cursor-default relative group"
-                  whileHover={{
-                    scale: 1.03,
-                    boxShadow: "0 30px 40px -10px rgba(0, 0, 0, 0.18)",
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Icono */}
-                  <div className="text-6xl md:text-3xl xl:text-5xl mb-6 drop-shadow-sm group-hover:scale-110 transition-transform duration-300">
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: i * 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="group relative"
+            >
+              <div className={`
+                h-full p-8 rounded-[2.5rem] bg-white border border-slate-100 
+                shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] 
+                transition-all duration-500 ease-out
+                group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]
+                group-hover:-translate-y-2
+                ${step.border}
+              `}>
+                
+                {/* Badge de número minimalista */}
+                <div className="flex justify-between items-start mb-12">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500`}>
                     {step.icon}
                   </div>
+                  <span className="text-5xl font-black text-slate-100 group-hover:text-slate-200 transition-colors">
+                    0{i + 1}
+                  </span>
+                </div>
 
-                  {/* Título */}
-                  <h3 className="text-2xl md:text-xl xl:text-2xl font-bold text-gray-800 mb-4 leading-tight">
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
                     {step.titulo}
                   </h3>
-
-                  {/* Descripción */}
-                  <p className="text-gray-600 leading-relaxed xl:text-lg">
+                  <p className="text-slate-500 leading-relaxed font-medium">
                     {step.contenido}
                   </p>
+                </div>
 
-                  {/* Efecto de brillo lateral (opcional) */}
-                  <span className="absolute inset-0 rounded-3xl bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></span>
-                </motion.div>
-              </motion.div>
-            ))}
-          </motion.div>
+                {/* Línea decorativa inferior */}
+                <div className="mt-8 w-full h-[1px] bg-slate-100 relative overflow-hidden">
+                  <motion.div 
+                    initial={{ x: "-100%" }}
+                    animate={isInView ? { x: "100%" } : {}}
+                    transition={{ duration: 1.5, delay: 0.5 + (i * 0.2) }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500 to-transparent"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
+
+        {/* Footer de la sección */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 1 }}
+          className="mt-20 flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-[2rem] bg-slate-900 text-white"
+        >
+          <div className="text-center md:text-left">
+            <p className="text-lg font-bold">¿Listo para empezar?</p>
+            <p className="text-slate-400 text-sm">No requiere registro previo para buscar.</p>
+          </div>
+          <button className="px-8 py-4 bg-blue-500 hover:bg-blue-400 rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-blue-500/20">
+            Explorar Médicos 🔍
+          </button>
+        </motion.div>
       </div>
-      </div>
-    
-   
     </section>
   );
 };
