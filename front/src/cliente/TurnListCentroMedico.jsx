@@ -277,6 +277,8 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   const disponibles = turnos.length - ocupados - finalizados;
                   const isSelected = fecha === fechaSeleccionada;
 
+                  
+
                   return (
                     <button
                       key={fecha}
@@ -288,13 +290,13 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                           : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
                       }`}
                     >
-                      <div className="font-semibold">
-                        {new Date(fecha).toLocaleDateString("es-AR", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                        })}
-                      </div>
+                   <div className="font-semibold">
+  {new Date(fecha + "T00:00:00-03:00").toLocaleDateString("es-AR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+  })}
+</div>
                       <div
                         className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
                           isSelected
@@ -331,7 +333,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
             {/* Detalles de turnos */}
             <div className="w-full md:w-2/3 p-6 overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">
+                {/* <h3 className="text-xl font-bold text-gray-800">
                   {fechaSeleccionada
                     ? new Date(fechaSeleccionada).toLocaleDateString("es-AR", {
                         weekday: "long",
@@ -340,7 +342,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                         year: "numeric",
                       })
                     : "Seleccioná una fecha"}
-                </h3>
+                </h3> */}
                 {fechaSeleccionada && (
                   <button
                     onClick={handleBorrarTodosLosTurnos}
