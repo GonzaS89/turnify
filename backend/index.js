@@ -133,6 +133,20 @@ app.get("/api/provincias", async (req, res) => {
   }
 });
 
+//OBTENER PACIENTES SEGUN ID CONSULTORIO //
+
+app.get("/api/pacientes/:idConsultorio", async (req, res) => {
+  const { idConsultorio } = req.params;
+  try {
+    const query = 'SELECT nombre_paciente AS nombre,apellido_paciente AS apellido,dni, telefono FROM turnos WHERE estado = ? AND consultorio_id = ?'
+    const [resultado] = await pool.execute(query, ['reservado', idConsultorio]);
+    res.json(resultado);
+  } catch {
+    console.error("Error al obtener pacientes");
+    res.status(500).send("Error al obtener pacientes");
+  }
+});
+
 app.get("/api/turnosxfecha/:fecha", async (req, res) => {
   const {fecha} = req.params
   try {
@@ -143,10 +157,12 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
     t.telefono,
     t.fecha, 
     t.hora,
+    t.notificacion_5h_enviada AS notificacionEnviada,
     p.titulo,
     p.nombre AS nombreProfesional,
     p.apellido AS apellidoProfesional,
     c.direccion,
+    c.telefono AS telefonoConsultorio,
     l.nombre as localidad
     FROM turnos AS t
     JOIN
@@ -158,6 +174,39 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
     WHERE fecha >= ? AND 
     estado = ?`;
     const [resultado] = await pool.execute(query, [fecha, 'reservado']);
+    res.json(resultado)
+  } catch {
+    console.error("Error al obtener turnos por fecha");
+    res.status(500).send("Error al obtener turnos por fecha");
+  }
+})
+
+app.get("/api/todoslosturnosxfecha/:fecha/:idProf", async (req, res) => {
+  const {fecha, idProf} = req.params
+  try {
+    const query = `SELECT  
+    t.id,
+    t.nombre_paciente AS paciente,
+    t.DNI,
+    t.telefono,
+    t.fecha, 
+    t.hora,
+    t.notificacion_5h_enviada AS notificacionEnviada,
+    p.titulo,
+    p.nombre AS nombreProfesional,
+    p.apellido AS apellidoProfesional,
+    c.direccion,
+    c.telefono AS telefonoConsultorio,
+    l.nombre as localidad
+    FROM turnos AS t
+    JOIN
+    profesionales AS p ON p.id = t.profesional_id
+    JOIN
+    consultorios AS c ON c.id = t.consultorio_id
+    JOIN 
+    localidades AS l ON l.id = c.localidad
+    WHERE fecha = ? AND ${idProf} = t.profesional_id`;
+    const [resultado] = await pool.execute(query, [fecha]);
     res.json(resultado)
   } catch {
     console.error("Error al obtener turnos por fecha");
@@ -479,6 +528,28 @@ app.get("/api/profesionalxidperfil/:perfilId", async (req, res) => {
   }
 });
 
+//  CAMBIAR ESTADO NOTIFICACION ENVIADA //
+
+app.put("/api/cambiarNotificacionEnviada/:turnoId", async (req, res) => {
+  const { turnoId } = req.params;
+  const query = `
+    UPDATE turnos
+    SET notificacion_5h_enviada = ?
+    WHERE id = ?;
+  `;
+  const values = [true, turnoId];
+  try {
+    const [result] = await pool.query(query, values);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: `Turno con ID ${turnoId} no encontrado.` });
+    }
+    res.status(200).json({ message: "Notificación marcada como enviada.", updatedId: turnoId });
+  } catch (error) {
+    console.error("Error al actualizar la notificación:", error);
+    res.status(500).json({ message: "Error interno del servidor al actualizar la notificación." });
+  }
+});
+
 // RESERVAR TURNO //
 
 app.put("/api/reservarturno/:turnoId", async (req, res) => {
@@ -587,30 +658,44 @@ app.post("/api/habilitarturnos", async (req, res) => {
   const {
     consultorioId,
     profesionalId,
-    fecha,
-    cantidadTurnos,
+    fechas, // ← ahora es un array
     horaInicio,
     duracion,
+    cantidadTurnosPorDia, // ← renombrado para claridad
   } = req.body;
 
   // Validación básica
   if (
     !consultorioId ||
     !profesionalId ||
-    !fecha ||
-    !cantidadTurnos ||
-    cantidadTurnos <= 0
+    !Array.isArray(fechas) ||
+    fechas.length === 0 ||
+    !horaInicio ||
+    !duracion ||
+    !cantidadTurnosPorDia ||
+    cantidadTurnosPorDia <= 0
   ) {
     return res.status(400).json({
-      message: "Faltan datos requeridos o cantidad de turnos inválida.",
+      message:
+        "Faltan datos requeridos: consultorioId, profesionalId, fechas (array), horaInicio, duracion y cantidadTurnosPorDia.",
     });
+  }
+
+  // Validar formato de cada fecha (espera "YYYY-MM-DD")
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  for (const fecha of fechas) {
+    if (!dateRegex.test(fecha)) {
+      return res.status(400).json({
+        message: `Formato de fecha inválido: ${fecha}. Usa YYYY-MM-DD.`,
+      });
+    }
   }
 
   // Validar formato de horaInicio (espera "HH:MM")
   if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horaInicio)) {
-    return res
-      .status(400)
-      .json({ message: "Formato de hora de inicio inválido. Usa HH:MM." });
+    return res.status(400).json({
+      message: "Formato de hora de inicio inválido. Usa HH:MM.",
+    });
   }
 
   let connection;
@@ -619,44 +704,50 @@ app.post("/api/habilitarturnos", async (req, res) => {
     await connection.beginTransaction();
 
     const insertQuery = `
-        INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora, duracion)
-        VALUES (?, ?, ?, ?, ?)
-      `;
+      INSERT INTO turnos (consultorio_id, profesional_id, fecha, hora, duracion)
+      VALUES (?, ?, ?, ?, ?)
+    `;
 
-    let currentHour = horaInicio; // "08:30"
+    // Procesar cada fecha
+    for (const fecha of fechas) {
+      let currentHour = horaInicio;
 
-    for (let i = 0; i < cantidadTurnos; i++) {
-      // Insertar turno
-      await connection.execute(insertQuery, [
-        consultorioId,
-        profesionalId,
-        fecha,
-        currentHour,
-        duracion,
-      ]);
+      for (let i = 0; i < cantidadTurnosPorDia; i++) {
+        // Insertar turno
+        await connection.execute(insertQuery, [
+          consultorioId,
+          profesionalId,
+          fecha,
+          currentHour,
+          duracion,
+        ]);
 
-      // Calcular próxima hora
-      const [hours, minutes] = currentHour.split(":").map(Number);
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      date.setMinutes(date.getMinutes() + duracion);
+        // Calcular próxima hora
+        const [hours, minutes] = currentHour.split(":").map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        date.setMinutes(date.getMinutes() + duracion);
 
-      // Formatear como "HH:MM"
-      const nextHours = String(date.getHours()).padStart(2, "0");
-      const nextMinutes = String(date.getMinutes()).padStart(2, "0");
-      currentHour = `${nextHours}:${nextMinutes}`;
+        const nextHours = String(date.getHours()).padStart(2, "0");
+        const nextMinutes = String(date.getMinutes()).padStart(2, "0");
+        currentHour = `${nextHours}:${nextMinutes}`;
+      }
     }
 
     await connection.commit();
+
+    const totalTurnos = fechas.length * cantidadTurnosPorDia;
     res.status(200).json({
-      message: `Se han habilitado ${cantidadTurnos} turnos para el ${fecha}.`,
+      message: `✅ Se han habilitado ${totalTurnos} turnos en ${fechas.length} día(s).`,
+      totalTurnos,
+      dias: fechas.length,
     });
   } catch (error) {
     if (connection) await connection.rollback();
     console.error("Error al habilitar turnos en la base de datos:", error);
-    res
-      .status(500)
-      .json({ message: "Error interno del servidor al habilitar turnos." });
+    res.status(500).json({
+      message: "Error interno del servidor al habilitar turnos.",
+    });
   } finally {
     if (connection) connection.release();
   }
