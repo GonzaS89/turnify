@@ -36,6 +36,7 @@ const TurnoInterno = ({
   };
 
 
+
   const calcularHoraFin = (horaInicio, duracionMinutos) => {
     if (!horaInicio || !duracionMinutos) return "";
     const [horas, minutos] = horaInicio.split(":").map(Number);
@@ -62,7 +63,7 @@ const TurnoInterno = ({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
         {/* Número y horario */}
         <div className="flex items-center gap-3 flex-wrap">
-          <span className={`font-bold text-lg ${config.text}`}>#{idx + 1}</span>
+          {/* <span className={`font-bold text-lg ${config.text}`}>#{idx + 1}</span> */}
 
           {hora && (
             <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">

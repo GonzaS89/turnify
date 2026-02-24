@@ -113,12 +113,13 @@ const ConfirmationModalInterno = ({
       
       Tolerancia de espera: 15 minutos
 
+      Por favor confirmar presencial por este mismo medio 
+
       ¡Te esperamos! 
       
       Saludos, ${nombreProfesional}
       
       Turno generado desde https://turnate.site`;
-      
 
       
 

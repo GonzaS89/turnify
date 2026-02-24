@@ -1,7 +1,7 @@
 // src/components/MiCuenta.jsx (UserDashboard.jsx)
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaSpinner, FaPowerOff ,FaHome, FaExclamationCircle } from 'react-icons/fa';
+import { FaSpinner, FaPowerOff, FaHome, FaExclamationCircle, FaUserCircle, FaBriefcaseMedical } from 'react-icons/fa';
 import useAllPerfiles from '../../customHooks/useAllPerfiles';
 import PanelConsultorioPropio from './PanelConsultorioPropio';
 import PanelCentroMedico from './PanelCentroMedico';
@@ -10,160 +10,144 @@ import { RingLoader } from 'react-spinners';
 const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
 
-  const [cerrandoSesion, setCerrandoSesion] = useState(false)
-
-  // Obtener consultorio desde localStorage
+  // Recuperar perfil de localStorage
   const recuperarPerfil = JSON.parse(localStorage.getItem('perfil') || 'null');
   const perfilId = recuperarPerfil?.id;
 
-  const {perfiles, isLoading:isLoadingPerfiles, error:errorPerfiles} = useAllPerfiles();
+  const { perfiles, isLoading: isLoadingPerfiles, error: errorPerfiles } = useAllPerfiles();
 
   const perfilFiltrado = perfiles.filter((f) => f.id === perfilId);
-
   const perfil = perfilFiltrado[0];
-  
   const { tipo } = perfil || {};
-
   const password = localStorage.getItem('userPassword') || '';
 
-  // Enviar password al padre (si es necesario)
+  // Sincronización de password
   useEffect(() => {
     if (password && enviarPass) {
       enviarPass(password);
     }
   }, [password, enviarPass]);
 
-  // Guardar consultorio en localStorage si se carga correctamente
+  // Persistencia de perfil
   useEffect(() => {
     if (perfil) {
       try {
         localStorage.setItem('perfil', JSON.stringify(perfil));
       } catch (err) {
-        console.error('Error al guardar consultorio en localStorage:', err);
+        console.error('Error al guardar en localStorage:', err);
       }
     }
   }, [perfil]);
 
-  // Manejo de cierre de sesión
   const handleLogout = () => {
-
-    setCerrandoSesion(true)
-    
-    try {
-      setCerrandoSesion(true)
-      setTimeout(() => {
-        // setCerrandoSesion(false)
-        navigate('/');
-      
-        setCerrandoSesion(false)
-        localStorage.removeItem('perfil');
+    setCerrandoSesion(true);
+    setTimeout(() => {
+      navigate('/');
+      localStorage.removeItem('perfil');
       localStorage.removeItem('userPassword');
       if (onLogout && typeof onLogout === 'function') {
         onLogout();
       }
-      }, 1500);
-    } catch (err) {
-      console.error('Error al cerrar sesión:', err);
-    } finally {
-      
-    }
+      setCerrandoSesion(false);
+    }, 1500);
   };
 
   const [medicoID, setMedicoID] = useState(null);
+  const recibirMedicoID = data => setMedicoID(data);
 
-  const recibirMedicoID = data => {
-    setMedicoID(data)
-  }
-
-  // === Pantalla de carga ===
+  // === UI: CARGANDO ===
   if (isLoadingPerfiles) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
-        <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-blue-100">
-          <RingLoader color="#4F46E5" size={60} />
-          <p className="text-gray-700 text-lg mt-6 font-medium">Cargando tu información...</p>
-          <p className="text-gray-500 text-sm mt-2">Estamos preparando tu panel de control.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc]">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100/50 p-12 text-center max-w-sm w-full border border-slate-100">
+          <div className="flex justify-center mb-6">
+            <RingLoader color="#4F46E5" size={60} />
+          </div>
+          <p className="text-slate-800 text-xl font-black tracking-tight">Cargando información</p>
+          <p className="text-slate-400 text-sm mt-2 font-medium">Sincronizando perfiles...</p>
         </div>
       </div>
     );
   }
 
-  // === Manejo de errores ===
+  // === UI: ERROR ===
   if (errorPerfiles) {
-    if (error.message.includes('No autorizado') || error.message.includes('401')) {
-      localStorage.removeItem('consultorio');
-      localStorage.removeItem('userPassword');
-    }
-
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-red-200">
-          <FaExclamationCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Error</h2>
-          <p className="text-red-600 mb-4">{error.message || 'No se pudo cargar el consultorio.'}</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6">
+        <div className="bg-white rounded-[2.5rem] shadow-xl p-10 text-center max-w-md w-full border border-red-100">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <FaExclamationCircle size={32} />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 mb-2">Error de conexión</h2>
+          <p className="text-slate-500 mb-8 font-medium">{errorPerfiles?.message || 'Error al obtener datos.'}</p>
           <button
             onClick={() => navigate('/')}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition transform hover:scale-105"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all"
           >
-            <FaHome /> Volver al Inicio
+            <FaHome /> Reintentar
           </button>
         </div>
       </div>
     );
   }
 
-  // === Estado vacío (sin consultorio) ===
-  if (!perfil && !recuperarPerfil) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
-        <div className="rounded-2xl shadow-xl p-8 text-center max-w-md w-full border border-gray-200">
-          <FaExclamationCircle className="text-orange-500 mx-auto mb-4" size={48} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Sin acceso</h2>
-          <p className="text-gray-600 mb-4">No se encontró información de tu consultorio. Por favor, inicia sesión nuevamente.</p>
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition transform hover:scale-105"
-          >
-            <FaHome /> Iniciar Sesión
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Usar el consultorio disponible
-  const perfilEnUso = perfil;
+  const perfilEnUso = perfil || recuperarPerfil;
 
   return (
-    <div className="min-h-screen">
-      {/* Header con gradiente */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-b-2xl shadow-md flex flex-col items-center">
-        <button
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* --- NAVBAR --- */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
+              <FaUserCircle size={22} />
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Sesión activa</p>
+              <h2 className="text-sm font-bold text-slate-800 uppercase tracking-tight">
+                {perfilEnUso?.usuario || 'Mi Cuenta'}
+              </h2>
+            </div>
+          </div>
+
+          <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-5 py-2 lg:py-2.5 bg-red-700/90 hover:bg-red-700/50 rounded-xl text-white font-semibold transition backdrop-blur-sm border border-white/3 min-max-w-40 md:max-w-48 mb-4 text-sm"
-            aria-label="Cerrar sesión"
+            disabled={cerrandoSesion}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all border ${
+              cerrandoSesion 
+              ? "bg-slate-50 text-slate-300 border-slate-100" 
+              : "bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-600 hover:bg-red-50"
+            }`}
           >
-             {cerrandoSesion ? (
-              <span className='inline-flex gap-2 items-center'>
-                <FaSpinner className="animate-spin" size={16} /> Cerrando sesión...
-              </span>
-             ): (
-              <span className='inline-flex gap-2 items-center'>
-                <FaPowerOff className="mr-2" size={16} /> Cerrar sesión
-              </span>
-             )}
+            {cerrandoSesion ? (
+              <><FaSpinner className="animate-spin" /> Saliendo...</>
+            ) : (
+              <><FaPowerOff size={14} /> Cerrar Sesión</>
+            )}
           </button>
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold">
+        </div>
+      </nav>
+
+      {/* --- CABECERA --- */}
+      <header className="bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-4 border border-indigo-100">
+            <FaBriefcaseMedical size={10} />
+            {tipo === 'Particular' ? 'Perfil Profesional' : 'Centro Médico'}
+          </div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter sm:text-5xl">
             ¡Bienvenido, {perfilEnUso?.usuario || 'Usuario'}!
           </h1>
-          
+          <p className="text-slate-500 mt-3 font-medium text-lg max-w-2xl leading-relaxed">
+            Administra tus agendas, sedes y pacientes con la mejor tecnología de gestión.
+          </p>
         </div>
       </header>
 
-      {/* Contenido principal */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* --- CONTENIDO --- */}
+      <main className="max-w-7xl mx-auto py-6">
         {tipo === 'Particular' ? (
           <PanelConsultorioPropio
             perfilData={perfilEnUso}
@@ -178,6 +162,12 @@ const UserDashboard = ({ onLogout, enviarTurnoYOrden, enviarPass }) => {
           />
         )}
       </main>
+
+      <footer className="max-w-7xl mx-auto px-6 py-10 text-center">
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.4em]">
+          Turnate • Gestión Profesional de Salud
+        </p>
+      </footer>
     </div>
   );
 };

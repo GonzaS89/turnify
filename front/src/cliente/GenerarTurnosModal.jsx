@@ -1,311 +1,249 @@
+// src/components/GenerarTurnosModal.jsx
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
-import { FaCalendarAlt, FaClock, FaStopwatch, FaTimes, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaTimes,
+  FaCheckCircle,
+  FaTrashAlt,
+  FaHourglassHalf,
+} from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
-import {format, parseISO} from 'date-fns';
-import {es} from 'date-fns/locale';
-import useObtenerCnsultorioxId from '../../customHooks/useConsultorioxId';
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import useObtenerCnsultorioxId from "../../customHooks/useConsultorioxId";
 
-const GenerarTurnosModal = (consultorioTipo) => {
-  const [selectedDate, setSelectedDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+const GenerarTurnosModal = () => {
+  const [selectedDates, setSelectedDates] = useState([]);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [duracionTurno, setDuracionTurno] = useState(30);
   const [generando, setGenerando] = useState(false);
 
   const navigate = useNavigate();
-  const { consultorioId } = useParams();
-  const { profesionalId } = useParams();
+  const { consultorioId, profesionalId } = useParams();
 
   const consultorioIdParsed = parseInt(consultorioId, 10);
   const profesionalIdParsed = parseInt(profesionalId, 10);
 
-  const { consultorio, isLoading, error } = useObtenerCnsultorioxId(consultorioIdParsed);
-
-  const consultorioObtenido = consultorio[0] || null;
-
-  const { tipo } = consultorioObtenido || {};
+  const { consultorio } = useObtenerCnsultorioxId(consultorioIdParsed);
+  const consultorioObtenido = consultorio?.[0] || {};
+  const { tipo } = consultorioObtenido;
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Calcular cantidad de turnos
+  /* ================= LÓGICA (Se mantiene intacta) ================= */
   const calculatedTurns = useMemo(() => {
-    if (!selectedDate || !startTime || !endTime || duracionTurno <= 0) return 0;
-
+    if (!startTime || !endTime || duracionTurno <= 0) return 0;
     const start = new Date(`2000-01-01T${startTime}`);
     const end = new Date(`2000-01-01T${endTime}`);
-
     if (end <= start) return 0;
-
     const diffMins = (end - start) / (1000 * 60);
     return Math.floor(diffMins / duracionTurno);
-  }, [selectedDate, startTime, endTime, duracionTurno]);
+  }, [startTime, endTime, duracionTurno]);
 
-  const handleDateChange = (e) => {
-    setSelectedDate(e.target.value);
-    setStartTime('');
-    setEndTime('');
-  };
+  const totalTurns = calculatedTurns * selectedDates.length;
 
-  const handleStartTimeChange = (e) => {
-    setStartTime(e.target.value);
-    if (endTime && new Date(`2000-01-01T${e.target.value}`) >= new Date(`2000-01-01T${endTime}`)) {
-      setEndTime('');
+  const handleAddDate = (e) => {
+    const value = e.target.value;
+    if (value && !selectedDates.includes(value)) {
+      setSelectedDates((prev) => [...prev, value]);
     }
+    e.target.value = "";
   };
-
-  const handleEndTimeChange = (e) => {
-    setEndTime(e.target.value);
-  };
-
-  const handleDuracionChange = (e) => {
-    const value = parseInt(e.target.value) || 30;
-    setDuracionTurno(value < 5 ? 5 : value);
-  };
-
-  const formatearFechaSQL = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
-  };
-
 
   const handleEnableTurns = async () => {
-    if (!selectedDate) return toast.warn("Selecciona una fecha.");
-    if (!startTime) return toast.warn("Selecciona una hora de inicio.");
-    if (!endTime) return toast.warn("Selecciona una hora de finalización.");
-    if (new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`)) {
-      return toast.error("La hora de finalización debe ser posterior a la de inicio.");
-    }
-    if (duracionTurno < 5) return toast.error("La duración mínima es 5 minutos.");
-    if (calculatedTurns <= 0) return toast.warn("No se pueden generar turnos con estos parámetros.");
+    if (selectedDates.length === 0) return toast.warn("⚠️ Selecciona al menos un día.");
+    if (!startTime) return toast.warn("⏰ Selecciona una hora de inicio.");
+    if (!endTime) return toast.warn("🕗 Selecciona una hora de finalización.");
+    if (calculatedTurns <= 0) return toast.warn("❌ El horario no permite generar turnos.");
 
     setGenerando(true);
-
     try {
       const response = await fetch(`${API_URL}/api/habilitarturnos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           consultorioId: consultorioIdParsed,
           profesionalId: profesionalIdParsed,
-          fecha:  selectedDate,// Asegura que sea solo YYYY-MM-DD
-          cantidadTurnos: calculatedTurns,
+          fechas: selectedDates,
           horaInicio: startTime,
-          duracion: duracionTurno
-        }),
+          duracion: duracionTurno,
+          cantidadTurnosPorDia: calculatedTurns
+        })
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Error al habilitar turnos');
+        throw new Error(error.message || "Error al generar turnos");
       }
 
-      const result = await response.json();
-
-      // Éxito
-     
-     
-
-      toast.success(
-        <div className="text-sm">
-          ✅ <strong>{calculatedTurns} turnos</strong> generados para el{' '}
-          <strong>{formatearFechaSQL(selectedDate)}</strong>, de{' '}
-          <strong>{startTime}</strong> a <strong>{endTime}</strong>, cada{' '}
-          <strong>{duracionTurno} min</strong>.
-        </div>,
-        { autoClose: 1000, position:"bottom-right" }
-      );
-
-      // Redirigir tras éxito
+      toast.success("✅ Turnos generados con éxito");
       setTimeout(() => {
-        tipo === 'centro médico' ?
-        navigate(`/micuenta/panelturnos-centromedico/${consultorioId}/${profesionalId}`) :
-        navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
-        
-      }, 1500);
-
+        tipo === "centro médico"
+          ? navigate(`/micuenta/panelturnos-centromedico/${consultorioId}/${profesionalId}`)
+          : navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`);
+      }, 1600);
     } catch (err) {
-      toast.error(`❌ Error: ${err.message}`);
-      console.error('Error al habilitar turnos:', err);
-    } 
+      toast.error(`❌ ${err.message || "Error al procesar"}`);
+    } finally {
+      setGenerando(false);
+    }
   };
 
-
-
-      // Formato de fecha legible
-  const formattedDate = selectedDate
-  ? format(parseISO(selectedDate), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
-  : "";
-
+  /* ================= INTERFAZ ACTUALIZADA ================= */
   return (
-    <>
-      {/* Overlay oscuro con blur */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
-        onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-[600] animate-fade-in">
+      <div 
+        className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="bg-white rounded-2xl shadow-2xl w-screen max-w-md h-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FaCalendarAlt className="text-2xl" />
-                <h3 className="text-2xl font-bold">Habilitar Turnos</h3>
+        {/* HEADER */}
+        <div className="bg-white border-b border-slate-100 p-8 flex justify-between items-center">
+          <div>
+            <h3 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+              <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-lg shadow-indigo-100">
+                <FaCalendarAlt size={18} />
               </div>
-              <button
-                onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-            <p className="text-blue-100 mt-2 text-sm opacity-90">
-              Define fecha, horario y duración. Los turnos se generarán automáticamente.
-            </p>
+              Habilitar Agenda
+            </h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Configuración de turnos masivos</p>
           </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 bg-slate-50 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
 
-          {/* Cuerpo scrollable */}
-          <div className="p-6 space-y-6 max-h-[calc(90vh-180px)] overflow-y-auto">
-            {/* Fecha */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <FaCalendarAlt className="text-blue-500" /> Fecha *
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition"
-              />
-            </div>
-
-            {selectedDate && (
-              <>
-                {/* Hora de inicio */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaClock className="text-green-500" /> Hora de inicio *
-                  </label>
-                  <input
-                    type="time"
-                    value={startTime}
-                    onChange={handleStartTimeChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                {/* Hora de finalización */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaClock className="text-orange-500" /> Hora de finalización *
-                  </label>
-                  <input
-                    type="time"
-                    value={endTime}
-                    onChange={handleEndTimeChange}
-                    min={startTime || undefined}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  />
-                  {endTime && new Date(`2000-01-01T${endTime}`) <= new Date(`2000-01-01T${startTime}`) && (
-                    <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-                      <FaExclamationCircle /> Debe ser posterior a la hora de inicio.
-                    </p>
-                  )}
-                </div>
-
-                {/* Duración del turno */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <FaStopwatch className="text-purple-500" /> Duración (minutos) *
-                  </label>
-                  <div className="flex items-center gap-3">
+        {/* BODY */}
+        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          
+          {/* SELECCIÓN DE FECHAS */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <FaCalendarAlt className="text-indigo-500" /> Seleccionar Días
+            </label>
+            <input
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              onChange={handleAddDate}
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700"
+            />
+            
+            {selectedDates.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2 animate-fadeIn">
+                {selectedDates.map((d) => (
+                  <span
+                    key={d}
+                    className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-black text-slate-700 shadow-sm"
+                  >
+                    {format(parseISO(d), "dd/MM", { locale: es })}
                     <button
-                      type="button"
-                      onClick={() => setDuracionTurno(prev => Math.max(5, prev - 5))}
-                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition flex items-center justify-center"
+                      onClick={() => setSelectedDates((prev) => prev.filter((x) => x !== d))}
+                      className="text-slate-300 hover:text-red-500 transition-colors"
                     >
-                      −
+                      <FaTrashAlt size={10} />
                     </button>
-                    <input
-                      type="number"
-                      value={duracionTurno}
-                      onChange={handleDuracionChange}
-                      min="5"
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setDuracionTurno(prev => prev + 5)}
-                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-bold transition flex items-center justify-center"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <p className="text-gray-500 text-sm mt-1">Recomendado: 15, 30, 45 o 60 minutos</p>
-                </div>
-
-                {/* Resumen de turnos */}
-                {calculatedTurns > 0 ? (
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaCheckCircle className="text-green-600" />
-                      <span className="font-semibold text-green-800">Turnos generados</span>
-                    </div>
-                    <p className="text-green-700 text-sm leading-relaxed">
-                      Se crearán <strong>{calculatedTurns} turnos</strong> el <strong>{formattedDate}</strong>, desde las{' '}
-                      <strong>{startTime}</strong> hasta las <strong>{endTime}</strong>, cada <strong>{duracionTurno} minutos</strong>.
-                    </p>
-                  </div>
-                ) : calculatedTurns === 0 && startTime && endTime ? (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                    <p className="text-yellow-800 text-sm flex items-center gap-1">
-                      <FaExclamationCircle /> No se pueden generar turnos completos con esta duración.
-                    </p>
-                  </div>
-                ) : null}
-              </>
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* Footer con botones */}
-          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => navigate(`/micuenta/panelturnos/${consultorioId}/${profesionalId}`)}
-              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleEnableTurns}
-              disabled={generando || calculatedTurns <= 0}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold text-white transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${
-                generando || calculatedTurns <= 0
-                  ? 'bg-gray-400'
-                  : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg'
-              }`}
-            >
-              {generando ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                  Habilitando ...
-                </div>
-              ) : (
-                `Habilitar ${calculatedTurns} turno${calculatedTurns !== 1 ? 's' : ''}`
-              )}
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* HORA INICIO */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <FaClock className="text-emerald-500" /> Hora Inicio
+              </label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-500 outline-none transition-all font-bold text-slate-700"
+              />
+            </div>
+
+            {/* HORA FIN */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <FaClock className="text-rose-500" /> Hora Fin
+              </label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-rose-50 focus:border-rose-500 outline-none transition-all font-bold text-slate-700"
+              />
+            </div>
           </div>
+
+          {/* DURACIÓN */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <FaHourglassHalf className="text-indigo-500" /> Duración por turno (minutos)
+            </label>
+            <input
+              type="number"
+              min="5"
+              max="120"
+              value={duracionTurno}
+              onChange={(e) => setDuracionTurno(Math.max(5, +e.target.value))}
+              className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all font-bold text-slate-700"
+            />
+          </div>
+
+          {/* RESUMEN DE GENERACIÓN */}
+          {calculatedTurns > 0 && (
+            <div className="p-6 bg-slate-900 rounded-3xl text-white shadow-xl shadow-slate-200 animate-fadeIn">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-indigo-400">
+                  <FaCheckCircle size={24} />
+                </div>
+                <div>
+                  <p className="text-lg font-black">{calculatedTurns} turnos <span className="text-indigo-300 font-medium">por día</span></p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Carga total: {totalTurns} espacios de atención
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        <ToastContainer />
+
+        {/* FOOTER */}
+        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex-1 px-6 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-100 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleEnableTurns}
+            disabled={generando || calculatedTurns <= 0 || selectedDates.length === 0}
+            className={`flex-[2] py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg ${
+              generando || calculatedTurns <= 0 || selectedDates.length === 0
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200"
+            }`}
+          >
+            {generando ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Procesando...
+              </div>
+            ) : (
+              `Habilitar Turnos`
+            )}
+          </button>
+        </div>
       </div>
-    </>
+      <ToastContainer position="bottom-right" />
+    </div>
   );
 };
 
