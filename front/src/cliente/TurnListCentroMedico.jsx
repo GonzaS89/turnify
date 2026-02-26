@@ -1,36 +1,36 @@
-import axios from "axios";
+// src/components/TurnListCentroMedico.jsx
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router";
+import { toast, ToastContainer } from 'react-toastify';
 
-// CARGA ICONOS
+// ICONOS
 import {
-  FaInfoCircle,
   FaCalendarAlt,
   FaTimes,
   FaPlus,
+  FaArrowLeft,
+  FaChevronDown,
   FaTrashAlt,
+  FaRegClock,
+  FaCheckCircle
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
-import { useParams, useNavigate } from "react-router";
-import {toast, ToastContainer} from 'react-toastify';
+import { BiLoaderCircle } from "react-icons/bi";
 
-// CARGA HOOK
-
+// HOOKS
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
 
-// CARGA DE LAYOUTS
-
+// LAYOUTS
 import BorrarTurno from "../cliente/BorrarTurno";
 import BorrarTodosLosTurnosModal from "../cliente/BorrarTodosLosTurnosModal";
 import TurnoInterno from "../cliente/TurnoInterno";
 
-
-
 const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const navigate = useNavigate();
-  const { consultorioId } = useParams();
-  const { profesionalId } = useParams();
+  const { consultorioId, profesionalId } = useParams();
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
@@ -38,7 +38,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [IdTurnoSeleccionado, setIdTurnoSeleccionado] = useState(null);
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberando, setLiberando] = useState(false);
-   const [finalizando, setFinalizando] = useState(false);
+  const [finalizando, setFinalizando] = useState(false);
 
   const datesListRef = useRef(null);
 
@@ -47,14 +47,9 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     const interval = setInterval(() => {
       setRefreshTrigger((prev) => prev + 1);
     }, 300000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const recibirConfirmacionLiberacion = () => {
-    setLiberando(true)
-  }
- 
   const handleActualizarTurnos = () => setRefreshTrigger((prev) => prev + 1);
 
   const { turnos, isLoading } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
@@ -64,7 +59,6 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const medico = profesional?.[0];
   const nombreMedico = `${medico?.nombre || ""} ${medico?.apellido || ""}`.trim();
 
-  // Agrupar turnos por fecha
   const turnosAgrupados = turnos.reduce((acc, turno) => {
     const fecha = new Date(turno.fecha);
     const clave = fecha.toISOString().split("T")[0];
@@ -74,20 +68,6 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   }, {});
 
   const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
-
-  // Scroll automático al centro en mobile
-  useEffect(() => {
-    if (fechaSeleccionada && datesListRef.current && window.innerWidth < 768) {
-      requestAnimationFrame(() => {
-        const button = datesListRef.current.querySelector(`[data-date="${fechaSeleccionada}"]`);
-        if (button) {
-          const container = datesListRef.current;
-          const offset = button.offsetLeft - container.offsetWidth / 2 + button.offsetWidth / 2;
-          container.scrollTo({ left: offset, behavior: "smooth" });
-        }
-      });
-    }
-  }, [fechaSeleccionada]);
 
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
@@ -103,37 +83,26 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     setShowModalBorrarTurno(true);
   };
 
-  const handleBorrarTodosLosTurnos = () => {
-    setShowModalBorrarTodosLosTurnos(true);
-  };
-
-   const handleModificarEstadoTurno = async (idTurno) => {
-    setFinalizando(true)
+  const handleModificarEstadoTurno = async (idTurno) => {
+    setFinalizando(true);
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/modificarestadoturno/${idTurno}`);
       setTimeout(() => {
-        setFinalizando(false)
+        setFinalizando(false);
+        handleActualizarTurnos();
       }, 1500);
-      handleActualizarTurnos();
-    } catch (error) {
-      console.error("Error al modificar estado del turno:", error);
-    }
+    } catch (error) { console.error(error); setFinalizando(false); }
   };
 
   const handleLiberarTurno = async (idTurno) => {
-
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/cancelarturno/${idTurno}`);
-      
-      toast.success("Turno liberado")
-
+      toast.success("Turno liberado");
       setTimeout(() => {
         handleActualizarTurnos();
-        setLiberando(false)
+        setLiberando(false);
       }, 1500);
-    } catch (error) {
-      console.error("Error al liberar turno:", error);
-    }
+    } catch (error) { console.error(error); }
   };
 
   const coberturaElegida = (value) => {
@@ -142,72 +111,16 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return cobertura ? cobertura.siglas : "Particular";
   };
 
-  // Previene scroll del fondo
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    return () => { document.body.style.overflow = "auto"; };
   }, []);
 
-  // Estado vacío
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Cargando tu agenda...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (turnos.length === 0) {
-    return (
-      <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]"
- 
-      >
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-          {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-2xl flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <FaCalendarAlt /> Tu Agenda
-            </h2>
-            <button
-              onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
-              className="text-white hover:bg-white/20 rounded-full p-1 transition"
-              aria-label="Cerrar"
-            >
-              <FaTimes size={20} />
-            </button>
-          </div>
-
-          {/* Cuerpo */}
-          <div className="p-8 text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center">
-                <FaCalendarAlt className="text-blue-500 w-10 h-10" />
-              </div>
-            </div>
-            <p className="text-gray-700 text-lg font-medium">No tenés turnos agendados.</p>
-            <p className="text-gray-500 text-sm">Habilitá tu agenda para recibir pacientes.</p>
-            <div className="space-y-3 pt-2">
-              <button
-                onClick={handleAgregarTurnoClick}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg"
-              >
-                <FaPlus /> Habilitar Turnos
-              </button>
-              <button
-                   onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
-                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition"
-              >
-                Volver a Mi Cuenta
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-[400]">
+        <BiLoaderCircle className="animate-spin text-indigo-600 mb-4" size={50} />
+        <p className="text-slate-800 font-black tracking-widest uppercase text-xs">Sincronizando Agenda...</p>
       </div>
     );
   }
@@ -215,173 +128,176 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const turnosDeLaFecha = turnosAgrupados[fechaSeleccionada] || [];
 
   return (
-    <>
-      {/* Overlay oscuro con blur */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center xl:p-4"
-         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
-      >
-        <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-screen h-[100dvh] xl:max-w-[1400px] xl:max-h-[90dvh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Encabezado */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl flex items-center justify-between">
-            <h2 className="text-xl lg:text-2xl font-bold flex items-center gap-3">
-              <FaCalendarAlt /> {tipoConsultorio === "propio" ? "Tu Agenda" : `Agenda de ${nombreMedico}`}
-            </h2>
-            <div className="flex items-center gap-2">
-  <button
-    onClick={handleActualizarTurnos}
-    className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-2xl text-sm transition"
-    aria-label="Actualizar"
-  >
-    <TbRefresh size={16} />
-    <span className="hidden sm:inline"> Actualizar</span>
-  </button>
-
-  <button
-    onClick={handleAgregarTurnoClick}
-    className="flex items-center gap-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition"
-    aria-label="Agregar"
-  >
-    <FaPlus size={14} />
-    <span className="hidden sm:inline"> Agregar</span>
-  </button>
-
-  <button
-         onClick={() => navigate(`/micuenta/gestionprofesionales/${consultorioId}`)}
-    className="text-white hover:bg-white/20 rounded-full p-1 transition"
-    aria-label="Cerrar"
-  >
-    <FaTimes size={20} />
-  </button>
-</div>
-          </div>
-
-          {/* Contenido principal */}
-          <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-            {/* Sidebar de fechas */}
-            <div className="w-full md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-              <div className="p-6 border-b border-gray-200">
-                <h4 className="font-bold text-gray-800 text-lg">Fechas</h4>
-              </div>
-              <div
-                ref={datesListRef}
-                className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-4 py-3 gap-3 custom-scrollbar"
-              >
-                {fechasOrdenadas.map((fecha) => {
-                  const turnos = turnosAgrupados[fecha];
-                  const ocupados = turnos.filter((t) => t.estado === "reservado").length;
-                  const finalizados = turnos.filter((t) => t.estado === "finalizado").length;
-                  const disponibles = turnos.length - ocupados - finalizados;
-                  const isSelected = fecha === fechaSeleccionada;
-
-                  return (
-                    <button
-                      key={fecha}
-                      data-date={fecha}
-                      onClick={() => setFechaSeleccionada(fecha)}
-                      className={`min-w-36 md:min-w-0 p-4 rounded-xl text-left transition-all ${
-                        isSelected
-                          ? "bg-blue-500 text-white shadow-md"
-                          : "bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
-                      }`}
-                    >
-                      <div className="font-semibold">
-                        {new Date(fecha).toLocaleDateString("es-AR", {
-                          weekday: "short",
-                          day: "2-digit",
-                          month: "short",
-                        })}
-                      </div>
-                      <div
-                        className={`text-xs font-bold mt-1 px-2 py-1 rounded-full inline-block ${
-                          isSelected
-                            ? "bg-white text-blue-600"
-                            : disponibles > 0
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {disponibles} disp.
-                      </div>
-                      {turnos.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {turnos.map((t) => (
-                            <div
-                              key={t.id}
-                              className={`w-3 h-3 rounded-full ${
-                                t.estado === "reservado"
-                                  ? "bg-red-400"
-                                  : t.estado === "disponible"
-                                  ? "bg-green-400"
-                                  : "bg-blue-400"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+    <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in font-sans">
+      
+      {/* HEADER PREMIUM */}
+      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate(-1)} className="p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-2xl" />
+          </button>
+          <div className="flex items-center gap-5">
+            <div className="bg-indigo-600 p-4 rounded-2xl hidden md:block shadow-lg">
+              <FaCalendarAlt className="text-3xl text-white" />
             </div>
-
-            {/* Detalles de turnos */}
-            <div className="w-full md:w-2/3 p-6 overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">
-                  {fechaSeleccionada
-                    ? new Date(fechaSeleccionada).toLocaleDateString("es-AR", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "Seleccioná una fecha"}
-                </h3>
-                {fechaSeleccionada && (
-                  <button
-                    onClick={handleBorrarTodosLosTurnos}
-                    className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-lg transition flex items-center gap-1"
-                  >
-                    <FaTrashAlt size={14} /> Borrar todos
-                  </button>
-                )}
-              </div>
-
-              {!fechaSeleccionada ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <FaInfoCircle className="text-blue-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">Seleccioná una fecha para ver los turnos.</p>
-                </div>
-              ) : turnosDeLaFecha.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                  <FaInfoCircle className="text-yellow-400 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-500 mb-5">No hay turnos para este día.</p>
-                  <button
-                    onClick={handleAgregarTurnoClick}
-                    className="px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center gap-2 mx-auto text-sm"
-                  >
-                    <FaPlus /> Agregar Turnos
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {turnosDeLaFecha
-                    .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
-                    .map((turno, idx) => (
-                     <TurnoInterno key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida} confirmarLiberacion={recibirConfirmacionLiberacion} liberando={liberando}/>
-                    ))}
-                </div>
-              )}
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">Agenda Profesional</h2>
+              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2 italic">
+                {tipoConsultorio === "propio" ? "Turnos del Centro" : `${medico?.titulo || ""} ${nombreMedico}`}
+              </p>
             </div>
           </div>
         </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleActualizarTurnos}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white"
+            title="Sincronizar"
+          >
+            <TbRefresh size={22} className={isLoading ? "animate-spin" : ""} />
+          </button>
+          <button 
+            onClick={handleAgregarTurnoClick}
+            className="hidden md:flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-lg"
+          >
+            <FaPlus /> Habilitar
+          </button>
+          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
+            <FaTimes />
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
+        
+        {/* SIDEBAR DE FECHAS */}
+        <aside className="lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-sm">
+          <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <div>
+              <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado de</h3>
+              <p className="text-slate-800 font-black text-xl tracking-tight uppercase">Fechas</p>
+            </div>
+            <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg font-black text-[10px]">
+              {fechasOrdenadas.length} DÍAS
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
+            {fechasOrdenadas.length === 0 ? (
+              <div className="text-center py-10 px-4">
+                <FaRegClock className="mx-auto text-slate-200 mb-4" size={40} />
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Sin turnos generados</p>
+              </div>
+            ) : (
+              fechasOrdenadas.map((fecha) => {
+                const turnosDia = turnosAgrupados[fecha];
+                const ocupados = turnosDia.filter((t) => t.estado === "reservado").length;
+                const disponibles = turnosDia.length - ocupados - turnosDia.filter((t) => t.estado === "finalizado").length;
+                const isSelected = fecha === fechaSeleccionada;
+
+                return (
+                  <button
+                    key={fecha}
+                    onClick={() => setFechaSeleccionada(fecha)}
+                    className={`w-full p-5 rounded-[1.5rem] border-2 transition-all flex items-center justify-between ${
+                      isSelected 
+                        ? "border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-100" 
+                        : "border-slate-50 bg-white hover:border-indigo-100"
+                    }`}
+                  >
+                    <div className="text-left">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                        {new Date(fecha + "T12:00:00").toLocaleDateString("es-AR", { weekday: "short" })}
+                      </p>
+                      <p className={`text-lg font-black tracking-tighter ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                        {new Date(fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase ${
+                        disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}>
+                        {disponibles} Libres
+                      </span>
+                      <div className="flex gap-0.5">
+                        {turnosDia.slice(0, 5).map((t, i) => (
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${t.estado === 'disponible' ? 'bg-green-400' : 'bg-red-400'}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        {/* CONTENEDOR DE TURNOS */}
+        <main className="flex-1 overflow-y-auto p-6 md:p-12 lg:p-16 custom-scrollbar">
+          {fechaSeleccionada ? (
+            <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
+              {/* HEADER DE FECHA SELECCIONADA */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                    <span className="text-indigo-600 font-black uppercase text-[10px] tracking-widest">Vista Detallada</span>
+                  </div>
+                  <h3 className="text-4xl font-black text-slate-800 tracking-tighter capitalize leading-tight">
+                    {new Date(fechaSeleccionada + "T12:00:00").toLocaleDateString("es-AR", { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setShowModalBorrarTodosLosTurnos(true)}
+                  className="px-6 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-red-100"
+                >
+                  <FaTrashAlt /> Vaciar Día
+                </button>
+              </div>
+
+              {/* LISTADO DE TURNOS */}
+              <div className="space-y-4">
+                {turnosDeLaFecha
+                  .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
+                  .map((turno, idx) => (
+                    <TurnoInterno 
+                      key={turno.id} 
+                      turno={turno} 
+                      id={turno.id} 
+                      idx={idx} 
+                      estado={turno.estado} 
+                      hora={turno.hora} 
+                      paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} 
+                      DNI={turno.DNI} 
+                      cobertura={turno.cobertura} 
+                      duracion={turno.duracion} 
+                      telefono={turno.telefono} 
+                      tapButtonAsignar={tapButtonAsignar} 
+                      handleBorrarTurno={handleBorrarTurno} 
+                      handleModificarEstadoTurno={handleModificarEstadoTurno} 
+                      handleLiberarTurno={handleLiberarTurno} 
+                      coberturaElegida={coberturaElegida} 
+                      liberando={liberando}
+                      finalizando={finalizando}
+                    />
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-8 animate-pulse">
+              <div className="bg-slate-100 p-16 rounded-[4rem] border-4 border-dashed border-slate-200">
+                <FaCalendarAlt size={80} className="opacity-20 text-slate-400" />
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-3xl font-black text-slate-400 tracking-tighter uppercase leading-none">Selecciona una fecha</p>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic">Para visualizar la gestión de horarios</p>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
 
-      {/* Modales */}
+      {/* MODALES */}
       {showModalBorrarTurno && (
         <BorrarTurno
           idTurno={IdTurnoSeleccionado}
@@ -399,8 +315,15 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           resetearFecha={() => setFechaSeleccionada(null)}
         />
       )}
-      <ToastContainer autoClose={1000} position="bottom-right" />
-    </>
+
+      <ToastContainer autoClose={1500} position="bottom-right" />
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      `}</style>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import { FaCheckCircle, FaUser, FaTrashAlt, FaIdCard, FaTimesCircle, FaShieldAlt, FaPlus, FaPhone, FaUnlock, FaSpinner } from "react-icons/fa";
-import { useState } from "react";
 
 const TurnoInterno = ({
   turno,
@@ -21,20 +20,15 @@ const TurnoInterno = ({
   finalizando
 }) => {
 
-
-
   const liberarTurno = id => {
     handleLiberarTurno(id); 
-  }
-
-
+  };
 
   const formatearHora = (hora) => {
     if (!hora) return "";
     const [h, m] = hora.split(":");
     return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
-
 
   const calcularHoraFin = (horaInicio, duracionMinutos) => {
     if (!horaInicio || !duracionMinutos) return "";
@@ -45,157 +39,130 @@ const TurnoInterno = ({
     return fechaFin.toTimeString().slice(0, 5);
   };
 
-  // Estado visual
-  const estadoConfig = {
-    reservado: { bg: "bg-red-50", border: "border-red-500", text: "text-red-700", badge: "bg-red-100 text-red-800" },
-    disponible: { bg: "bg-green-50", border: "border-green-500", text: "text-green-700", badge: "bg-green-100 text-green-800" },
-    finalizado: { bg: "bg-blue-50", border: "border-blue-500", text: "text-blue-700", badge: "bg-blue-100 text-blue-800" },
-  };
-
-  const config = estadoConfig[estado] || estadoConfig.finalizado;
+  // Configuración estética Pro
+  const config = {
+    reservado: { 
+      bg: "bg-white", 
+      border: "border-indigo-600", 
+      text: "text-indigo-600", 
+      badge: "bg-indigo-100 text-indigo-700",
+      indicator: "bg-indigo-600"
+    },
+    disponible: { 
+      bg: "bg-white", 
+      border: "border-slate-200", 
+      text: "text-slate-400", 
+      badge: "bg-green-100 text-green-700",
+      indicator: "bg-green-500"
+    },
+    finalizado: { 
+      bg: "bg-slate-50", 
+      border: "border-slate-200", 
+      text: "text-slate-300", 
+      badge: "bg-slate-200 text-slate-600",
+      indicator: "bg-slate-400"
+    },
+  }[estado] || { bg: "bg-white", border: "border-slate-200", text: "text-slate-400", badge: "bg-slate-100 text-slate-600", indicator: "bg-slate-400" };
 
   return (
-    <div
-      className={`p-6 rounded-xl border-l-8 ${config.bg} ${config.border} shadow-sm transition-all duration-200 hover:shadow-md`}
-    >
-      {/* Encabezado: número, horario y estado */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
-        {/* Número y horario */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className={`font-bold text-lg ${config.text}`}>#{idx + 1}</span>
+    <div className={`${config.bg} rounded-[2rem] border-2 ${config.border} p-6 md:p-8 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5 group relative overflow-hidden`}>
+      
+      {/* Indicador de estado lateral sutil */}
+      <div className={`absolute left-0 top-0 bottom-0 w-2 ${config.indicator}`}></div>
 
-          {hora && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-700">
-              <span className="bg-white px-3 py-1.5 rounded-lg shadow-sm font-medium text-gray-800 border border-gray-200">
-                {formatearHora(hora)} → {calcularHoraFin(hora, duracion)}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        
+        {/* INFO PRINCIPAL: Hora y Orden */}
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-center justify-center bg-slate-100 rounded-2xl w-16 h-16">
+            <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">Orden</span>
+            <span className={`text-xl font-black ${config.text}`}>#{idx + 1}</span>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-black text-slate-800 tracking-tighter">
+                {formatearHora(hora)} <span className="text-slate-300 font-light">→</span> {calcularHoraFin(hora, duracion)}
               </span>
-              {duracion && (
-                <span className="text-xs bg-gray-200 text-gray-700 px-2.5 py-1 rounded-full font-medium">
-                  {duracion} min
-                </span>
-              )}
+              <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${config.badge}`}>
+                {estado === "reservado" ? "Ocupado" : estado === "disponible" ? "Disponible" : "Finalizado"}
+              </span>
             </div>
-          )}
+            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+              Sesión de {duracion} minutos
+            </p>
+          </div>
         </div>
 
-        {/* Estado y botón de eliminación */}
+        {/* ACCIONES RÁPIDAS */}
         <div className="flex items-center gap-3">
-          <span
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide ${config.badge} shadow-sm`}
-          >
-            {estado === "reservado" ? "Ocupado" : estado === "disponible" ? "Disponible" : "Finalizado"}
-          </span>
+          {estado === "reservado" && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleModificarEstadoTurno(id)}
+                disabled={finalizando}
+                className="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] tracking-widest uppercase hover:bg-indigo-600 transition-all flex items-center gap-2 shadow-lg shadow-slate-200"
+              >
+                {finalizando ? <FaSpinner className="animate-spin" /> : <FaCheckCircle />}
+                {finalizando ? "PROCESANDO" : "FINALIZAR"}
+              </button>
+              <button
+                onClick={() => liberarTurno(id)}
+                disabled={liberando}
+                className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all"
+                title="Liberar Turno"
+              >
+                {liberando ? <FaSpinner className="animate-spin" /> : <FaUnlock />}
+              </button>
+            </div>
+          )}
 
           {estado === "disponible" && (
-            <button
-              onClick={() => handleBorrarTurno(id)}
-              className="text-white hover:text-red-100 bg-red-500 hover:bg-red-600 p-1.5 rounded-lg transition-colors duration-150"
-              aria-label="Eliminar turno"
-            >
-              <FaTrashAlt size={16} />
-            </button>
+            <div className="flex gap-2 w-full md:w-auto">
+              <button
+                onClick={() => tapButtonAsignar(turno, idx)}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] tracking-widest uppercase hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-100"
+              >
+                <FaPlus /> Asignar Turno
+              </button>
+              <button
+                onClick={() => handleBorrarTurno(id)}
+                className="p-3 border-2 border-slate-100 text-slate-300 rounded-xl hover:border-red-200 hover:text-red-500 transition-all"
+              >
+                <FaTrashAlt />
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Botones de acción */}
-      {estado === "reservado" ? (
-        <div className="flex flex-col sm:flex-row gap-3 mt-4">
-          <button
-            onClick={() => handleModificarEstadoTurno(id)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow transform hover:scale-105"
-          >
-            {finalizando ? (
-              <span className="inline-flex gap-2">
-                <FaSpinner size={16} className="animate-spin" />
-                Finalizando ...
-              </span>
-            ): (
-              <span className="inline-flex gap-2">
-                <FaCheckCircle size={16}/>
-                Finalizar
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => liberarTurno(id)}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow transform hover:scale-105"
-          >
-            {liberando ? (
-            <span className="inline-flex gap-2">
-                <FaSpinner size={16} className="animate-spin"/> Liberando ...
-            </span>
-            ):( 
-             
-             <span className="inline-flex gap-2">
-                <FaUnlock size={16} /> Liberar
-             </span>
-      )}
+      {/* DETALLES DEL PACIENTE (Solo si está ocupado/reservado) */}
+      {estado === "reservado" && DNI && (
+        <div className="mt-8 pt-8 border-t border-slate-100 animate-slide-up">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
-          </button>
-        </div>
-      ) : (
-        estado === "disponible" && (
-          <button
-            onClick={() => tapButtonAsignar(turno, idx)}
-            className="flex items-center justify-center w-full sm:w-48 xl: gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md hover:shadow-lg transform hover:scale-105"
-          >
-            <FaPlus size={16} /> Asignar turno
-          </button>
-        )
-      )}
-
-      {/* Datos del paciente (solo si está reservado) */}
-      {DNI && (
-        <div className="mt-6 pt-5 border-t border-gray-200 bg-white/80 rounded-xl p-5 shadow-sm">
-          <h4 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <FaUser className="text-blue-500" /> Datos del paciente
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            {/* Nombre */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <FaUser className="text-gray-500" />
-              <div>
-                <div className="text-gray-500 text-xs uppercase tracking-wide">Nombre</div>
-                <div className="font-medium text-gray-800">{paciente}</div>
-              </div>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nombre del Paciente</p>
+              <p className="text-sm font-black text-slate-800 uppercase">{paciente}</p>
             </div>
 
-            {/* DNI */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <FaIdCard className="text-gray-500" />
-              <div>
-                <div className="text-gray-500 text-xs uppercase tracking-wide">Documento</div>
-                <div className="font-medium text-gray-800">{DNI}</div>
-              </div>
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Documento / DNI</p>
+              <p className="text-sm font-black text-slate-800">{DNI}</p>
             </div>
 
-            {/* Cobertura */}
-            {cobertura && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <FaShieldAlt className="text-purple-500" />
-                <div>
-                  <div className="text-gray-500 text-xs uppercase tracking-wide">Cobertura</div>
-                  <div className="font-medium text-gray-800">{coberturaElegida(cobertura)}</div>
-                </div>
-              </div>
-            )}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cobertura Médica</p>
+              <p className="text-sm font-black text-indigo-600 uppercase">{coberturaElegida(cobertura)}</p>
+            </div>
 
-            {/* Teléfono */}
-            {telefono && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <FaPhone className="text-orange-500" />
-                <div>
-                  <div className="text-gray-500 text-xs uppercase tracking-wide">Teléfono</div>
-                  <a
-                    href={`tel:${telefono}`}
-                    className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                  >
-                    {telefono}
-                  </a>
-                </div>
-              </div>
-            )}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Contacto Directo</p>
+              <a href={`tel:${telefono}`} className="text-sm font-black text-slate-800 hover:text-indigo-600 transition-colors flex items-center gap-2">
+                <FaPhone size={10} className="text-indigo-400" /> {telefono}
+              </a>
+            </div>
+
           </div>
         </div>
       )}

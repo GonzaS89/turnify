@@ -1,34 +1,33 @@
-import { useState, useEffect, useMemo } from "react";
-import { FaUserDoctor } from "react-icons/fa6";
-import { BiFilterAlt, BiSearch } from "react-icons/bi";
-import BotonesConsultorios from "./BotonesConsultorios";
+import { useState, useMemo } from "react";
+import { FaUserDoctor, FaHospital, FaChevronDown, FaChevronUp, FaArrowRight } from "react-icons/fa6";
+import { BiFilterAlt, BiSearch, BiBuildingHouse } from "react-icons/bi";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
-import useProfesionalxId from "../../customHooks/useProfesionalxId";
+import useAllConsultorios from "../../customHooks/useAllConsultorios";
+import useProfesionalxIdConsultorio from "../../customHooks/useProfesionalxIdConsultorio";
 import { useNavigate } from "react-router";
 
-const SearchModal = ({ enviarIds }) => {
+const SearchModal = () => {
+  const [searchType, setSearchType] = useState("profesionales");
   const [specialty, setSpecialty] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 16;
 
   const navigate = useNavigate();
-
-  const { profesionales, isLoading, error } = useAllProfesionals();
+  const { profesionales } = useAllProfesionals();
+  const { consultorios } = useAllConsultorios();
 
   const normalizeString = (str) => {
-    return (
-      str
-        ?.normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase() || ""
-    );
+    return str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() || "";
   };
 
-  // Pre-procesar y normalizar nombres una vez
-  const processedProfesionales = useMemo(() => {
-    if (!Array.isArray(profesionales)) return [];
+  const centrosMedicosFiltrados = useMemo(() => {
+    if (!Array.isArray(consultorios)) return [];
+    return consultorios.filter(c => c.tipo === "centro médico");
+  }, [consultorios]);
 
+  const processedDocs = useMemo(() => {
+    if (!Array.isArray(profesionales)) return [];
     return profesionales.map((p) => ({
       ...p,
       fullNameNormalized: normalizeString(`${p.nombre} ${p.apellido}`),
@@ -36,267 +35,105 @@ const SearchModal = ({ enviarIds }) => {
     }));
   }, [profesionales]);
 
-  // Filtrar doctores: mostrar todos si no hay filtros
-  const filteredDoctors = useMemo(() => {
-    if (!processedProfesionales.length) return [];
-
-    let results = [...processedProfesionales];
-
-    if (specialty) {
-      const normalizedSpec = normalizeString(specialty);
-      results = results.filter((doc) => doc.especialidadNormalized === normalizedSpec);
-    }
-
-    if (searchQuery) {
-      const query = normalizeString(searchQuery);
-      results = results.filter((doc) => doc.fullNameNormalized.includes(query));
-    }
-
-    // Ordenar alfabéticamente por apellido
-    return results.sort((a, b) => a.apellido.localeCompare(b.apellido));
-  }, [processedProfesionales, specialty, searchQuery]);
-
-  // Resetear página al cambiar filtros
-  useEffect(() => {
-    setPage(1);
-  }, [specialty, searchQuery]);
-
-  const hasSearched = !!specialty || !!searchQuery;
-
-  const displayedDoctors = filteredDoctors.slice(0, page * itemsPerPage);
-  const hasMore = displayedDoctors.length < filteredDoctors.length;
-
-  const cerrarModal = () => {
-    setSpecialty("");
-    setSearchQuery("");
-    setPage(1);
-    navigate("/");
-  };
-
-  const verTurnos = (id) => {
-    const doctor = processedProfesionales.find((p) => p.id === id);
-    if (doctor && doctor.slug) {
-      navigate(`/turnos/${doctor.slug}`);
+  const filteredResults = useMemo(() => {
+    const query = normalizeString(searchQuery);
+    if (searchType === "profesionales") {
+      let results = [...processedDocs];
+      if (specialty) results = results.filter(d => d.especialidadNormalized === normalizeString(specialty));
+      if (query) results = results.filter(d => d.fullNameNormalized.includes(query));
+      return results.sort((a, b) => a.apellido.localeCompare(b.apellido));
     } else {
-      console.warn("No se encontró el slug del profesional");
-      navigate(`/turnos/id-${id}`);
+      let results = [...centrosMedicosFiltrados];
+      if (query) results = results.filter(c => normalizeString(c.nombre).includes(query));
+      return results.sort((a, b) => a.nombre.localeCompare(b.nombre));
     }
-  };
+  }, [searchType, processedDocs, centrosMedicosFiltrados, specialty, searchQuery]);
+
+  const displayedItems = filteredResults.slice(0, page * itemsPerPage);
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center xl:p-4 z-50">
-      <div className="bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 shadow-2xl border border-white/40 xl:rounded-3xl w-full xl:max-w-7xl h-[100dvh] xl:h-[90vh] flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 bg-indigo-950/80 backdrop-blur-md flex items-center justify-center z-50">
+      <div className="bg-slate-50 w-full h-screen flex flex-col relative overflow-hidden">
         
-        {/* Overlay de grid sutil */}
-        <div
-          className="absolute inset-0 opacity-5 md:block hidden"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(100, 160, 220, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(100, 160, 220, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: "40px 40px",
-          }}
-        ></div>
-
-        {/* Botón de cierre */}
-        <button
-          onClick={cerrarModal}
-          className="absolute top-4 right-6 text-gray-600 text-3xl font-bold rounded-full hover:scale-110 duration-300 z-50"
-          aria-label="Cerrar modal"
+        {/* Botón Cerrar más visible */}
+        <button 
+          onClick={() => navigate("/")} 
+          className="absolute top-6 right-8 text-slate-400 hover:text-indigo-600 text-5xl font-light transition-all z-50 p-2"
         >
           ×
         </button>
 
-        {/* Scroll interno */}
-        <div className="overflow-y-auto flex-1 relative z-10">
-          
-          {/* Encabezado */}
-          <div className="text-center p-6 pt-10">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-800 bg-clip-text text-transparent">
-              Encuentra a tu Especialista
+        <div className="overflow-y-auto flex-1">
+          {/* Header con más aire */}
+          <div className="text-center p-8 pt-16">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight">
+              Encuentra tu Atención Médica
             </h2>
-            <p className="text-gray-600 mt-2 text-sm">
-              Selecciona una especialidad o escribe un nombre para buscar.
+            <p className="text-slate-500 text-lg md:text-xl mt-4 max-w-2xl mx-auto">
+              Gestiona tus turnos con profesionales de la salud y centros especializados.
             </p>
+            
+            {/* Selectores de tipo más grandes */}
+            <div className="flex justify-center mt-12">
+              <div className="bg-slate-200/60 p-2 rounded-3xl flex gap-2 border border-slate-200">
+                <button
+                  onClick={() => { setSearchType("profesionales"); setPage(1); }}
+                  className={`flex items-center gap-3 px-10 py-4 rounded-2xl text-lg transition-all duration-300 ${searchType === "profesionales" ? "bg-white shadow-xl text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  <FaUserDoctor className="text-xl" /> Profesionales
+                </button>
+                <button
+                  onClick={() => { setSearchType("centros"); setPage(1); }}
+                  className={`flex items-center gap-3 px-10 py-4 rounded-2xl text-lg transition-all duration-300 ${searchType === "centros" ? "bg-white shadow-xl text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  <BiBuildingHouse className="text-xl" /> Centros Médicos
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Filtros */}
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="bg-white/60 p-6 rounded-3xl mb-6 mx-6 border border-white/50 shadow-lg"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4">
-              
-              {/* Especialidad */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="specialty"
-                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
-                >
-                  <BiFilterAlt className="mr-1 text-indigo-500" /> Especialidad
-                </label>
+          {/* Barra de búsqueda expandida */}
+          <div className="px-8 mb-12 max-w-6xl mx-auto w-full">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl shadow-indigo-500/5 flex flex-col md:flex-row gap-6">
+              {searchType === "profesionales" && (
                 <select
-                  id="specialty"
                   value={specialty}
                   onChange={(e) => setSpecialty(e.target.value)}
-                  className="p-3 border border-white/50 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white/80 shadow-sm"
+                  className="p-4 border border-slate-200 rounded-2xl bg-slate-50 outline-none flex-1 text-lg text-slate-700 focus:ring-4 focus:ring-indigo-500/10 transition-all cursor-pointer"
                 >
-                  <option value="">Todas</option>
-                  {Array.isArray(profesionales) &&
-                    [...new Set(profesionales.map((p) => p.especialidad))]
-                      .sort()
-                      .map((spec) => (
-                        <option key={spec} value={spec}>
-                          {spec}
-                        </option>
-                      ))}
+                  <option value="">Todas las especialidades</option>
+                  {[...new Set(profesionales?.map(p => p.especialidad))].sort().map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-              </div>
-
-              {/* Búsqueda */}
-              <div className="flex flex-col">
-                <label
-                  htmlFor="searchQuery"
-                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
-                >
-                  <BiSearch className="mr-1 text-indigo-500" /> Nombre o Apellido
-                </label>
+              )}
+              <div className="relative flex-[2]">
+                <BiSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-2xl" />
                 <input
                   type="text"
-                  id="searchQuery"
-                  placeholder="Ej: Ana López"
+                  placeholder={searchType === "profesionales" ? "Buscar por nombre de médico..." : "Buscar por nombre del centro..."}
+                  className="w-full pl-14 pr-6 p-4 border border-slate-200 rounded-2xl bg-slate-50 outline-none focus:ring-4 focus:ring-indigo-500/10 text-lg transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="p-3 border border-white/50 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 bg-white/80 shadow-sm"
                 />
               </div>
             </div>
-          </form>
+          </div>
 
-          {/* Resultados */}
-          <div className="px-6 pb-8">
-            {isLoading && (
-              <div className="flex justify-center items-center py-16">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-                <span className="ml-3 text-indigo-600">Cargando...</span>
-              </div>
-            )}
-
-            {error && (
-              <p className="text-center text-red-600 text-lg py-4 bg-red-50 rounded-2xl border border-red-200">
-                ⚠️ {error.message || "Error al cargar los profesionales."}
-              </p>
-            )}
-
-            {!isLoading && !error && (
-              <>
-                {/* Mensaje cuando no hay filtros */}
-                {!hasSearched && (
-                  <div className="text-center py-4 mb-6">
-                    <h3 className="text-gray-800 font-bold text-lg">
-                      Todos los especialistas ({filteredDoctors.length})
-                    </h3>
-                    <p className="text-gray-500 text-sm mt-1 max-w-md mx-auto">
-                      Selecciona uno para ver disponibilidad de turnos.
-                    </p>
-                  </div>
-                )}
-
-                {/* Resultados encontrados */}
-                {filteredDoctors.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
-                    {displayedDoctors.map((doctor) => {
-                      if (!doctor || !doctor.id) return null;
-
-                      return (
-                        <div
-                        key={doctor.id}
-                        className="bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-indigo-200 transition-all duration-300 transform hover:scale-102 flex flex-col h-full overflow-hidden w-full md:min-w-[200px] shadow-black"
-                      >
-                        {/* Encabezado con gradiente y avatar */}
-                        <div className="p-5 pb-4 bg-gradient-to-br from-white to-gray-50 border-b border-gray-100">
-                          <div className="flex items-start gap-4">
-                            {/* Avatar con fondo degradado */}
-                            <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 p-3 rounded-xl text-white flex-shrink-0 shadow-md group-hover:from-purple-500 group-hover:to-pink-500 transition-colors duration-300">
-                              <FaUserDoctor className="text-2xl" />
-                            </div>
-                      
-                            {/* Info principal */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-bold text-gray-900 leading-tight capitalize group-hover:text-indigo-700 transition-colors duration-200">
-                                {doctor.apellido}, {doctor.nombre}
-                              </h3>
-                              <p className="text-indigo-600 font-semibold text-sm mt-1 flex items-center">
-                                {doctor.especialidad}
-                              </p>
-                              <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1">
-                                <span className="bg-gray-100 px-1.5 py-0.5 rounded">MP {doctor.matricula}</span>
-                              </p>
-                      
-                              {/* Consultorios */}
-                              {Array.isArray(doctor.consultorios) && doctor.consultorios.length > 0 && (
-                                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                                  {doctor.consultorios.slice(0, 2).map((consultorio) => (
-                                    <span
-                                      key={consultorio.id}
-                                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-800 border border-indigo-100 shadow-sm hover:shadow transition-shadow duration-200"
-                                      title={`Consultorio: ${consultorio.nombre}`}
-                                    >
-                                      {consultorio.tipo === "Particular" ? (
-                                        <FaHome className="text-[0.6rem]" />
-                                      ) : (
-                                        <FaHospital className="text-[0.6rem]" />
-                                      )}
-                                      {consultorio.nombre}
-                                    </span>
-                                  ))}
-                                  {doctor.consultorios.length > 2 && (
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
-                                      +{doctor.consultorios.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      
-                        {/* Botón de acción */}
-                        <button
-                          onClick={() => verTurnos(doctor.id)}
-                          className="w-full p-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-sm tracking-wide rounded-b-2xl transition-all duration-200 shadow-sm hover:shadow-md group-hover:shadow-lg"
-                        >
-                          Ver disponibilidad
-                        </button>
-                      </div>
-                      );
-                    })}
-                  </div>
+          {/* Grid de resultados */}
+          <div className="px-10 pb-20">
+            <div className={searchType === "profesionales" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 place-" : "flex flex-col gap-6 max-w-6xl mx-auto"}>
+              {displayedItems.map((item) => (
+                searchType === "profesionales" ? (
+                  <DoctorCard key={item.id} doctor={item} navigate={navigate} />
                 ) : (
-                  /* Sin resultados */
-                  <div className="text-center py-16">
-                    <p className="text-gray-600 text-lg">
-                      No se encontraron médicos con esos criterios.
-                    </p>
-                    <p className="text-gray-500 mt-1">
-                      Intenta con otra especialidad o nombre.
-                    </p>
-                  </div>
-                )}
-
-                {/* Botón cargar más */}
-                {hasSearched && hasMore && (
-                  <div className="text-center mt-8">
-                    <button
-                      onClick={() => setPage((p) => p + 1)}
-                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors duration-200"
-                    >
-                      Cargar más
-                    </button>
-                  </div>
-                )}
-              </>
+                  <CentroExpandible key={item.id} centro={item} navigate={navigate} />
+                )
+              ))}
+            </div>
+            
+            {filteredResults.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-slate-400 text-2xl font-medium">No se encontraron resultados para tu búsqueda.</p>
+              </div>
             )}
           </div>
         </div>
@@ -304,5 +141,104 @@ const SearchModal = ({ enviarIds }) => {
     </div>
   );
 };
+
+const CentroExpandible = ({ centro, navigate }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { profesional: staff, isLoading } = useProfesionalxIdConsultorio(isOpen ? centro.id : null);
+
+  return (
+    <div className={`bg-white rounded-[2rem] border transition-all duration-500 ${isOpen ? 'border-indigo-400 ring-8 ring-indigo-500/5' : 'border-slate-200 shadow-sm'}`}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-7 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors rounded-[2rem]"
+      >
+        <div className="flex items-center gap-6">
+          <div className={`p-5 rounded-2xl transition-all duration-300 ${isOpen ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-indigo-50 text-indigo-600'}`}>
+            <FaHospital className="text-3xl" />
+          </div>
+          <div>
+            <h3 className="font-black text-slate-800 text-2xl tracking-tight">{centro.nombre}</h3>
+            
+            <div className="flex items-center gap-2 mt-1.5 text-slate-500">
+              <p className="text-sm font-medium">
+                {centro.direccion} 
+                <span className="mx-2 text-slate-300">|</span> 
+                <span className="text-indigo-600 font-bold uppercase text-[10px] tracking-widest">
+                  {centro.localidad}, {centro.provincia}
+                </span>
+              </p>
+            </div>
+            
+            {!isOpen && (
+              <div className="mt-4 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                <p className="text-indigo-600 text-[11px] font-black uppercase tracking-[0.15em] opacity-80">
+                  Tocá para ver profesionales
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center gap-1">
+          {isOpen ? <FaChevronUp className="text-indigo-600 text-xl" /> : <FaChevronDown className="text-slate-300 text-xl" />}
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="p-8 bg-slate-50/50 border-t border-slate-100 rounded-b-[2rem] animate-fade-in">
+          <p className="text-slate-400 text-xs font-black mb-6 px-2 uppercase tracking-[0.2em]">Profesionales en este centro</p>
+          
+          {isLoading ? (
+            <div className="p-8 text-center text-lg text-indigo-600 animate-pulse font-medium">Cargando staff profesional...</div>
+          ) : staff?.length > 0 ? (
+            /* Grid de DoctorCards dentro del centro */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {staff.map(doc => (
+                <DoctorCard key={doc.id} doctor={doc} navigate={navigate} />
+              ))}
+            </div>
+          ) : (
+            <p className="p-10 text-center text-lg text-slate-400 italic font-light">Actualmente no hay profesionales registrados en esta sede.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DoctorCard = ({ doctor, navigate }) => (
+  <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-200 transition-all duration-300 group flex flex-col justify-between h-full">
+    <div className="flex flex-col gap-4 mb-8">
+      <div className="bg-slate-50 w-20 h-20 rounded-3xl flex items-center justify-center text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-inner">
+        <FaUserDoctor className="text-4xl" />
+      </div>
+      
+      <div>
+        <h3 className="font-black text-slate-800 text-xl capitalize leading-snug group-hover:text-indigo-800 transition-colors">
+          {doctor.apellido}, {doctor.nombre}
+        </h3>
+        
+        <p className="text-slate-400 text-sm font-bold mt-1 tracking-tight">
+          M.P. <span className="text-slate-600">{doctor.matricula}</span>
+        </p>
+
+        <p className="text-indigo-600 text-sm font-black mt-3 tracking-wider uppercase bg-indigo-50 inline-block px-3 py-1 rounded-lg">
+          {doctor.especialidad}
+        </p>
+      </div>
+    </div>
+
+    <button 
+      onClick={(e) => {
+        e.stopPropagation(); // Evita que el clic propague al acordeón del centro
+        navigate(`/turnos/${doctor.slug || 'id-'+doctor.id}`);
+      }} 
+      className="w-full py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold tracking-widest hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-200 transition-all duration-300"
+    >
+      VER AGENDA
+    </button>
+  </div>
+);
 
 export default SearchModal;

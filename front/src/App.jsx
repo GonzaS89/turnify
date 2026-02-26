@@ -102,12 +102,17 @@ const App = () => {
                      rounded-xl shadow relative
                      transition-colors duration-700 ease-in-out"
                      style={{
-        // Fondo: degradado suave + patrón de ondas tenue (base64)
-        backgroundImage: `
-          url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230ea5e9' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='40' cy='40' r='20'/%3E%3C/g%3E%3C/svg%3E"),
-          linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #ffffff 100%)
-        `,
-      }}>
+  backgroundColor: "#ffffff",
+  backgroundImage: `
+    /* Capa 3: Patrón geométrico técnico (Cruces de precisión) */
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234f46e5' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M19 19V5h2v14h14v2H21v14h-2V21H5v-2h14z'/%3E%3C/g%3E%3C/svg%3E"),
+    /* Capa 2: Gradiente de "Aura" Indigo en la esquina superior */
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 40%),
+    /* Capa 1: Gradiente de "Luz" Esmeralda sutil en la inferior derecha */
+    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 40%)
+  `,
+  backgroundAttachment: 'fixed', // Esto hace que el patrón se quede quieto mientras el contenido fluye (parallax sutil)
+}}>
         
         {/* Botón de modo oscuro usando contexto */}
         {/* <button

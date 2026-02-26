@@ -3,19 +3,14 @@ import useAllProvincias from "../../customHooks/useAllProvincias";
 import useLocalidadesxIdProvincia from "../../customHooks/useLocalidadesxIdProvincia";
 import axios from "axios";
 import {
-  FaEye,
-  FaEyeSlash,
   FaBuilding,
-  FaHome,
   FaMapMarkerAlt,
   FaPhone,
-  FaUser,
-  FaLock,
   FaInfoCircle,
-  FaCheckCircle,
   FaExclamationCircle,
-  FaSpinner,
+  FaCircleNotch,
   FaTimes,
+  FaWallet,
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -32,355 +27,223 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
   const [seña, setSeña] = useState(false);
   const [importe, setImporte] = useState("");
   const [idProvinciaSelected, setIdProvinciaSelected] = useState("");
-  const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const [creando, setCreando] = useState(false);
 
-  const {
-    provincias,
-    loading: loadingProvincias,
-    error: errorProvincias,
-  } = useAllProvincias();
-  const {
-    localidades,
-    loading: loadingLocalidades,
-    error: errorLocalidades,
-  } = useLocalidadesxIdProvincia(idProvinciaSelected);
+  const { provincias, loading: loadingProvincias } = useAllProvincias();
+  const { localidades, loading: loadingLocalidades } = useLocalidadesxIdProvincia(idProvinciaSelected);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Resetear el formulario cuando se abre el modal
+  // Bloqueo estricto de scroll al abrir el modal
   useEffect(() => {
     if (isOpen) {
-      // Limpiar campos
-      setDireccion("");
-      setLocalidad("");
-      setTelefono("");
-      setNombre("");
-      setBanco("");
-      setCbu("");
-      setAlias("");
-      setTitular("");
-      setSeña(false);
-      setImporte("");
-      setIdProvinciaSelected("");
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  // Reset del form
+  useEffect(() => {
+    if (isOpen) {
+      setDireccion(""); setLocalidad(""); setTelefono(""); setNombre("");
+      setBanco(""); setCbu(""); setAlias(""); setTitular("");
+      setSeña(false); setImporte(""); setIdProvinciaSelected("");
       setError("");
-      setMensaje("");
     }
   }, [isOpen]);
 
-  // Desactivar seña si es centro médico
-  useEffect(() => {
-    if (perfilTipo === "centro médico") {
-      setSeña(false);
-    }
-  }, [perfilTipo]);
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setCreando(true);
-  setError("");
+    e.preventDefault();
+    setCreando(true);
+    setError("");
 
-  // Validación de campos obligatorios
-  if (!nombre || !direccion || !localidad || !idProvinciaSelected) {
-    setError("Todos los campos marcados con * son obligatorios.");
-    setCreando(false);
-    return;
-  }
-
-  // Validación de teléfono (opcional, 10 dígitos si se ingresa)
-  if (telefono && telefono.replace(/\D/g, "").length !== 10) {
-    setError("El teléfono debe tener 10 dígitos.");
-    setCreando(false);
-    return;
-  }
-
-  
-
-  // Validación de importe si seña está activa
-  let importeValue = null;
-  if (seña) {
-    importeValue = parseFloat(importe);
-    if (isNaN(importeValue) || importeValue <= 0) {
-      setError("El importe de la seña debe ser un número válido mayor a 0.");
+    if (!nombre || !direccion || !localidad || !idProvinciaSelected) {
+      setError("Los campos marcados con * son obligatorios.");
       setCreando(false);
       return;
     }
-  }
 
-  try {
-    const nuevoConsultorio = {
-      perfilTipo,
-      direccion,
-      localidad,
-      provincia: idProvinciaSelected,
-      telefono: telefono || null,
-      nombre,
-      seña,
-      importe: seña ? importeValue : null,
-      banco: seña ? banco : null,
-      cbu: seña ? cbu : null,
-      alias: seña ? alias : null,
-      titular: seña ? titular : null,
-    };
+    try {
+      const nuevoConsultorio = {
+        perfilTipo, direccion, localidad, provincia: idProvinciaSelected,
+        telefono: telefono || null, nombre, seña,
+        importe: seña ? parseFloat(importe) : null,
+        banco: seña ? banco : null, cbu: seña ? cbu : null,
+        alias: seña ? alias : null, titular: seña ? titular : null,
+      };
 
-    const response = await axios.post(
-      `${API_URL}/api/crear-y-unir-consultorio-a-perfil/${perfilID}/${profesionalID}`,
-      nuevoConsultorio
-    );
+      const response = await axios.post(
+        `${API_URL}/api/crear-y-unir-consultorio-a-perfil/${perfilID}/${profesionalID}`,
+        nuevoConsultorio
+      );
 
-    setTimeout(() => {
-      window.location.reload();
+      toast.success("Establecimiento creado correctamente");
+      setTimeout(() => {
+        window.location.reload();
+        onSuccess?.(response.data);
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error de conexión");
       setCreando(false);
-      onSuccess?.(response.data); // Callback de éxito
-      onClose();
-      if (typeof actualizarProfesionales === "function") {
-        actualizarConsultorio();
-      }
-    }, 1500);
+    }
+  };
 
-    toast.success("✅ ¡Consultorio creado exitosamente!");
-    // Cierra el modal
-  } catch (err) {
-    const errorMessage =
-      err.response?.data?.message ||
-      err.response?.statusText ||
-      "Error de conexión al servidor";
-
-    setError(`❌ ${errorMessage}`);
-    toast.error("Error al crear el consultorio");
-    setCreando(false);
-  }
-};
-
-  // Si no está abierto, no renderizamos nada
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Overlay oscuro */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-90 z-40"
+      {/* OVERLAY: Cobertura total absoluta con Blur Premium */}
+      <div 
+        className="fixed inset-0 w-screen h-screen bg-slate-900/95 backdrop-blur-md z-[9998] transition-all duration-500"
         onClick={onClose}
       ></div>
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-screen overflow-y-auto"
-          onClick={(e) => e.stopPropagation()} // Evita que el clic en el contenido cierre el modal
+      {/* WRAPPER DEL MODAL: Centrado y scroll interno */}
+      <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div 
+          className="bg-white rounded-[3rem] shadow-[0_35px_120px_-15px_rgba(0,0,0,0.6)] w-full max-w-4xl max-h-[92vh] overflow-y-auto border border-slate-100 pointer-events-auto animate-fade-in-up"
+          onClick={(e) => e.stopPropagation()}
         >
-          {/* Encabezado del modal */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">Crear Consultorio</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition"
-              aria-label="Cerrar"
+          {/* HEADER: Sticky para mantener el control siempre visible */}
+          <div className="sticky top-0 bg-white/90 backdrop-blur-xl flex justify-between items-center p-10 sm:p-12 border-b border-slate-50 z-20">
+            <div>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
+                Nuevo <span className="text-indigo-600 not-italic">Establecimiento</span>
+              </h2>
+              <p className="text-slate-400 font-bold text-sm uppercase tracking-[0.3em] mt-3">Configuración de Sede</p>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="p-5 bg-slate-50 rounded-[1.5rem] text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all active:scale-90"
             >
-              <FaTimes size={20} />
+              <FaTimes size={28} />
             </button>
           </div>
 
-          {/* Cuerpo del modal */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-10 sm:p-14 space-y-14">
             {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-700">
-                <FaExclamationCircle />
-                <span className="text-sm font-medium">{error}</span>
+              <div className="p-8 rounded-3xl bg-red-50 border border-red-100 flex items-center gap-5 text-red-600 font-black text-xl animate-shake">
+                <FaExclamationCircle size={30} className="flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            {mensaje && (
-              <div className="p-4 rounded-xl bg-green-50 border border-green-200 flex items-center gap-3 text-green-700">
-                <FaCheckCircle />
-                <span className="text-sm font-medium">{mensaje}</span>
+            {/* SECCIÓN 1: DATOS GENERALES */}
+            <section className="space-y-10">
+              <div className="flex items-center gap-4 border-l-8 border-indigo-600 pl-6">
+                <FaBuilding className="text-slate-900" size={24} />
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Información de Atención</h3>
               </div>
-            )}
 
-            {/* Sección: Datos del Establecimiento */}
-            <section>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <FaBuilding className="text-indigo-500" /> Datos del consultorio
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre (opcional)
-                  </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-3">
+                  <label className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Comercial *</label>
                   <input
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Consultorio Dra. Pérez"
+                    type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
+                    className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-2xl text-slate-800 transition-all placeholder:text-slate-300"
+                    placeholder="Ej: Clínica Los Olivos"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Teléfono Público</label>
+                  <div className="relative group">
+                    <FaPhone className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={20} />
+                    <input
+                      type="tel" value={telefono}
+                      onChange={(e) => setTelefono(e.target.value.replace(/\D/g, ""))}
+                      className="w-full pl-16 pr-8 py-6 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-2xl"
+                      placeholder="381691..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Dirección Exacta *</label>
+                <div className="relative group">
+                  <FaMapMarkerAlt className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={20} />
+                  <input
+                    type="text" value={direccion} onChange={(e) => setDireccion(e.target.value)}
+                    className="w-full pl-16 pr-8 py-6 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-2xl"
+                    placeholder="Ej: Av. Belgrano 2500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dirección *
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                      <FaMapMarkerAlt />
-                    </span>
-                    <input
-                      type="text"
-                      value={direccion}
-                      onChange={(e) => setDireccion(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Av. Libertador 1000"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Teléfono (10 dígitos)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                      <FaPhone />
-                    </span>
-                    <input
-                      type="tel"
-                      value={telefono}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        if (value.length <= 10) setTelefono(value);
-                      }}
-                      inputMode="numeric"
-                      maxLength="10"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      placeholder="3816917619"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Provincia *
-                  </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-3">
+                  <label className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Provincia *</label>
                   <select
-                    value={idProvinciaSelected}
-                    onChange={(e) => setIdProvinciaSelected(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    value={idProvinciaSelected} onChange={(e) => setIdProvinciaSelected(e.target.value)}
+                    className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-2xl appearance-none cursor-pointer"
                   >
-                    <option value="" disabled>
-                      Seleccionar provincia
-                    </option>
-                    {loadingProvincias && <option disabled>Cargando...</option>}
-                    {errorProvincias && <option disabled>Error</option>}
-                    {!loadingProvincias &&
-                      !errorProvincias &&
-                      provincias.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.nombre}
-                        </option>
-                      ))}
+                    <option value="">Seleccionar...</option>
+                    {provincias.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Localidad *
-                  </label>
+                <div className="space-y-3">
+                  <label className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Localidad *</label>
                   <select
-                    value={localidad}
-                    onChange={(e) => setLocalidad(e.target.value)}
+                    value={localidad} onChange={(e) => setLocalidad(e.target.value)}
                     disabled={!idProvinciaSelected}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white disabled:bg-gray-100"
+                    className="w-full px-8 py-6 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-2xl appearance-none disabled:opacity-30 cursor-pointer"
                   >
-                    <option value="">Seleccionar localidad</option>
-                    {loadingLocalidades && <option disabled>Cargando...</option>}
-                    {errorLocalidades && <option disabled>Error</option>}
-                    {!loadingLocalidades &&
-                      !errorLocalidades &&
-                      localidades.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.nombre}
-                        </option>
-                      ))}
+                    <option value="">Seleccionar...</option>
+                    {localidades.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}
                   </select>
                 </div>
               </div>
             </section>
 
-            {/* Sección: Seña (solo para particulares) */}
+            {/* SECCIÓN 2: PAGOS (Solo Particulares) */}
             {perfilTipo === "Particular" && (
-              <section>
-                <div className="flex items-center mb-4">
-                  <input
-                    type="checkbox"
-                    id="seña"
-                    checked={seña}
-                    onChange={(e) => setSeña(e.target.checked)}
-                    className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                  />
-                  <label htmlFor="seña" className="ml-3 text-lg font-medium text-gray-800">
-                    ¿Requiere seña para reservar?
-                  </label>
-                </div>
+              <section className="pt-12 border-t-2 border-slate-50">
+                <label className="flex items-center gap-6 cursor-pointer group mb-10">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${seña ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200'}`}>
+                    <input type="checkbox" className="hidden" checked={seña} onChange={(e) => setSeña(e.target.checked)} />
+                    <FaWallet size={20} />
+                  </div>
+                  <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase">¿Solicitar seña por reserva?</span>
+                </label>
 
                 {seña && (
-                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-5 rounded-2xl border border-indigo-100 space-y-4">
-                    <h4 className="font-semibold text-indigo-700 flex items-center gap-2">
-                      <FaInfoCircle /> Datos de Pago de Seña
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Importe *
-                        </label>
+                  <div className="bg-slate-900 rounded-[2.5rem] p-12 space-y-10 animate-fade-in-up shadow-2xl shadow-indigo-100">
+                    <div className="flex items-center gap-4 text-indigo-400 border-b border-slate-800 pb-6">
+                      <FaInfoCircle size={24} />
+                      <p className="text-sm font-black uppercase tracking-[0.2em]">Configuración de Cobro Directo</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Valor de la Seña ($)</label>
                         <input
-                          type="number"
-                          value={importe}
-                          onChange={(e) => setImporte(e.target.value)}
-                          className="w-full px-4 py-3 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          placeholder="5000"
+                          type="number" value={importe} onChange={(e) => setImporte(e.target.value)}
+                          className="w-full px-8 py-5 bg-slate-800 border-2 border-transparent rounded-2xl focus:border-indigo-500 focus:outline-none font-bold text-white text-2xl transition-all"
+                          placeholder="0.00"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Banco *
-                        </label>
+                      <div className="space-y-3">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Banco / Billetera</label>
                         <input
-                          type="text"
-                          value={banco}
-                          onChange={(e) => setBanco(e.target.value)}
-                          className="w-full px-4 py-3 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          placeholder="Banco Nación"
+                          type="text" value={banco} onChange={(e) => setBanco(e.target.value)}
+                          className="w-full px-8 py-5 bg-slate-800 border-2 border-transparent rounded-2xl focus:border-indigo-500 focus:outline-none font-bold text-white text-2xl transition-all"
+                          placeholder="Ej: Brubank"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          CBU o Alias *
-                        </label>
+                      <div className="md:col-span-2 space-y-3">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">CBU / Alias / CVU</label>
                         <input
-                          type="text"
-                          value={cbu}
-                          onChange={(e) => setCbu(e.target.value)}
-                          className="w-full px-4 py-3 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          placeholder="Ej: 2850590940091234567890"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Titular
-                        </label>
-                        <input
-                          type="text"
-                          value={titular}
-                          onChange={(e) => setTitular(e.target.value)}
-                          className="w-full px-4 py-3 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                          placeholder="Juan Pérez"
+                          type="text" value={cbu} onChange={(e) => setCbu(e.target.value)}
+                          className="w-full px-8 py-5 bg-slate-800 border-2 border-transparent rounded-2xl focus:border-indigo-500 focus:outline-none font-bold text-white text-2xl transition-all tracking-widest font-mono"
+                          placeholder="000000..."
                         />
                       </div>
                     </div>
@@ -389,23 +252,18 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
               </section>
             )}
 
-            {/* Botón de envío */}
-            <div className="pt-4">
+            {/* ACCIÓN FINAL */}
+            <div className="pt-8">
               <button
-                type="submit"
-                disabled={creando}
-                className={`w-full py-4 text-white font-semibold rounded-2xl shadow-lg transition transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300 ${
-                  creando
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                }`}
+                type="submit" disabled={creando}
+                className="w-full py-8 bg-slate-900 text-white font-black rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-indigo-600 hover:scale-[1.02] active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 transition-all uppercase tracking-[0.3em] text-2xl"
               >
                 {creando ? (
-                  <span className="inline-flex gap-2 items-center">
-                    <FaSpinner className="animate-spin" /> Creando...
+                  <span className="flex items-center justify-center gap-5">
+                    <FaCircleNotch className="animate-spin" /> Procesando...
                   </span>
                 ) : (
-                  <span className="inline-flex gap-2 items-center">🚀 Crear Establecimiento</span>
+                  "Confirmar y Crear"
                 )}
               </button>
             </div>
@@ -413,8 +271,10 @@ const CrearConsultorioModal = ({ isOpen, onClose, onSuccess, profesionalID, perf
         </div>
       </div>
 
-      {/* Toastify */}
-      <ToastContainer position="bottom-right" autoClose={2000} hideProgressBar={false} />
+      <ToastContainer 
+        position="bottom-center" autoClose={2000} hideProgressBar 
+        toastClassName="bg-slate-900 text-white font-black rounded-3xl shadow-2xl p-8 text-xl"
+      />
     </>
   );
 };

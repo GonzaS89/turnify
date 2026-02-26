@@ -8,7 +8,8 @@ import {
   FaBuilding,
   FaEye,
   FaEyeSlash,
-  FaSpinner,
+  FaCircleNotch,
+  FaShieldAlt,
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,7 +18,6 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
   const { codigo: codigoValidacion } = useParams();
   const navigate = useNavigate();
 
-  // Estados del formulario
   const [usuario, setUsuario] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [repetirContraseña, setRepetirContraseña] = useState("");
@@ -34,7 +34,6 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
     setCreando(true);
     setError("");
 
-    // Validaciones
     if (!usuario || !contraseña || !repetirContraseña) {
       setError("Todos los campos son obligatorios.");
       setCreando(false);
@@ -61,197 +60,177 @@ const CrearPerfil = ({ handleCrearConsultorio }) => {
         codigo: codigoValidacion,
       };
 
-      await axios.put(
-        `${API_URL}/api/crearperfil/${codigoValidacion}`,
-        nuevoPerfil
-      );
+      await axios.put(`${API_URL}/api/crearperfil/${codigoValidacion}`, nuevoPerfil);
 
-      toast.success("✅ ¡Perfil creado! Redirigiendo...");
+      toast.success("Perfil configurado con éxito");
 
       setTimeout(() => {
         handleCrearConsultorio();
         navigate("/");
         setCreando(false);
       }, 1500);
-
-      // Resetear formulario
-      setUsuario("");
-      setContraseña("");
-      setRepetirContraseña("");
-      setTipo("Particular");
-      setMostrarContraseña(false);
-      setMostrarRepetir(false);
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.statusText ||
-        "Error de conexión";
-      setError(`❌ ${errorMessage}`);
-      toast.error("Error al crear el perfil");
+      const errorMessage = err.response?.data?.message || "Error de conexión";
+      setError(errorMessage);
+      toast.error("No se pudo crear el perfil");
       setCreando(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
-        {/* Encabezado */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-            Crear Perfil
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto w-full">
+        {/* Header Premium */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-3xl shadow-xl shadow-indigo-100 mb-6">
+            <FaShieldAlt size={30} />
+          </div>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 italic">
+            TURNATE<span className="text-indigo-600 not-italic">.</span>
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Completa tus datos básicos para comenzar
+          <p className="mt-3 text-slate-500 font-bold uppercase tracking-widest text-xs">
+            Configuración de Profesional
           </p>
         </div>
 
-        {/* Mensaje de error */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+        {/* Card Principal */}
+        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+          <div className="p-8 sm:p-10">
+            {error && (
+              <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold flex items-center gap-2">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                {error}
+              </div>
+            )}
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          
-          {/* Usuario */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Usuario *
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                <FaUser size={16} />
-              </span>
-              <input
-                type="text"
-                value={usuario}
-                onChange={(e) => setUsuario(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="usuario o email"
-              />
-            </div>
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Input Usuario */}
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                  Usuario o Email
+                </label>
+                <div className="relative group">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                    <FaUser size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    value={usuario}
+                    onChange={(e) => setUsuario(e.target.value)}
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-slate-800 transition-all"
+                    placeholder="Ej: dr.gonzalez"
+                  />
+                </div>
+              </div>
 
-          {/* Contraseña */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contraseña *
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                <FaLock size={16} />
-              </span>
-              <input
-                type={mostrarContraseña ? "text" : "password"}
-                value={contraseña}
-                onChange={(e) => setContraseña(e.target.value)}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                placeholder="••••••••"
-              />
+              {/* Input Contraseña */}
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                    Contraseña
+                  </label>
+                  <div className="relative group">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                      <FaLock size={14} />
+                    </span>
+                    <input
+                      type={mostrarContraseña ? "text" : "password"}
+                      value={contraseña}
+                      onChange={(e) => setContraseña(e.target.value)}
+                      className="w-full pl-11 pr-12 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-slate-800 transition-all"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarContraseña(!mostrarContraseña)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 transition-colors"
+                    >
+                      {mostrarContraseña ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                    Confirmar Contraseña
+                  </label>
+                  <div className="relative group">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                      <FaLock size={14} />
+                    </span>
+                    <input
+                      type={mostrarRepetir ? "text" : "password"}
+                      value={repetirContraseña}
+                      onChange={(e) => setRepetirContraseña(e.target.value)}
+                      className="w-full pl-11 pr-12 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-slate-800 transition-all"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMostrarRepetir(!mostrarRepetir)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 transition-colors"
+                    >
+                      {mostrarRepetir ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selector de Tipo Premium */}
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
+                  Modalidad de Trabajo
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { id: "Particular", icon: FaHome, label: "Particular" },
+                    { id: "centro médico", icon: FaBuilding, label: "Centro Médico" },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setTipo(item.id)}
+                      className={`flex items-center justify-center gap-2 py-3 rounded-2xl font-black text-xs uppercase tracking-tighter transition-all border-2
+                        ${tipo === item.id 
+                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100" 
+                          : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"}`}
+                    >
+                      <item.icon size={14} />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Botón de Acción */}
               <button
-                type="button"
-                onClick={() => setMostrarContraseña(!mostrarContraseña)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
+                type="submit"
+                disabled={creando}
+                className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-200 hover:bg-indigo-600 hover:scale-[1.02] active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 disabled:transform-none transition-all uppercase tracking-widest text-sm"
               >
-                {mostrarContraseña ? <FaEyeSlash /> : <FaEye />}
+                {creando ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <FaCircleNotch className="animate-spin" /> Creando Perfil...
+                  </span>
+                ) : (
+                  "Finalizar Registro"
+                )}
               </button>
-            </div>
+            </form>
           </div>
+        </div>
 
-          {/* Repetir Contraseña */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Repetir Contraseña *
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                <FaLock size={16} />
-              </span>
-              <input
-                type={mostrarRepetir ? "text" : "password"}
-                value={repetirContraseña}
-                onChange={(e) => setRepetirContraseña(e.target.value)}
-                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setMostrarRepetir(!mostrarRepetir)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-indigo-600"
-              >
-                {mostrarRepetir ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-          </div>
-
-          {/* Tipo de cuenta */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Tipo de Cuenta *
-            </label>
-            <div className="flex gap-3">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="Particular"
-                  checked={tipo === "Particular"}
-                  onChange={(e) => setTipo(e.target.value)}
-                  className="sr-only"
-                />
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                    tipo === "Particular"
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  <FaHome className="inline mr-1" /> Consultorio Particular
-                </span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="centro médico"
-                  checked={tipo === "centro médico"}
-                  onChange={(e) => setTipo(e.target.value)}
-                  className="sr-only"
-                />
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                    tipo === "centro médico"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  <FaBuilding className="inline mr-1" /> Centro Médico
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {/* Botón de envío */}
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={creando}
-              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow hover:from-indigo-700 hover:to-purple-700 disabled:opacity-70 disabled:cursor-not-allowed transform hover:scale-105 transition"
-            >
-              {creando ? (
-                <span className="flex items-center justify-center gap-2">
-                  <FaSpinner className="animate-spin" /> Creando...
-                </span>
-              ) : (
-                "Crear Perfil"
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* Toastify */}
-        <ToastContainer position="bottom-right" autoClose={1000} />
+        {/* <p className="mt-8 text-center text-slate-400 text-xs font-bold uppercase tracking-tighter">
+          Seguridad encriptada de extremo a extremo
+        </p> */}
       </div>
+
+      <ToastContainer 
+        position="bottom-center" 
+        autoClose={2000} 
+        hideProgressBar 
+        toastClassName="bg-slate-900 text-white font-bold rounded-2xl shadow-2xl"
+      />
     </div>
   );
 };

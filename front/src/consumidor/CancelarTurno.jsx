@@ -1,7 +1,7 @@
 // src/pages/CancelarTurnoPage.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaTimes, FaRegClock } from 'react-icons/fa';
+import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaTimes, FaRegClock, FaUser, FaIdCard, FaCalendarAlt, FaClock, FaStethoscope } from 'react-icons/fa';
 import useObtenerTurnoxID from '../../customHooks/useObtenerTurnoxID';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
@@ -20,40 +20,22 @@ export default function CancelarTurno() {
   const { turno, loading: loadingTurno, error, mensaje: mensajeTurno } = useObtenerTurnoxID(idParseada);
   const turnoObtenido = turno ? turno[0] : null;
 
-  const { profesional, isLoading: loadingProfesional, error: errorProfesional } = useProfesionalxId(turnoObtenido?.profesionalID);
+  const { profesional } = useProfesionalxId(turnoObtenido?.profesionalID);
+  const { consultorio } = useConsultorioxId(turnoObtenido?.consultorioID);
 
-  const { consultorio, isLoading: loadingConsultorio, error: errorConsultorio } = useConsultorioxId(turnoObtenido?.consultorioID);
-
-  const consultorioObtenido = consultorio[0];
-
-  console.log(turnoObtenido)
-
-  const { direccion, localidad, telefono} = consultorioObtenido || {};
-
-
+  const consultorioObtenido = consultorio?.[0];
+  const { direccion, localidad, telefono } = consultorioObtenido || {};
   const direccionCompleta = `${direccion || 'N/A'}, ${localidad || 'N/A'}`;
 
-
-  const prof = profesional[0];
-
+  const prof = profesional?.[0];
   const { slug, nombre, apellido, titulo } = prof || { slug: 'profesional' };
 
-  // Validación del ID
-  useEffect(() => {
-    if (!turnoId) {
-      setMensaje({ tipo: 'error', texto: 'ID de turno no válido.' });
-    }
-  }, [turnoId]);
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // Verificar si se puede cancelar
   const puedeCancelar = () => {
-    // Verificar datos básicos
     if (!turnoObtenido?.fecha || !turnoObtenido?.hora || !turnoObtenido?.estado) return false;
-
-    // Condición 1: El estado debe ser "reservado"
     if (turnoObtenido.estado !== 'reservado') return false;
 
-    // Condición 2: Debe haber más de 24 horas de anticipación
     const [hours, minutes] = turnoObtenido.hora.split(':').map(Number);
     const turnoDateTime = new Date(turnoObtenido.fecha);
     turnoDateTime.setHours(hours, minutes, 0, 0);
@@ -65,400 +47,190 @@ export default function CancelarTurno() {
     return horasRestantes > 6;
   };
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const cancelacionPermitida = puedeCancelar();
-
-  
-
 
   const handleCancelar = async () => {
     if (!turnoId || loading || loadingTurno || !cancelacionPermitida) return;
-
     setLoading(true);
     try {
-      // Solo ejecutamos el PUT, axios lanza error si falla
       await axios.put(`${API_URL}/api/cancelarturno/${idParseada}`);
-
-      // Si llega aquí, fue exitoso
-      toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {
-        position: 'top-right',
-        autoClose: 1800,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
-
-      const definirTitulo = (value) => {
-        switch (value) {
-          case 'doctor':
-            return 'Dr.';
-          case 'doctora':
-            return 'Dra.';
-          case 'licenciado':
-          case 'licenciada':
-            return 'Lic.';
-          default:
-            return '';
-        }
+      toast.success('✅ Turno cancelado');
+      
+      const definirTitulo = (val) => {
+        const map = { doctor: 'Dr.', doctora: 'Dra.', licenciado: 'Lic.', licenciada: 'Lic.' };
+        return map[val] || '';
       };
 
       const nombreProfesional = `${definirTitulo(titulo)} ${nombre} ${apellido}`.trim();
+      const mensajeWhatsApp = `¡Hola ${nombreProfesional}!\n\nLamento informarte que debo CANCELAR mi turno:\n\nFecha: ${formatearFechaSQL(turnoObtenido?.fecha)}\nHora: ${formatearHora(turnoObtenido?.hora)}\n\nSaludos,\n*${turnoObtenido?.paciente}*`;
 
-      const mensajeCancelacionTurno = `
-¡Hola ${nombreProfesional}!
+      let tel = telefono?.replace(/\D/g, "");
+      if (tel.startsWith("9")) tel = "54" + tel;
+      else if (tel.startsWith("11") && tel.length === 10) tel = "549" + tel;
+      else if (!tel.startsWith("54")) tel = "549" + tel;
 
-Lamento informarte que debo *CANCELAR* mi turno:
-
-Fecha: ${formatearFechaSQL(turnoObtenido?.fecha)}
-Hora: ${formatearHora(turnoObtenido?.hora)}
-Direccion: ${direccionCompleta}
-
-Lamento las molestias y agradezco tu comprensión.
-
-Atentamente,
-*${turnoObtenido?.paciente}*
-`;
-
-// 📱 Formatear número
-let telefonoFormateado = telefono?.replace(/\D/g, ""); // Solo dígitos
-
-if (telefonoFormateado.startsWith("9")) {
-  telefonoFormateado = "54" + telefonoFormateado;
-} else if (telefonoFormateado.startsWith("11") && telefonoFormateado.length === 10) {
-  telefonoFormateado = "549" + telefonoFormateado;
-} else if (!telefonoFormateado.startsWith("54")) {
-  telefonoFormateado = "549" + telefonoFormateado;
-}  
-
-
-const whatsappUrl = `https://wa.me/${telefonoFormateado}?text=${encodeURIComponent(mensajeCancelacionTurno)}`;
-
-      setTimeout(() => {
-        window.open(whatsappUrl, "_blank");
-        navigate('/');
-      }, 2000);
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensajeWhatsApp)}`, "_blank");
+      navigate('/');
     } catch (err) {
-      // Manejamos el error
-      const mensajeError =
-        err.response?.data?.message ||
-        err.message ||
-        'No se pudo cancelar el turno.';
-
-      toast.error(`❌ Error: ${mensajeError}`, {
-        position: 'top-right',
-        autoClose: 6000,
-        hideProgressBar: false,
-      });
-      setMensaje({ tipo: 'error', texto: mensajeError });
-    } finally {
-      setLoading(false); // Aseguramos que se detenga el loading
-    }
+      setMensaje({ tipo: 'error', texto: err.response?.data?.message || 'Error al cancelar.' });
+    } finally { setLoading(false); }
   };
 
   const handleReprogramar = async () => {
     if (!turnoId || loading || loadingTurno || !cancelacionPermitida) return;
-
     setReprogramando(true);
     try {
-      // Solo ejecutamos el PUT, axios lanza error si falla
       await axios.put(`${API_URL}/api/cancelarturno/${idParseada}`);
-
-      // Si llega aquí, fue exitoso
-      toast.success('✅ ¡Tu turno ha sido cancelado con éxito!', {
-        position: 'top-right',
-        autoClose: 1800,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      setMensaje({ tipo: 'exito', texto: '¡Tu turno ha sido cancelado con éxito!' });
-
       sessionStorage.setItem('turnoReprogramadoId', idParseada.toString());
-
-
-
-      setTimeout(() => {
-        navigate(`/turnos/${slug}`);
-        idTurnoReprogramado(idParseada);
-      }, 2000);
+      navigate(`/turnos/${slug}`);
     } catch (err) {
-      // Manejamos el error
-      const mensajeError =
-        err.response?.data?.message ||
-        err.message ||
-        'No se pudo cancelar el turno.';
-
-      toast.error(`❌ Error: ${mensajeError}`, {
-        position: 'top-right',
-        autoClose: 6000,
-        hideProgressBar: false,
-      });
-      setMensaje({ tipo: 'error', texto: mensajeError });
-    } finally {
-      setReprogramando(false); // Aseguramos que se detenga el loading
-    }
-  };
-
-  const handleVolver = () => {
-    navigate('/');
+      setMensaje({ tipo: 'error', texto: 'No se pudo reprogramar.' });
+    } finally { setReprogramando(false); }
   };
 
   const formatearFechaSQL = (fecha) => {
     if (!fecha) return 'N/A';
     const date = new Date(fecha);
-    return date.toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' });
+    return date.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const formatearHora = (hora) => {
     if (!hora) return 'N/A';
-    const [horaParte, minutoParte] = hora.split(':');
-    const horaFormateada = `${horaParte.padStart(2, '0')}:${minutoParte.padStart(2, '0')}`;
-    return horaFormateada;
+    const [h, m] = hora.split(':');
+    return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
   };
 
-  // Si el ID no es válido
-  if (!turnoId) {
-    return (
-      <>
-        <ToastContainer />
-        <div className="min-h-screen bg-red-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-center">
-            <FaTimesCircle className="text-red-500 text-4xl mx-auto mb-3" />
-            <p className="text-red-600 font-medium">ID de turno no válido.</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Mientras se carga el turno
-  if (loadingTurno) {
-    return (
-      <>
-        <ToastContainer />
-        <div className="h-screen bg-gradient-to-br from-red-50 via-white to-pink-50 flex items-center justify-center">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-            <div className="flex justify-center mb-5">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center animate-spin">
-                <FaExclamationTriangle className="text-red-600 text-3xl" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Cargando turno...</h1>
-            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Si hubo error al cargar el turno o no existe
-  if (error || !turnoObtenido) {
-    return (
-      <>
-        <ToastContainer />
-        <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50 flex items-center justify-center">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
-            <FaTimesCircle className="text-red-500 text-4xl mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Error</h1>
-            <p className="text-gray-600 mb-6">
-              {mensajeTurno || 'No se pudo cargar el turno. Intenta más tarde.'}
-            </p>
-            <button
-              onClick={handleVolver}
-              className="px-6 py-2 bg-gray-600 text-white rounded-2xl hover:bg-gray-700 transition-all duration-200 font-medium"
-            >
-              Volver al inicio
-            </button>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Estado combinado de carga
-  const isLoading = loading || loadingTurno;
+  if (loadingTurno) return (
+    <div className="h-screen w-full bg-slate-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-black tracking-widest uppercase text-xs">Cargando información del turno...</p>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      {/* Contenedor de Toastify */}
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col overflow-hidden animate-fade-in">
       <ToastContainer />
 
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-pink-50 flex items-center justify-center px-4 py-8">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-100 transform transition-all hover:shadow-3xl duration-300">
-
-          {/* Icono de advertencia */}
-          <div className="flex justify-center mb-5">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center animate-pulse">
-              <FaExclamationTriangle className="text-red-600 text-3xl" />
+      {/* HEADER: Pantalla Completa Estilo Indigo/Slate */}
+      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-xl z-20">
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate('/')} className="p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-2xl" />
+          </button>
+          <div className="flex items-center gap-5">
+            <div className="bg-red-500 p-4 rounded-2xl shadow-lg shadow-red-500/20">
+              <FaExclamationTriangle className="text-3xl text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-none uppercase">Gestión de Turno</h2>
+              <p className="text-slate-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2">ID de Operación: #{turnoId}</p>
             </div>
           </div>
+        </div>
+        <button onClick={() => navigate('/')} className="text-slate-400 hover:text-white text-4xl font-light p-2">
+          <FaTimes />
+        </button>
+      </header>
 
-          {/* Título */}
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">Reprogramar turno</h1>
-
-          {/* Subtítulo */}
-          <p className="text-gray-600 leading-relaxed mb-6 px-2">
-            ¿Estás seguro de que deseas reprogramar el turno? Esta acción no se puede deshacer.
-          </p>
-
-          {/* Detalles del Turno */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl px-5 py-4 mb-6 shadow-sm">
-            <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              📅 Detalles del Turno
+      <main className="flex-1 overflow-y-auto py-10 px-6 flex flex-col items-center">
+        <div className="w-full max-w-2xl space-y-8">
+          
+          <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-200 shadow-sm text-center space-y-6">
+            <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">
+              ¿Qué deseas hacer con tu turno?
             </h3>
-            <div className="space-y-2 text-left text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Paciente</span>
-                <span className="text-gray-800">{turnoObtenido?.paciente}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">DNI</span>
-                <span className="text-gray-800">{turnoObtenido?.dni}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Fecha</span>
-                <span className="text-gray-800">{formatearFechaSQL(turnoObtenido?.fecha)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Hora</span>
-                <span className="text-gray-800">{formatearHora(turnoObtenido?.hora)} hrs</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Especialidad</span>
-                <span className="text-gray-800">{turnoObtenido?.especialidad}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Profesional</span>
-                <span className="text-gray-800">{turnoObtenido?.profesional}</span>
-              </div>
-              {/* <div className="flex justify-between">
-                <span className="text-gray-500 font-medium">Estado</span>
-                <span
-                  className={`font-semibold ${
-                    turnoObtenido?.estado === 'reservado'
-                      ? 'text-green-600'
-                      : turnoObtenido?.estado === 'confirmado'
-                      ? 'text-blue-600'
-                      : turnoObtenido?.estado === 'cancelado'
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  {turnoObtenido?.estado}
-                </span>
-              </div> */}
-            </div>
-          </div>
+            <p className="text-slate-500 text-lg">
+              Recuerda que las modificaciones solo se permiten con un mínimo de <strong>6 horas</strong> de anticipación.
+            </p>
 
-          {/* Mensaje de éxito o error */}
-          {mensaje.texto && (
-            <div
-              className={`flex items-center justify-center gap-2 p-4 rounded-2xl text-sm mb-6 transition-all duration-300 ${mensaje.tipo === 'exito'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
-                }`}
-            >
-              {mensaje.tipo === 'exito' ? (
-                <FaCheckCircle className="text-green-500 text-lg" />
-              ) : (
-                <FaTimesCircle className="text-red-500 text-lg" />
-              )}
-              <span>{mensaje.texto}</span>
-            </div>
-          )}
+            {/* CARD DE DETALLES: Estilo Unificado */}
+            <div className="bg-slate-50 p-6 md:p-8 rounded-[2.5rem] border border-slate-100 text-left space-y-6 shadow-inner">
+              <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
+                <div className="bg-indigo-600 text-white p-3 rounded-xl"><FaUser /></div>
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paciente</p>
+                  <p className="text-xl font-black text-slate-800 capitalize">{turnoObtenido?.paciente}</p>
+                  <p className="text-xs font-bold text-slate-500">DNI: {turnoObtenido?.dni}</p>
+                </div>
+              </div>
 
-          {/* Mensaje si el estado no es "reservado" */}
-          {turnoObtenido.estado && turnoObtenido.estado !== 'reservado' && !mensaje.texto && (
-            <div className="bg-gray-50 border border-gray-200 text-gray-700 p-4 rounded-2xl text-sm mb-6 flex items-center gap-2">
-              <FaTimesCircle className="text-gray-500" />
-              <span>
-                No se puede cancelar porque el estado del turno es <strong>"{turnoObtenido.estado}"</strong>.
-              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <FaCalendarAlt className="text-indigo-500 text-xl" />
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha</p>
+                    <p className="text-slate-700 font-bold capitalize">{formatearFechaSQL(turnoObtenido?.fecha)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FaClock className="text-indigo-500 text-xl" />
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hora</p>
+                    <p className="text-slate-700 font-bold">{formatearHora(turnoObtenido?.hora)} hs</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 col-span-full">
+                  <FaStethoscope className="text-indigo-500 text-xl" />
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Profesional / Especialidad</p>
+                    <p className="text-slate-700 font-bold">{turnoObtenido?.profesional} | <span className="text-indigo-600 uppercase text-xs">{turnoObtenido?.especialidad}</span></p>
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* Mensaje si no se puede cancelar por tiempo */}
-          {!cancelacionPermitida &&
-            turnoObtenido.estado === 'reservado' &&
-            !mensaje.texto &&
-            mensaje.tipo !== 'exito' && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-2xl text-sm mb-6 flex items-center gap-2">
-                <FaExclamationTriangle className="text-yellow-500" />
-                <span>
-                  La cancelación solo está permitida con más de 6 horas de anticipación.
-                </span>
+            {/* ALERTAS DE ESTADO */}
+            {!cancelacionPermitida && (
+              <div className="bg-amber-50 border-2 border-amber-100 p-5 rounded-2xl flex items-center gap-4 text-left">
+                <FaExclamationTriangle className="text-amber-500 text-2xl flex-shrink-0" />
+                <p className="text-amber-800 text-sm font-bold leading-tight">
+                  {turnoObtenido?.estado !== 'reservado' 
+                    ? `Este turno ya se encuentra en estado "${turnoObtenido.estado}".`
+                    : "La gestión del turno expiró (requiere 6hs de anticipación)."}
+                </p>
               </div>
             )}
+          </div>
 
-          {/* Botones */}
-          <div className="flex flex-col gap-3 justify-center">
+          {/* BOTONERA DE ACCIÓN */}
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={handleReprogramar}
+                disabled={loading || reprogramando || !cancelacionPermitida}
+                className={`py-6 rounded-3xl font-black tracking-widest uppercase flex items-center justify-center gap-3 transition-all shadow-xl
+                  ${!cancelacionPermitida 
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+                    : 'bg-slate-900 text-white hover:bg-indigo-600 hover:shadow-indigo-200 active:scale-95'}`}
+              >
+                {reprogramando ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <FaRegClock className="text-xl" />}
+                Reprogramar
+              </button>
+
+              <button
+                onClick={handleCancelar}
+                disabled={loading || reprogramando || !cancelacionPermitida}
+                className={`py-6 rounded-3xl font-black tracking-widest uppercase flex items-center justify-center gap-3 transition-all
+                  ${!cancelacionPermitida 
+                    ? 'bg-slate-100 text-slate-300 border-2 border-slate-200 shadow-none' 
+                    : 'bg-white border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-500 active:scale-95 shadow-lg shadow-red-100'}`}
+              >
+                {loading ? <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <FaTimes className="text-xl" />}
+                Cancelar Turno
+              </button>
+            </div>
+
             <button
-              onClick={handleVolver}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-2xl hover:bg-gray-700 disabled:opacity-60 transition-all duration-200 shadow-sm font-medium"
+              onClick={() => navigate('/')}
+              className="w-full py-5 text-slate-400 font-black tracking-widest uppercase text-xs hover:text-slate-800 transition-colors"
             >
-              <FaArrowLeft /> Volver
-            </button>
-
-            <button
-              onClick={handleCancelar}
-              disabled={isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-medium shadow-sm transition-all duration-200 ${isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-red-600 hover:bg-red-700 text-white'
-                }`}
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {loading ? 'Cancelando...' : 'Cargando...'}
-                </>
-              ) : !cancelacionPermitida ? (
-                turnoObtenido.estado !== 'reservado' ? (
-                  `Estado: ${turnoObtenido.estado}`
-                ) : (
-                  'No permitido'
-                )
-              ) : (
-                <span className='inline-flex items-center gap-2'>
-                  <FaTimes className="text-white text-xl" />  Cancelar turno
-                </span>
-
-              )}
-            </button>
-            <button
-              onClick={handleReprogramar}
-              disabled={isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-medium shadow-sm transition-all duration-200 ${isLoading || mensaje.tipo === 'exito' || !cancelacionPermitida
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                  {reprogramando ? 'Cancelando...' : 'Cargando...'}
-                </>
-              ) : !cancelacionPermitida ? (
-                turnoObtenido.estado !== 'reservado' ? (
-                  `Estado: ${turnoObtenido.estado}`
-                ) : (
-                  'No permitido'
-                )
-              ) : (
-                <span className='inline-flex items-center gap-2'>
-                  <FaRegClock className="text-white text-xl font-bold" /> Reprogramar turno
-                </span>
-
-              )}
+              No deseo realizar cambios, volver al inicio
             </button>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

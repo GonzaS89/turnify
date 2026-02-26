@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {FaTimes, FaPlus} from 'react-icons/fa'
+import { FaPlus, FaArrowRight } from 'react-icons/fa';
 
 const FAQS = () => {
     const [openFAQ, setOpenFAQ] = useState(null);
 
     const mensaje = "Hola, estoy interesado en sus servicios y tengo algunas dudas.";
-  const whatsappUrl = `https://wa.me/5493815588504?text=${encodeURIComponent(mensaje)}`;
+    const whatsappUrl = `https://wa.me/5493815588504?text=${encodeURIComponent(mensaje)}`;
 
     const toggleFAQ = (index) => {
         setOpenFAQ(openFAQ === index ? null : index);
@@ -15,27 +15,23 @@ const FAQS = () => {
     const faqData = [
         {
             q: '¿Cómo reservo un turno?',
-            a: 'Simplemente usa el buscador en la parte superior, filtra por especialidad o médico, y elige un horario disponible. Completa tus datos para confirmar, ¡es así de fácil!',
+            a: 'Simplemente usá el buscador en la parte superior, filtrá por especialidad o médico, y elegí un horario disponible. Completá tus datos para confirmar, ¡es así de fácil!',
         },
         {
             q: '¿Qué hago si necesito cancelar un turno?',
-            a: 'Puedes cancelar tu turno a través del enlace que recibiste en el correo de confirmación. Te pedimos que canceles con al menos 24 horas de anticipación para que otro paciente pueda usar ese horario.',
+            a: 'Podés cancelar tu turno a través del enlace que recibiste en el mensaje de confirmación. Te pedimos que canceles con tiempo para que otro paciente pueda usar ese horario.',
         },
         {
             q: '¿Cómo puedo afiliarme como médico o centro médico?',
-            a: 'En la sección "Beneficios de Afiliarte" encontrarás un botón de contacto para hablar con nuestro equipo. Te guiaremos en la creación de tu perfil para que empieces a recibir reservas de inmediato.',
+            a: 'En la sección "Beneficios" encontrarás un botón de contacto para hablar con nuestro equipo. Te guiaremos en la configuración de tu panel para que empieces a gestionar turnos de inmediato.',
         },
     ];
 
-    // Animaciones
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.15,
-                delayChildren: 0.3,
-            },
+            transition: { staggerChildren: 0.1 },
         },
     };
 
@@ -48,93 +44,85 @@ const FAQS = () => {
         },
     };
 
-    const iconRotate = {
-        open: { rotate: 45, transition: { duration: 0.3, ease: 'easeInOut' } },
-        closed: { rotate: 0, transition: { duration: 0.3, ease: 'easeInOut' } },
-    };
-
     return (
         <section
             id="preguntas-frecuentes"
-            className="py-8 md:py-12 lg:py-28 px-4 overflow-hidden bg-white/50 rounded-xl lg:rounded-[100px] lg:max-w-4xl xl:max-w-7xl mx-auto"
+            className="py-24 px-6 max-w-7xl mx-auto overflow-hidden"
             aria-labelledby="faq-title"
         >
-            <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-10">
-                {/* Encabezado con animación */}
+            <div className="max-w-4xl mx-auto">
+                {/* ===== ENCABEZADO ===== */}
                 <motion.div
-                    initial={{ opacity: 0, y: -30 }}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="text-center mb-16 lg:mb-20"
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                    className="text-center mb-20 space-y-6"
                 >
+                    <div className="inline-flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100">
+                        <span className="text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em]">
+                            Centro de ayuda
+                        </span>
+                    </div>
+
                     <h2
                         id="faq-title"
-                        className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 tracking-tight mb-5"
+                        className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter uppercase"
                     >
-                        Preguntas <span className="text-indigo-600">Frecuentes</span>
+                        Despejá tus <br />
+                        <span className="text-indigo-600">Dudas</span>
                     </h2>
-                    <p className="text-lg lg:text-base xl:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed opacity-90">
-                        Aquí respondemos a las dudas más comunes. Si no encuentras lo que buscas, no dudes en contactarnos.
+                    
+                    <p className="text-slate-500 font-bold text-lg md:text-xl pt-4">
+                        Respondemos las consultas más habituales. Si no encontrás lo que buscás, escribinos.
                     </p>
                 </motion.div>
 
-                {/* Lista de FAQs */}
+                {/* ===== LISTA DE FAQS ===== */}
                 <motion.div
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true }}
-                    className="space-y-5 max-w-4xl mx-auto"
+                    className="space-y-4"
                 >
                     {faqData.map((item, index) => (
                         <motion.div
                             key={index}
                             variants={itemVariants}
-                            className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 focus-within:ring-4 focus-within:ring-indigo-100"
-                            onClick={() => toggleFAQ(index)}
-                            tabIndex="0"
-                            role="button"
-                            aria-expanded={openFAQ === index}
-                            aria-controls={`faq-answer-${index}`}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    toggleFAQ(index);
-                                }
-                            }}
+                            className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden hover:border-indigo-500 transition-all duration-300"
                         >
-                            {/* Pregunta */}
-                            <div className="flex justify-between items-center p-6 md:p-5 sm:p-8 xl:p-8  cursor-pointer group">
-                                <h3 className="font-semibold text-lg sm:text-2xl md:text-xl xl:text-2xl text-gray-800 leading-tight flex-1 group-hover:text-indigo-700 transition-colors duration-200">
+                            <button
+                                className="w-full flex justify-between items-center p-8 text-left group"
+                                onClick={() => toggleFAQ(index)}
+                            >
+                                <h3 className="font-black text-xl md:text-2xl text-slate-900 uppercase tracking-tighter leading-tight group-hover:text-indigo-600 transition-colors">
                                     {item.q}
                                 </h3>
-                                <motion.span
-                                    className="text-lg md:text-base lg:text-lg xl:text-2xl font-light text-indigo-600 bg-indigo-50 rounded-full w-8 h-8 md:w-10 lg:h-10 flex items-center justify-center flex-shrink-0 ml-6"
-                                    variants={iconRotate}
-                                    animate={openFAQ === index ? 'open' : 'closed'}
+                                <motion.div
+                                    animate={{ rotate: openFAQ === index ? 45 : 0 }}
+                                    className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                                        openFAQ === index ? 'bg-slate-900 text-white' : 'bg-indigo-50 text-indigo-600'
+                                    }`}
                                 >
-                                    <FaPlus />
-                                </motion.span>
-                            </div>
+                                    <FaPlus size={20} />
+                                </motion.div>
+                            </button>
 
-                            {/* Respuesta */}
-                            <AnimatePresence initial={false}>
+                            <AnimatePresence>
                                 {openFAQ === index && (
                                     <motion.div
-                                        id={`faq-answer-${index}`}
-                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                        animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
                                         transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                        className="px-6 sm:px-8 pb-6 sm:pb-8"
-                                        role="region"
-                                        aria-labelledby={`faq-question-${index}`}
                                     >
-                                        <div className="border-t border-gray-200 pt-6">
-                                            <p className="text-gray-700 leading-relaxed text-base sm:text-lg md:text-base xl:text-xl">
-                                                {item.a}
-                                            </p>
+                                        <div className="px-8 pb-8">
+                                            <div className="pt-6 border-t border-slate-100">
+                                                <p className="text-slate-500 font-bold text-lg leading-relaxed">
+                                                    {item.a}
+                                                </p>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -143,20 +131,24 @@ const FAQS = () => {
                     ))}
                 </motion.div>
 
-                {/* Llamado a la acción final */}
+                {/* ===== CALL TO ACTION ===== */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                    className="text-center mt-16"
+                    className="text-center mt-20"
                 >
-                    <a
+                    <motion.a
                         href={whatsappUrl}
-                        className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold text-lg rounded-2xl shadow-lg hover:shadow-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-300 transform hover:scale-105"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="group inline-flex items-center gap-4 px-12 py-6 bg-slate-900 text-white font-black text-sm uppercase tracking-[0.2em] rounded-[2.5rem] shadow-2xl hover:bg-indigo-600 transition-all duration-300"
                     >
-                        ¿Tienes otra pregunta? Contáctanos
-                    </a>
+                        ¿Tenés otra pregunta? Contactanos
+                        <FaArrowRight className="group-hover:translate-x-2 transition-transform" />
+                    </motion.a>
                 </motion.div>
             </div>
         </section>

@@ -1,17 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
 import axios from "axios";
-import { ToastContainer } from "react-toastify";
 import {
   FaUserMd,
   FaLink,
   FaPlusCircle,
-  FaCheckCircle,
   FaExclamationCircle,
   FaTimes,
+  FaCircleNotch,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 
@@ -24,25 +23,23 @@ const AsociarProfesionalAPerfil = ({
   perfil,
   actualizarProfesionales
 }) => {
-  const {
-    profesionales,
-    isLoading,
-    error: hookError
-  } = useAllProfesionals();
+  const { profesionales, isLoading, error: hookError } = useAllProfesionals();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProfesional, setSelectedProfesional] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
-  const [mensaje, setMensaje] = useState(null);
   const [vinculando, setVinculando] = useState(false);
 
   const navigate = useNavigate();
-
   const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = "unset"; };
+  }, []);
 
   const handleSelect = async (e) => {
     e.preventDefault();
     setMensajeError(null);
-    setMensaje(null);
     setVinculando(true);
 
     if (!selectedProfesional) {
@@ -50,22 +47,14 @@ const AsociarProfesionalAPerfil = ({
       setVinculando(false);
       return;
     }
-    if (!perfilID) {
-      setMensajeError("No se especificó el perfil.");
-      setVinculando(false);
-      return;
-    }
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/unionprofesionalperfil`,
-        {
-          profesionalID: selectedProfesional,
-          perfilID: perfilID,
-        }
-      );
+      await axios.post(`${API_URL}/api/unionprofesionalperfil`, {
+        profesionalID: selectedProfesional,
+        perfilID: perfilID,
+      });
 
-      toast.info("✅ Profesional vinculado correctamente");
+      toast.success("Vínculo establecido con éxito");
 
       setTimeout(() => {
         setVinculando(false);
@@ -76,172 +65,121 @@ const AsociarProfesionalAPerfil = ({
       }, 1500);
 
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message ||
-        err.response?.statusText ||
-        "Error de conexión con el servidor";
-
-      setMensajeError(`❌ ${errorMsg}`);
+      const errorMsg = err.response?.data?.message || "Error de conexión";
+      setMensajeError(errorMsg);
       toast.error("Error al asociar profesional");
       setVinculando(false);
-      console.error("Error al asociar profesional:", err);
     }
   };
 
   const handleCreateSuccess = () => {
-    if (typeof actualizarProfesionales === "function") {
-      actualizarProfesionales();
-    }
-
-    if (perfil?.tipo === "Particular") {
-      window.location.reload();
-    }
-
+    if (typeof actualizarProfesionales === "function") actualizarProfesionales();
+    if (perfil?.tipo === "Particular") window.location.reload();
     refrescarListaProfesionales();
-    toast.success("✅ Nuevo profesional creado y vinculado");
+    toast.success("Profesional creado y vinculado");
     setShowCreateModal(false);
   };
 
   return (
     <>
-      {/* Overlay oscuro con blur */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-[40] animate-fade-in"
+      {/* OVERLAY PRINCIPAL (Asociar) */}
+      <div 
+        className="fixed inset-0 w-screen h-screen bg-slate-900/95 backdrop-blur-md z-[9998] transition-all duration-500"
         onClick={profesionalVinculado ? onClose : null}
-      >
-        <div
-          className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden border border-gray-100"
+      ></div>
+
+      {/* CONTENEDOR MODAL PRINCIPAL */}
+      <div className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div 
+          className="bg-white rounded-[3rem] shadow-[0_35px_100px_-15px_rgba(0,0,0,0.5)] w-full max-w-xl overflow-hidden border border-slate-100 pointer-events-auto animate-fade-in-up"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 relative rounded-t-2xl">
+          {/* Encabezado */}
+          <div className="bg-slate-900 text-white p-10 sm:p-12 relative">
             {profesionalVinculado && (
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-all duration-300 hover:scale-110 active:scale-95"
-                aria-label="Cerrar"
+                className="absolute top-8 right-8 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl p-3 transition-all active:scale-90"
               >
-                <FaTimes size={20} />
+                <FaTimes size={24} />
               </button>
             )}
 
-            <div className="flex items-center gap-3">
-              <FaLink className="text-2xl" />
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <FaLink size={30} />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold">Vincular Profesional</h2>
-                <p className="text-purple-100 text-sm opacity-90">
-                  Selecciona o crea un profesional para vincularlo
-                </p>
+                <h2 className="text-3xl font-black tracking-tighter uppercase italic leading-none">
+                  Vincular <span className="text-indigo-400 not-italic">Profesional</span>
+                </h2>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-3">Gestión de accesos y perfiles</p>
               </div>
             </div>
           </div>
 
-          {/* Cuerpo scrollable */}
-          <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
-            {/* Mensajes de error/hook */}
-            {hookError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
-                <FaExclamationCircle className="mt-0.5 flex-shrink-0" size={20} />
-                <div>
-                  <p className="font-semibold">Error al cargar profesionales</p>
-                  <p className="mt-1">{hookError}</p>
-                </div>
+          <div className="p-10 sm:p-14 space-y-10 bg-white">
+            {(mensajeError || hookError) && (
+              <div className="p-6 rounded-2xl bg-red-50 border border-red-100 text-red-600 font-bold text-lg flex items-center gap-4 animate-shake">
+                <FaExclamationCircle size={24} className="flex-shrink-0" />
+                <span>{mensajeError || hookError}</span>
               </div>
             )}
 
-            {mensajeError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
-                <FaExclamationCircle className="mt-0.5 flex-shrink-0" size={20} />
-                <div>
-                  <p className="font-semibold">Error</p>
-                  <p className="mt-1">{mensajeError}</p>
-                </div>
-              </div>
-            )}
-
-            {mensaje && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-start gap-3">
-                <FaCheckCircle className="mt-0.5 flex-shrink-0" size={20} />
-                <div>
-                  <p className="font-semibold">Éxito</p>
-                  <p className="mt-1">{mensaje}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Cargando */}
             {isLoading ? (
-              <div className="py-8 text-center bg-blue-50 rounded-xl border border-blue-200">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-3"></div>
-                <p className="text-blue-700 text-sm font-medium">Cargando profesionales...</p>
+              <div className="py-16 text-center bg-slate-50 rounded-[2rem] border border-slate-100 font-black">
+                <FaCircleNotch className="animate-spin text-indigo-600 mx-auto mb-4" size={40} />
+                <p className="text-slate-400 uppercase tracking-widest text-[10px]">Cargando profesionales...</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Selector de profesional */}
+              <div className="space-y-10">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <FaUserMd className="text-purple-600" /> Seleccionar Profesional *
+                  <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">
+                    Seleccionar Profesional Existente
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <select
                       value={selectedProfesional}
                       onChange={(e) => setSelectedProfesional(e.target.value)}
-                      className="w-full px-4 py-3 pl-11 pr-10 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-shadow text-gray-800 font-medium appearance-none"
-                      required
+                      className="w-full px-8 py-6 pl-16 bg-slate-50 border-2 border-transparent rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-xl text-slate-800 transition-all appearance-none cursor-pointer"
                     >
-                      <option value="" disabled>Seleccionar profesional</option>
+                      <option value="" disabled>Seleccionar de la lista</option>
                       {profesionales?.map((prof) => (
                         <option
                           key={prof.id}
                           value={prof.id}
                           disabled={idsProfesionalesVinculados?.includes(prof.id)}
-                          className={idsProfesionalesVinculados?.includes(prof.id) ? "text-gray-400" : ""}
                         >
-                          {prof.nombre} {prof.apellido} • {prof.especialidad} • MP: {prof.matricula}
-                          {idsProfesionalesVinculados?.includes(prof.id) ? " (Ya vinculado)" : ""}
+                          {prof.nombre} {prof.apellido} {idsProfesionalesVinculados?.includes(prof.id) ? "— YA VINCULADO" : ""}
                         </option>
                       ))}
                     </select>
-                    <FaUserMd className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+                    <FaUserMd className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={24} />
                   </div>
                 </div>
 
-                {/* Botones de acción */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg"
-                  >
-                    <FaPlusCircle size={18} /> Nuevo Profesional
-                  </button>
-
+                <div className="space-y-4">
                   <button
                     type="button"
                     onClick={handleSelect}
                     disabled={!selectedProfesional || vinculando}
-                    className={`
-                      flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300
-                      flex items-center justify-center gap-2
-                      ${vinculando
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg'
-                      }
-                    `}
+                    className="w-full py-6 bg-slate-900 text-white font-black rounded-3xl shadow-2xl shadow-slate-200 hover:bg-indigo-600 hover:scale-[1.02] active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 transition-all uppercase tracking-[0.2em] text-lg"
                   >
-                    {vinculando ? (
-                      <>
-                        <div className="animate-spin rounded-full h-2 w-4 border-t-2 border-white"></div>
-                        Vinculando...
-                      </>
-                    ) : (
-                      "Vincular Profesional"
-                    )}
+                    {vinculando ? "VINCULANDO..." : "CONFIRMAR VÍNCULO"}
+                  </button>
+
+                  <div className="relative py-4">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                    <div className="relative flex justify-center text-[10px] uppercase font-black tracking-[0.3em] text-slate-300"><span className="bg-white px-4">O también</span></div>
+                  </div>
+
+                  {/* BOTÓN QUE ACTIVA EL SEGUNDO MODAL */}
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(true)}
+                    className="w-full py-5 bg-indigo-50 text-indigo-600 font-black rounded-3xl hover:bg-indigo-600 hover:text-white transition-all uppercase tracking-[0.2em] text-sm border-2 border-transparent hover:border-indigo-200"
+                  >
+                    <FaPlusCircle className="inline mr-2" /> Crear Nuevo Registro
                   </button>
                 </div>
               </div>
@@ -250,16 +188,18 @@ const AsociarProfesionalAPerfil = ({
         </div>
       </div>
 
-      <ToastContainer position="bottom-right" autoClose={1500} />
+      <ToastContainer position="bottom-center" autoClose={1500} hideProgressBar />
 
-      {/* Modal de creación */}
+      {/* MODAL DE CREACIÓN: Ahora envuelto en un div con Z-INDEX superior [10000] */}
       {showCreateModal && (
-        <CrearYVincularProfesionalAPerfil
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreateSuccess}
-          perfilID={perfilID}
-          perfil={perfil}
-        />
+        <div className="relative z-[10000]">
+          <CrearYVincularProfesionalAPerfil
+            onClose={() => setShowCreateModal(false)}
+            onCreate={handleCreateSuccess}
+            perfilID={perfilID}
+            perfil={perfil}
+          />
+        </div>
       )}
     </>
   );

@@ -7,10 +7,14 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaTimes,
+  FaArrowLeft,
+  FaShieldAlt,
+  FaSpinner,
+  FaExclamationTriangle
 } from "react-icons/fa";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 const GestionCoberturas = () => {
   const { consultorioId } = useParams();
@@ -20,8 +24,6 @@ const GestionCoberturas = () => {
   const [isRemoving, setIsRemoving] = useState(null);
   const [isAdding, setIsAdding] = useState(null);
   const [showModalAccion, setShowModalAccion] = useState(false);
-
-  // Nuevo: estado para el modal de confirmación
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [coberturaToDelete, setCoberturaToDelete] = useState(null);
 
@@ -31,8 +33,7 @@ const GestionCoberturas = () => {
     error,
     refetch,
   } = useCoberturaxIdConsultorio(consultorioId);
-  const { coberturas: allCoberturas, isLoading: isLoadingAll } =
-    useAllCoberturas();
+  const { coberturas: allCoberturas, isLoading: isLoadingAll } = useAllCoberturas();
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -49,384 +50,212 @@ const GestionCoberturas = () => {
   );
   const isLoadingState = isLoading || isLoadingAll;
 
-  // --- Abrir modal de confirmación ---
   const handleOpenConfirmModal = (coberturaId, siglas) => {
     setCoberturaToDelete({ id: coberturaId, siglas });
     setShowConfirmModal(true);
   };
 
-  // --- Confirmar eliminación ---
   const handleConfirmDelete = async () => {
     if (!coberturaToDelete) return;
-
     const { id, siglas } = coberturaToDelete;
     setIsRemoving(id);
 
     try {
-      await axios.delete(
-        `${API_URL}/api/borrarCoberturaDeConsulotorio/${id}/${consultorioId}`
-      );
-
-      toast.warn(
-        <div className="flex items-center gap-2 text-sm">
-          <FaCheckCircle /> Cobertura {siglas} eliminada
-        </div>,
-        { autoClose: 1000 }
-      );
+      await axios.delete(`${API_URL}/api/borrarCoberturaDeConsulotorio/${id}/${consultorioId}`);
+      toast.warn(<div className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest"><FaTimesCircle /> Eliminando {siglas}...</div>);
 
       setTimeout(() => {
         refetch();
-        setIsRemoving(false);
+        setIsRemoving(null);
         setShowConfirmModal(false);
         setCoberturaToDelete(null);
       }, 1500);
     } catch (err) {
-      console.error("Error al eliminar cobertura:", err);
-      toast.error(
-        `❌ ${
-          err.response?.data?.message || "No se pudo eliminar la cobertura"
-        }`
-      );
+      toast.error(`❌ Error al eliminar`);
+      setIsRemoving(null);
     }
   };
 
-  // --- Cancelar eliminación ---
-  const handleCancelDelete = () => {
-    setShowConfirmModal(false);
-    setCoberturaToDelete(null);
-  };
-
-  // --- Añadir cobertura ---
   const handleAddCobertura = async (coberturaId, siglas) => {
     setIsAdding(coberturaId);
     setShowModalAccion(true);
     try {
-      await axios.post(
-        `${API_URL}/api/agregarCoberturaAlConsultorio/${coberturaId}/${consultorioId}`
-      );
-
-      
-      toast.success(
-        <div className="flex items-center gap-2 text-sm">
-          <FaCheckCircle /> Añadiendo {siglas} ...
-        </div>,
-        { autoClose: 1000 }
-      );
+      await axios.post(`${API_URL}/api/agregarCoberturaAlConsultorio/${coberturaId}/${consultorioId}`);
+      toast.success(<div className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest"><FaCheckCircle /> Vinculando {siglas}...</div>);
 
       setTimeout(() => {
         refetch();
-        setIsAdding(false);
+        setIsAdding(null);
         setShowModalAccion(false);
-        
       }, 1500);
     } catch (err) {
-      console.error("Error al añadir cobertura:", err);
-      toast.error(
-        `❌ ${err.response?.data?.message || "No se pudo añadir la cobertura"}`
-      );
+      toast.error(`❌ Error al añadir`);
+      setIsAdding(null);
+      setShowModalAccion(false);
     }
   };
 
+  if (isLoadingState) {
+    return (
+      <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-[400]">
+        <FaSpinner className="animate-spin text-indigo-600 mb-4" size={50} />
+        <p className="text-slate-800 font-black tracking-widest uppercase text-xs">Sincronizando Coberturas...</p>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* Overlay oscuro con blur */}
+    <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in font-sans">
+      <ToastContainer position="bottom-right" autoClose={1000} theme="colored" />
 
-      {showModalAccion && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 sm:p-6 lg:p-8 z-[200]">
-          {/* Overlay con opacidad y transición */}
-
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto transform transition-all duration-300 scale-100 hover:scale-105">
-            {/* Contenedor del modal con esquinas redondeadas y sombra profunda */}
-
-            {/* Encabezado con separador sutil */}
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h1 className="text-2xl font-semibold text-gray-800 text-center">
-                Añadiendo cobertura
-              </h1>
+      {/* HEADER PREMIUM SLATE/INDIGO */}
+      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate("/micuenta")} className="p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-2xl" />
+          </button>
+          <div className="flex items-center gap-5">
+            <div className="bg-indigo-600 p-4 rounded-2xl hidden md:block shadow-lg shadow-indigo-500/20">
+              <FaShieldAlt className="text-3xl text-white" />
             </div>
-
-            {/* Cuerpo del modal */}
-            <div className="p-6 text-center">
-              <div className="flex justify-center mb-4">
-                {/* Icono de carga o ilustración opcional */}
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-              </div>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Estamos procesando tu solicitud. Por favor, espera un momento.
-              </p>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">Gestión de Seguros</h2>
+              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2 italic">Administración de Obras Sociales</p>
             </div>
-
-            {/* Opcional: Botones de acción */}
-            {/* 
-    <div className="flex gap-3 px-6 pb-6">
-      <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium">
-        Cancelar
-      </button>
-      <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
-        Confirmar
-      </button>
-    </div>
-    */}
           </div>
         </div>
-      )}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center xl:p-4"
-        onClick={() => navigate("/micuenta")}
-      >
-        <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-full xl:max-w-7xl h-[100dvh] xl:max-h-[90dvh] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 xl:rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-full">
-                  <FaCheckCircle className="text-white" />
-                </div>
-                <h3 className="text-2xl font-bold">Gestionar Coberturas</h3>
-              </div>
-              <button
-                onClick={() => navigate("/micuenta")}
-                disabled={isLoadingState}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-            <p className="text-blue-100 mt-2 text-sm opacity-90">
-              Añade o elimina coberturas médicas disponibles en tu consultorio.
-            </p>
-          </div>
+        <button onClick={() => navigate("/micuenta")} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
+          <FaTimes />
+        </button>
+      </header>
 
-          {/* Cuerpo scrollable */}
-          <div className="p-6 space-y-6 flex-1 overflow-y-auto">
-            {isLoadingState ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-                <p className="text-gray-600 font-medium">
-                  Cargando coberturas...
-                </p>
-              </div>
-            ) : error ? (
-              <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-center">
-                <FaTimesCircle
-                  className="text-red-500 mx-auto mb-3"
-                  size={24}
-                />
-                <p className="text-red-700 font-medium">
-                  Error al cargar datos
-                </p>
-                <p className="text-red-600 text-sm mt-1">{error.message}</p>
+      <main className="flex-1 overflow-y-auto bg-slate-50 py-10 px-6 flex flex-col items-center">
+        <div className="w-full max-w-6xl space-y-12 pb-20">
+          
+          {/* SECCIÓN: COBERTURAS ACTIVAS */}
+          <section className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-200 shadow-sm space-y-8 animate-slide-up">
+            <h3 className="text-slate-800 text-xl font-black flex items-center gap-3 border-b border-slate-100 pb-5 uppercase tracking-tighter">
+              <FaCheckCircle className="text-green-500" /> Coberturas Activas en Consultorio
+            </h3>
+            
+            {activeCoberturas && activeCoberturas.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {activeCoberturas.map((cobertura) => (
+                  <div key={cobertura.id} className="group relative bg-slate-50 border-2 border-slate-100 p-5 rounded-3xl flex items-center justify-between hover:border-red-200 hover:bg-red-50 transition-all duration-300">
+                    <div>
+                      <p className="font-black text-slate-800 text-lg tracking-tighter uppercase">{cobertura.siglas}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate max-w-[120px]">{cobertura.nombre}</p>
+                    </div>
+                    <button
+                      onClick={() => handleOpenConfirmModal(cobertura.id, cobertura.siglas)}
+                      className="p-3 bg-white text-slate-300 rounded-2xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ))}
               </div>
             ) : (
-              <>
-                {/* Coberturas Activas */}
-                <section>
-                  <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <FaCheckCircle className="text-green-500" /> Coberturas
-                    Activas
-                  </h4>
-
-                  {activeCoberturas && activeCoberturas.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {activeCoberturas.map((cobertura) => (
-                        <div
-                          key={cobertura.id}
-                          className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-sm hover:bg-green-100 transition"
-                        >
-                          <span className="font-semibold text-green-800 text-sm truncate">
-                            {cobertura.siglas}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleOpenConfirmModal(
-                                cobertura.id,
-                                cobertura.siglas
-                              )
-                            }
-                            disabled={isRemoving === cobertura.id}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full p-1 transition disabled:opacity-50"
-                          >
-                            {isRemoving === cobertura.id ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
-                            ) : (
-                              <FaTimesCircle size={14} />
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-300 rounded-xl">
-                      <p className="text-gray-500 text-sm">
-                        No hay coberturas activas en este consultorio.
-                      </p>
-                    </div>
-                  )}
-                </section>
-
-                {/* Añadir Cobertura */}
-                <section>
-                  <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <FaPlusCircle className="text-blue-500" /> Añadir Nueva
-                    Cobertura
-                  </h4>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Busca una cobertura para agregarla a tu lista.
-                  </p>
-
-                  <div className="flex flex-col lg:flex-row gap-4">
-                    <div className="relative flex-1">
-                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Buscar por sigla o nombre..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                      />
-                    </div>
-                  </div>
-
-                  {searchTerm && (
-                    <div className="mt-4 bg-gray-50 rounded-xl border border-gray-200 max-h-80 overflow-y-auto">
-                      {availableCoberturasToAdd.length > 0 ? (
-                        <ul className="divide-y divide-gray-200">
-                          {availableCoberturasToAdd.map((cobertura) => (
-                            <li
-                              key={cobertura.id}
-                              className="flex items-center justify-between p-4 hover:bg-gray-100 transition"
-                            >
-                              <div>
-                                <p className="font-semibold text-gray-800">
-                                  {cobertura.siglas}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {cobertura.nombre}
-                                </p>
-                              </div>
-                              <button
-                                onClick={() =>
-                                  handleAddCobertura(
-                                    cobertura.id,
-                                    cobertura.siglas
-                                  )
-                                }
-                                disabled={isAdding === cobertura.id}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm px-4 py-2 rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition flex items-center gap-1"
-                              >
-                                {isAdding === cobertura.id ? (
-                                  <>
-                                    <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-white"></div>
-                                    Añadiendo...
-                                  </>
-                                ) : (
-                                  "Añadir"
-                                )}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 text-sm text-center py-6">
-                          {filteredAllCoberturas.length === 0
-                            ? `No se encontraron coberturas para "${searchTerm}".`
-                            : `Ya tienes todas las coberturas que coinciden con "${searchTerm}".`}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {!searchTerm && (
-                    <p className="text-gray-400 text-sm text-center py-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl mt-4">
-                      Escribe en el campo de arriba para comenzar a buscar.
-                    </p>
-                  )}
-                </section>
-              </>
+              <div className="py-12 border-4 border-dashed border-slate-100 rounded-[3rem] text-center flex flex-col items-center gap-4">
+                <FaShieldAlt className="text-slate-100 text-6xl" />
+                <p className="text-slate-400 font-black uppercase text-xs tracking-[0.2em]">No hay coberturas vinculadas actualmente</p>
+              </div>
             )}
-          </div>
+          </section>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            <button
-              onClick={() => navigate("/micuenta")}
-              disabled={isLoadingState}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
-            >
-              Cerrar
-            </button>
+          {/* SECCIÓN: BÚSQUEDA Y ALTA */}
+          <section className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-slate-200 shadow-sm space-y-10 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <h3 className="text-slate-800 text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
+                  <FaPlusCircle className="text-indigo-600" /> Vincular Nueva Cobertura
+                </h3>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic ml-8">Busca en nuestra base de datos nacional</p>
+              </div>
+              
+              <div className="relative w-full md:w-96 group">
+                <FaSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                <input
+                  type="text"
+                  placeholder="BUSCAR SIGLAS O NOMBRE..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-xs text-slate-700 focus:border-indigo-500 focus:bg-white outline-none transition-all uppercase tracking-widest shadow-inner"
+                />
+              </div>
+            </div>
+
+            {searchTerm && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                {availableCoberturasToAdd.length > 0 ? (
+                  availableCoberturasToAdd.map((cobertura) => (
+                    <div key={cobertura.id} className="bg-white border-2 border-slate-100 p-6 rounded-[2rem] flex items-center justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+                      <div>
+                        <p className="font-black text-slate-800 text-xl tracking-tighter">{cobertura.siglas}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{cobertura.nombre}</p>
+                      </div>
+                      <button
+                        onClick={() => handleAddCobertura(cobertura.id, cobertura.siglas)}
+                        disabled={isAdding === cobertura.id}
+                        className="px-6 py-3 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 group-hover:scale-105"
+                      >
+                        {isAdding === cobertura.id ? 'VINCULANDO...' : 'VINCULAR'}
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-10 text-center bg-slate-50 rounded-[2rem] font-black text-[10px] text-slate-400 uppercase tracking-widest border-2 border-slate-100">
+                    No se encontraron resultados para "{searchTerm}"
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!searchTerm && (
+              <div className="py-20 text-center space-y-4 opacity-30">
+                <FaSearch className="mx-auto text-slate-200" size={60} />
+                <p className="font-black text-xs uppercase tracking-[0.3em]">Utiliza el buscador para añadir convenios</p>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+
+      {/* MODAL DE PROCESAMIENTO (AGREGAR) */}
+      {showModalAccion && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl text-center space-y-6 max-w-sm w-full">
+            <FaSpinner className="animate-spin text-indigo-600 mx-auto" size={50} />
+            <h4 className="text-xl font-black uppercase tracking-tighter text-slate-800">Actualizando Base de Datos</h4>
+            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest italic">Vinculando cobertura al centro médico...</p>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* === Modal de Confirmación para Eliminar Cobertura === */}
+      {/* MODAL DE CONFIRMACIÓN (ELIMINAR) */}
       {showConfirmModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[201]"
-          onClick={handleCancelDelete}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Encabezado rojo */}
-            <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FaTimesCircle className="text-white" />
-                <h3 className="text-2xl font-bold">Eliminar Cobertura</h3>
-              </div>
-              <button
-                onClick={handleCancelDelete}
-                className="text-white hover:bg-white/20 rounded-full p-1 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimesCircle size={20} />
-              </button>
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={() => setShowConfirmModal(false)}>
+          <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-slide-up border border-red-50" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-red-600 text-white p-8 pb-12 text-center space-y-4 relative">
+              <FaExclamationTriangle className="mx-auto text-white" size={40} />
+              <h3 className="text-2xl font-black uppercase tracking-tighter">¿Desvincular Cobertura?</h3>
+              <p className="text-red-100 font-bold text-[10px] uppercase tracking-[0.2em] italic">Atención: Acción Irreversible</p>
             </div>
-
-            {/* Cuerpo */}
-            <div className="p-6 space-y-6">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                ¿Estás seguro de que deseas eliminar la cobertura{" "}
-                <strong>{coberturaToDelete?.siglas}</strong> del consultorio?
+            <div className="p-10 space-y-8">
+              <p className="text-slate-500 font-medium text-center leading-relaxed">
+                Estás por remover <span className="text-slate-800 font-black italic">{coberturaToDelete?.siglas}</span>. Los pacientes ya no podrán seleccionar este convenio en sus turnos.
               </p>
-            </div>
-
-            {/* Footer */}
-            <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleCancelDelete}
-                className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={isRemoving}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isRemoving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
-                    Eliminando...
-                  </>
-                ) : (
-                  <>
-                    <FaTimesCircle /> Eliminar
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col gap-3">
+                <button onClick={handleConfirmDelete} className="w-full py-5 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-red-200 hover:bg-red-700 transition-all flex items-center justify-center gap-3">
+                  {isRemoving ? <FaSpinner className="animate-spin" /> : 'CONFIRMAR DESVINCULACIÓN'}
+                </button>
+                <button onClick={() => setShowConfirmModal(false)} className="w-full py-5 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-slate-800 transition-colors">CANCELAR</button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

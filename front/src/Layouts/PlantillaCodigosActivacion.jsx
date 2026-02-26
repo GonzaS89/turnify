@@ -1,10 +1,10 @@
 import { useState } from "react";
 import useAllCodigosActivacion from "../../customHooks/useAllCodigosActivacion";
-import { FaWhatsapp, FaCopy } from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify"; // Opcional: para notificaciones
-import "react-toastify/dist/ReactToastify.css"; // Estilos de toast
+import { FaWhatsapp, FaCopy, FaLink, FaCircleNotch } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const URL = 'https://turnate.site/crearperfil'
+const URL = 'https://turnate.site/crearperfil';
 
 const PlantillaCodigosActivacion = () => {
   const { codigosActivacion, isLoading, error } = useAllCodigosActivacion();
@@ -16,11 +16,11 @@ const PlantillaCodigosActivacion = () => {
     if (codigosActivacion && codigosActivacion.length > 0) {
       const codigo = codigosActivacion[0].codigos;
       setUrlMostrada(`${URL}/${codigo}`);
+      toast.success("Enlace generado correctamente");
     }
   };
 
   const validarNumero = (num) => {
-    // Permite solo números, al menos 8 dígitos, máximo 15
     const soloNumeros = num.replace(/\D/g, "");
     return soloNumeros.length >= 8 && soloNumeros.length <= 15;
   };
@@ -37,129 +37,123 @@ const PlantillaCodigosActivacion = () => {
 
   const enviarPorWhatsApp = () => {
     if (!urlMostrada) return;
-
-    const numeroLimpio = numero.replace(/\D/g, ""); // Solo números
+    const numeroLimpio = numero.replace(/\D/g, "");
 
     if (!validarNumero(numeroLimpio)) {
-      setErrorNumero("Por favor ingresa un número válido.");
+      setErrorNumero("Ingresa un número válido.");
       return;
     }
 
     const mensaje = encodeURIComponent(
-      `Hola 👋 Usa este enlace para activar tu cuenta:\n\n${urlMostrada}`
+      `Hola 👋 Usa este enlace para activar tu cuenta en Turnate:\n\n${urlMostrada}`
     );
     const whatsappUrl = `https://wa.me/${numeroLimpio}?text=${mensaje}`;
 
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    toast.success(`Mensaje listo para enviar a ${numeroLimpio}`);
   };
 
   const copiarUrl = () => {
     if (urlMostrada) {
       navigator.clipboard
         .writeText(urlMostrada)
-        .then(() => toast.info("URL copiada al portapapeles"))
+        .then(() => toast.info("Copiado al portapapeles"))
         .catch(() => toast.error("Error al copiar"));
     }
   };
 
   return (
-    <section className="max-w-lg mx-auto mt-12 p-8 bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-xl border border-indigo-100">
-      <h2 className="text-3xl font-extrabold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-        Activación Rápida
-      </h2>
+    <section className="max-w-xl mx-auto mt-10 p-10 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 text-slate-800">
+      {/* Título con estilo font-black y colores Slate/Indigo */}
+      <header className="text-center mb-10">
+        <h2 className="text-4xl font-black tracking-tight text-slate-900 mb-2">
+          Activación <span className="text-indigo-600">Express</span>
+        </h2>
+        <p className="text-slate-500 font-medium">Gestión de accesos para nuevos profesionales</p>
+      </header>
 
-      {/* Estado de carga o error */}
+      {/* Estado de carga */}
       {isLoading && (
-        <div className="mb-6 p-4 text-center bg-yellow-50 text-yellow-700 rounded-lg font-medium animate-pulse">
-          🕒 Cargando códigos...
+        <div className="flex items-center justify-center gap-3 mb-8 p-4 bg-indigo-50 text-indigo-700 rounded-2xl font-bold animate-pulse">
+          <FaCircleNotch className="animate-spin" />
+          <span>Sincronizando códigos...</span>
         </div>
       )}
 
-      {error && (
-        <div className="mb-6 p-4 text-center bg-red-50 text-red-600 rounded-lg font-medium border border-red-200">
-          ❌ Error: {error.message}
-        </div>
-      )}
-
-      {/* URL generada */}
-      {urlMostrada ? (
-        <div className="mb-6 p-5 bg-white rounded-xl shadow-sm border border-indigo-200 transition-all hover:shadow-md">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Enlace de activación:
-          </label>
-          <div className="flex items-center gap-2 bg-indigo-50 px-3 py-2 rounded-lg text-indigo-800 text-sm break-all">
-            <span>{urlMostrada}</span>
-            <button
-              onClick={copiarUrl}
-              className="flex-shrink-0 text-indigo-500 hover:text-indigo-700 transition"
-              aria-label="Copiar URL"
-            >
-              <FaCopy size={16} />
-            </button>
+      {/* URL generada con estilo de tarjeta interna Premium */}
+      <div className="mb-8">
+        {urlMostrada ? (
+          <div className="p-6 bg-slate-50 rounded-3xl border border-indigo-100 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-3 text-slate-600">
+              <FaLink size={14} />
+              <span className="text-xs font-black uppercase tracking-widest">Enlace de Invitación</span>
+            </div>
+            <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <code className="text-indigo-600 font-bold truncate text-sm">{urlMostrada}</code>
+              <button
+                onClick={copiarUrl}
+                className="p-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-colors"
+                title="Copiar Enlace"
+              >
+                <FaCopy size={18} />
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <p className="mb-6 text-gray-400 text-center italic">
-          Genera la URL para comenzar.
-        </p>
-      )}
+        ) : (
+          <div className="text-center p-8 border-2 border-dashed border-slate-200 rounded-[2rem]">
+            <p className="text-slate-400 font-medium">No hay ningún enlace activo actualmente</p>
+          </div>
+        )}
+      </div>
 
-      {/* Botón para generar URL */}
+      {/* Botón Principal: Generar */}
       <button
-        className={`w-full py-3 px-6 rounded-xl font-semibold text-white transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-6
+        className={`w-full py-4 px-6 rounded-2xl font-black text-lg transition-all mb-8 shadow-lg
           ${isLoading || !!error || (codigosActivacion && codigosActivacion.length === 0)
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md"
+            ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+            : "bg-indigo-600 text-white hover:bg-slate-900 hover:scale-[1.02] active:scale-95 shadow-indigo-200"
           }`}
         onClick={mostrarPrimerCodigo}
         disabled={isLoading || !!error || (codigosActivacion && codigosActivacion.length === 0)}
       >
-        {isLoading ? (
-          "Cargando..."
-        ) : urlMostrada ? (
-          "Actualizar URL"
-        ) : (
-          "Generar URL de Activación"
-        )}
+        {urlMostrada ? "ACTUALIZAR ENLACE" : "GENERAR NUEVO ACCESO"}
       </button>
 
-      {/* Input de número de WhatsApp */}
-      <div className="mb-6">
-        <label htmlFor="numero" className="block text-sm font-medium text-gray-700 mb-2">
-          Número de WhatsApp (con código de país)
-        </label>
-        <input
-          id="numero"
-          type="text"
-          value={numero}
-          onChange={handleNumeroChange}
-          placeholder="Ej: 5491123456789"
-          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:outline-none transition
-            ${errorNumero
-              ? "border-red-500 focus:ring-red-200"
-              : "border-gray-300 focus:ring-indigo-200 focus:border-indigo-500"
+      {/* Sección de Envío WhatsApp */}
+      <div className="space-y-4 pt-6 border-t border-slate-100">
+        <div>
+          <label htmlFor="numero" className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2 ml-2">
+            Número del Profesional
+          </label>
+          <input
+            id="numero"
+            type="text"
+            value={numero}
+            onChange={handleNumeroChange}
+            placeholder="Ej: 549381..."
+            className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl font-bold focus:outline-none transition-all
+              ${errorNumero 
+                ? "border-red-400 text-red-600" 
+                : "border-transparent focus:border-indigo-600 focus:bg-white text-slate-800"
+              }`}
+          />
+          {errorNumero && <p className="mt-2 ml-2 text-xs font-bold text-red-500 italic">{errorNumero}</p>}
+        </div>
+
+        <button
+          className={`w-full py-4 px-6 rounded-2xl font-black flex items-center justify-center gap-3 transition-all
+            ${urlMostrada && !errorNumero && numero
+              ? "bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-100"
+              : "bg-slate-100 text-slate-300 cursor-not-allowed"
             }`}
-        />
-        {errorNumero && <p className="mt-1 text-sm text-red-500">{errorNumero}</p>}
+          onClick={enviarPorWhatsApp}
+          disabled={!urlMostrada || !!errorNumero || !numero.trim()}
+        >
+          <FaWhatsapp size={22} />
+          ENVIAR POR WHATSAPP
+        </button>
       </div>
 
-      {/* Botón de enviar por WhatsApp */}
-      <button
-        className={`w-full py-3 px-6 rounded-xl font-semibold text-white flex items-center justify-center gap-3 transition-all transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none
-          ${urlMostrada && !errorNumero && numero
-            ? "bg-green-600 hover:bg-green-700 shadow-md"
-            : "bg-gray-400 cursor-not-allowed"
-          }`}
-        onClick={enviarPorWhatsApp}
-        disabled={!urlMostrada || !!errorNumero || !numero.trim()}
-      >
-        <FaWhatsapp size={20} />
-        Enviar por WhatsApp
-      </button>
-
-      {/* Toastify para notificaciones */}
-      <ToastContainer position="bottom-right" autoClose={500} />
+      <ToastContainer position="bottom-center" autoClose={2000} hideProgressBar />
     </section>
   );
 };

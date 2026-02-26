@@ -1,6 +1,5 @@
 import { FaTimesCircle } from "react-icons/fa";
-import { PiClockCounterClockwise } from "react-icons/pi"; // Icono más moderno y distintivo
-import { motion } from "framer-motion"; // Opcional: para animaciones más fluidas (si usas Framer Motion)
+import { PiClockCounterClockwise } from "react-icons/pi";
 
 const formatearHora = (hora) => {
   if (!hora) return "";
@@ -14,7 +13,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
   const horaFormateada = formatearHora(turno.hora);
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center w-full">
       <button
         onClick={() => isAvailable && enviarTurno(turno, index)}
         disabled={!isAvailable}
@@ -24,32 +23,28 @@ const Turno = ({ turno, index, enviarTurno }) => {
             : `Turno a las ${horaFormateada} no disponible`
         }
         className={`
-          group relative w-full max-w-[120px] h-32 flex flex-col items-center justify-center
-          p-4 rounded-2xl transition-all duration-300 border-2 shadow-sm
-          focus:outline-none focus:ring-4 focus:ring-offset-2 focus:z-10
+          group relative w-full h-28 flex flex-col items-center justify-center
+          p-4 rounded-[1.5rem] transition-all duration-300 border-2
           ${isAvailable
             ? `
-              bg-gradient-to-b from-white to-blue-50 border-blue-200 text-gray-800
-              hover:shadow-lg hover:scale-105 hover:border-blue-300 hover:from-blue-50 hover:to-blue-100
+              bg-white border-slate-200 text-slate-800
+              hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 hover:border-indigo-400
               active:scale-95
-              focus:ring-blue-200/50 focus:ring-offset-2
               `
             : `
-              bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-70
-              hover:scale-100
-              focus:ring-gray-200/50
+              bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed
               `
           }
         `}
       >
-        {/* Icono central con fondo circular suave */}
+        {/* Icono superior estilizado */}
         <div
           className={`
-            w-12 h-12 flex items-center justify-center rounded-full mb-2
-            transition-all duration-300 transform group-hover:scale-110
+            w-10 h-10 flex items-center justify-center rounded-xl mb-2
+            transition-all duration-300
             ${isAvailable 
-              ? 'bg-blue-100 text-blue-600' 
-              : 'bg-gray-200 text-gray-400'}
+              ? 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white' 
+              : 'bg-slate-100 text-slate-300'}
           `}
         >
           {isAvailable ? (
@@ -59,45 +54,26 @@ const Turno = ({ turno, index, enviarTurno }) => {
           )}
         </div>
 
-        {/* Hora principal */}
+        {/* Hora con tipografía del SearchModal */}
         <span
           className={`
-            text-lg font-semibold tracking-tight transition-colors duration-300
-            ${isAvailable ? 'text-gray-800' : 'text-gray-500'}
+            text-lg font-black tracking-tight transition-colors duration-300
+            ${isAvailable ? 'text-slate-800' : 'text-slate-300'}
           `}
         >
           {horaFormateada}
         </span>
 
-        {/* Estado (solo si no está disponible) */}
+        {/* Estado sutil para turnos ocupados */}
         {!isAvailable && (
-          <span className="text-[0.65rem] font-medium text-gray-500 mt-1 uppercase tracking-wide">
+          <span className="text-[10px] font-black text-slate-300 mt-1 uppercase tracking-widest">
             Ocupado
           </span>
         )}
 
-        {/* Decoración sutil: icono pequeño en esquina inferior derecha */}
+        {/* Indicador visual de acción para disponibles */}
         {isAvailable && (
-          <PiClockCounterClockwise
-            className="absolute bottom-2 right-2 text-xs text-blue-300 opacity-60 group-hover:opacity-100 transition-opacity"
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Overlay sutil al hacer hover (solo si está disponible) */}
-        {isAvailable && (
-          <div
-            className="absolute inset-0 rounded-2xl bg-gradient-to-t from-blue-50/30 to-transparent 
-                       opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-          />
-        )}
-
-        {/* Borde animado sutil en hover */}
-        {isAvailable && (
-          <div
-            className="absolute inset-0 rounded-2xl border-2 border-blue-300 opacity-0 
-                       group-hover:opacity-40 transition-opacity duration-500 pointer-events-none"
-          />
+          <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
       </button>
     </div>

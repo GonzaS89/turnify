@@ -1,27 +1,49 @@
 import { useNavigate } from "react-router";
-const CardGestionCoberturas = ( { seccion, titulo, icon: Icon,  subtitulo, texto, emoji }) => {
+import { FaArrowRight } from "react-icons/fa";
 
-    const navigate = useNavigate()
+const CardGestionCoberturas = ({ seccion, titulo, icon: Icon, subtitulo, texto, emoji }) => {
+  const navigate = useNavigate();
 
   return (
-    
     <div
-          onClick={()=> navigate(seccion)}
-          className="group bg-white p-6 rounded-xl shadow-sm hover:shadow-xl border border-gray-100 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg text-white group-hover:from-blue-600 group-hover:to-indigo-700 transition">
-              <Icon className="w-6 h-6" />
-            </div>
+      onClick={() => navigate(seccion)}
+      className="group bg-white p-10 rounded-[3rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-500 transition-all duration-500 flex flex-col h-full cursor-pointer relative overflow-hidden"
+    >
+      {/* Efecto decorativo de fondo */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-600 transition-all duration-500 z-0 opacity-20 group-hover:opacity-10"></div>
+
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Contenedor del Icono */}
+        <div className="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 mb-8 shadow-inner">
+          <Icon size={30} />
+        </div>
+
+        {/* Textos con jerarquía Premium */}
+        <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-4 uppercase leading-none">
+          {titulo}
+        </h3>
+        <p className="text-slate-500 font-medium mb-10 flex-1 leading-relaxed">
+          {subtitulo}
+        </p>
+
+        {/* Footer de la tarjeta */}
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all duration-500">
+              {emoji}
+            </span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
+              {texto}
+            </span>
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-1">{titulo}</h3>
-          <p className="text-gray-600 text-sm mb-3">{subtitulo}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-2xl font-bold text-blue-600">{emoji}</span>
-            <span className="text-xs text-gray-500">{texto}</span>
+
+          <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-all duration-300 shadow-sm">
+            <FaArrowRight className="transform group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
-  )
-}
+      </div>
+    </div>
+  );
+};
 
-export default CardGestionCoberturas
+export default CardGestionCoberturas;

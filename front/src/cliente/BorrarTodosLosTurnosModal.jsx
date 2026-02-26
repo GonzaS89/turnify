@@ -1,36 +1,38 @@
+// src/components/cliente/BorrarTodosLosTurnosModal.jsx
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaTrashAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaTrashAlt, FaTimes, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 
 const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClose, actualizarTurnos, resetearFecha }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Previene scroll del fondo
-  document.body.style.overflow = 'hidden';
+  // Manejo de scroll y bloqueo de fondo
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = 'auto'; };
+  }, []);
 
   const handleBorrarTodos = async () => {
     if (!idConsultorio || !idProfesional || !fecha) {
-      toast.error('❌ Datos incompletos para eliminar turnos');
+      toast.error('❌ Datos incompletos para procesar la solicitud');
       return;
     }
 
     setIsDeleting(true);
 
     try {
-      const response = await axios.delete(`${API_URL}/api/borrarTodosLosTurnos`, {
+      await axios.delete(`${API_URL}/api/borrarTodosLosTurnos`, {
         data: { IdConsultorio: idConsultorio, idProfesional, fecha },
       });
 
-      // Éxito
       toast.warning(
-        <div className="flex items-center gap-2 text-sm">
-          <FaTrashAlt /> Borrando todos los turnos
+        <div className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest">
+          <FaTrashAlt /> Vaciando Agenda...
         </div>
       );
 
-      // Actualizar estados tras éxito
       setTimeout(() => {
         actualizarTurnos();
         resetearFecha();
@@ -39,91 +41,90 @@ const BorrarTodosLosTurnosModal = ({ idConsultorio, idProfesional, fecha, onClos
       }, 1500);
 
     } catch (error) {
-      console.error('Error al borrar todos los turnos:', error);
-      toast.error(
-        `❌ ${error.response?.data?.message || 'No se pudieron eliminar los turnos'}`
-      );
+      console.error('Error:', error);
+      toast.error(`❌ ${error.response?.data?.message || 'Error al eliminar turnos'}`);
+      setIsDeleting(false);
     } 
   };
 
   return (
-    <>
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 md:p-6 font-sans">
+      <ToastContainer position='bottom-right' autoClose={1000} theme="colored" />
+      
+      {/* Overlay con blur Premium */}
+      <div 
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+        onClick={!isDeleting ? onClose : null}
+      ></div>
 
-     
-      {/* Overlay oscuro con blur */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[200]"
-        onClick={onClose}
+      {/* Contenedor del Modal */}
+      <div 
+        className="relative bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-slide-up border border-red-50"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Encabezado con gradiente rojo */}
-          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-full">
-                <FaTrashAlt size={20} />
-              </div>
-              <h3 className="text-2xl font-bold">Eliminar Todos los Turnos</h3>
+        {/* Header de Alerta */}
+        <div className="bg-red-600 text-white p-8 pb-12 relative overflow-hidden">
+          <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+            <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-md shadow-lg">
+              <FaTrashAlt size={30} className="text-white" />
             </div>
-            <button
-              onClick={onClose}
-              disabled={isDeleting}
-              className="text-white hover:bg-white/20 rounded-full p-1 transition disabled:opacity-50"
-              aria-label="Cerrar"
-            >
-              <FaTimesCircle size={20} />
-            </button>
-          </div>
-
-          {/* Cuerpo */}
-          <div className="p-6 space-y-6">
-            <p className="text-gray-700 text-sm leading-relaxed">
-              ¿Estás seguro de que deseas eliminar <strong>todos los turnos</strong> de esta fecha? Esta acción no se puede deshacer.
+            <h3 className="text-2xl font-black uppercase tracking-tighter leading-none">
+              ¿Vaciar Agenda?
+            </h3>
+            <p className="text-red-100 font-bold text-[10px] uppercase tracking-[0.2em] italic">
+              Acción Irreversible
             </p>
+          </div>
+          {/* Decoración circular de fondo */}
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
+        </div>
 
-            {/* Advertencia visual */}
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <FaTimesCircle className="text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-red-700 text-sm">
-                Se eliminarán todos los turnos programados para el <strong>{new Date(fecha).toLocaleDateString('es-AR')}</strong>.
-              </p>
+        {/* Cuerpo del Mensaje */}
+        <div className="p-8 md:p-10 space-y-8">
+          <div className="space-y-4 text-center">
+            <p className="text-slate-500 font-medium leading-relaxed">
+              Estás por eliminar <span className="text-slate-800 font-black italic">todos los horarios</span> programados para la fecha seleccionada.
+            </p>
+            
+            <div className="bg-red-50 border-2 border-red-100 p-5 rounded-[2rem] flex items-center justify-center gap-4 animate-pulse">
+              <FaExclamationTriangle className="text-red-500 text-xl flex-shrink-0" />
+              <div className="text-left">
+                <p className="text-red-400 font-black text-[9px] uppercase tracking-widest leading-none mb-1">Fecha de Limpieza</p>
+                <p className="text-red-700 font-black text-lg tracking-tighter">
+                  {new Date(fecha + "T12:00:00").toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex gap-3 p-6 bg-gray-50 rounded-b-2xl border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isDeleting}
-              className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium disabled:opacity-70"
-            >
-              Cancelar
-            </button>
+          {/* Botonera Premium */}
+          <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={handleBorrarTodos}
               disabled={isDeleting}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+              className={`w-full py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl transition-all flex items-center justify-center gap-3
+                ${isDeleting ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700 hover:shadow-red-200 active:scale-95'}`}
             >
               {isDeleting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
-                  Eliminando...
-                </>
+                <><FaSpinner className="animate-spin" /> PROCESANDO...</>
               ) : (
-                <>
-                  <FaTrashAlt /> Borrar Todos
-                </>
+                <><FaTrashAlt /> CONFIRMAR ELIMINACIÓN</>
               )}
+            </button>
+            
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isDeleting}
+              className="w-full py-5 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-slate-800 transition-colors disabled:opacity-50"
+            >
+              Cancelar y volver
             </button>
           </div>
         </div>
-        <ToastContainer position='bottom-right' autoClose={1000}/>
       </div>
-    </>
+    </div>
   );
 };
 

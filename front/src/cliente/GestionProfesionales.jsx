@@ -7,12 +7,9 @@ import { useParams, useNavigate } from "react-router-dom";
 
 // Iconos
 import {
-  
-FaCalendarAlt,
-  FaEdit,
+  FaCalendarAlt,
   FaTrashAlt,
   FaUserMd,
-  FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
   FaTimes,
@@ -20,6 +17,8 @@ FaCalendarAlt,
   FaUserPlus,
   FaList,
   FaThLarge,
+  FaArrowLeft,
+  FaSearch,
 } from "react-icons/fa";
 
 // Hook personalizado
@@ -28,7 +27,7 @@ import useProfesionalxIdConsultorio from "../../customHooks/useProfesionalxIdCon
 // Componentes
 import AsociarProfesionalAConsultorio from "./AsociarProfesionalAConsultorio";
 
-const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
+const GestionProfesionales = ({ profesionalVinculado, consultorioTipo,  }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const { consultorioId } = useParams();
   const navigate = useNavigate();
@@ -38,7 +37,7 @@ const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
   const [orden, setOrden] = useState("nombre");
   const [direccion, setDireccion] = useState("asc");
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
-  const [viewMode, setViewMode] = useState("table"); // "table" o "cards"
+  const [viewMode, setViewMode] = useState("table"); 
   const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [deletingIds, setDeletingIds] = useState(new Set());
 
@@ -48,39 +47,32 @@ const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
     error,
   } = useProfesionalxIdConsultorio(consultorioId, refreshProfesionales);
 
-  // Actualizar lista de IDs vinculados
+
   useEffect(() => {
     if (profesionales) {
       setIdsProfesionalesVinculados(profesionales.map((p) => p.id));
     }
   }, [profesionales]);
 
-  // Cambiar vista según tamaño de pantalla
+
   useEffect(() => {
     const handleResize = () => {
-      setViewMode(window.innerWidth < 768 ? "cards" : "table");
+      setViewMode(window.innerWidth < 1024 ? "cards" : "table");
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const refrescarListaProfesionales = () => {
-    setRefreshProfesionales((prev) => prev + 1);
-  };
+  const refrescarListaProfesionales = () => setRefreshProfesionales((prev) => prev + 1);
 
-  // Obtener especialidades únicas
   const especialidades = [
     ...new Set(profesionales?.map((p) => p.especialidad).filter(Boolean) || []),
   ].sort();
 
-  // Filtrar y ordenar
   const profesionalesFiltradosYOrdenados = profesionales
     ? profesionales
-        .filter(
-          (p) =>
-            !filtroEspecialidad || p.especialidad === filtroEspecialidad
-        )
+        .filter((p) => !filtroEspecialidad || p.especialidad === filtroEspecialidad)
         .sort((a, b) => {
           let comparison = 0;
           if (orden === "nombre") {
@@ -99,13 +91,8 @@ const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
   };
 
   const handleDesvincularProfesional = async (profesionalId) => {
-    if (!profesionalId) {
-      toast.error("❌ ID inválido");
-      return;
-    }
-
+    if (!profesionalId) return;
     setDeletingIds((prev) => new Set([...prev, profesionalId]));
-
     try {
       await axios.put(`${API_URL}/api/desvincularprofesional/${consultorioId}/${profesionalId}`);
       toast.success("✅ Profesional desvinculado");
@@ -139,287 +126,208 @@ const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
   const getSortIcon = (columna) => {
     if (orden !== columna) return null;
     return direccion === "asc" ? (
-      <FaSortAmountDown className="inline ml-1 text-blue-500" />
+      <FaSortAmountDown className="inline ml-2 text-indigo-600" />
     ) : (
-      <FaSortAmountUp className="inline ml-1 text-blue-500" />
+      <FaSortAmountUp className="inline ml-2 text-indigo-600" />
     );
   };
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-xs mx-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-700 font-medium">Cargando médicos...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
-          <FaUserMd className="text-red-500 mx-auto mb-3" size={32} />
-          <h3 className="text-lg font-bold text-red-700">Error</h3>
-          <p className="text-gray-600 text-sm mt-1">{error.message}</p>
-          <button
-            onClick={() => navigate("/micuenta")}
-            className="mt-4 px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-          >
-            Volver
-          </button>
-        </div>
+      <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-[500]">
+        <FaSpinner className="animate-spin text-indigo-600 mb-4" size={50} />
+        <p className="text-slate-800 font-black tracking-widest uppercase text-xs">Sincronizando Staff...</p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Overlay oscuro */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-40"
-        onClick={() => navigate("/micuenta")}
-      >
-        <div
-          className="bg-white xl:rounded-2xl shadow-2xl w-full max-w-7xl h-[100dvh] flex flex-col overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+    <div className="fixed inset-0 z-[300] flex flex-col h-screen w-full bg-slate-50 overflow-hidden animate-fade-in font-sans">
+      <ToastContainer position="bottom-right" autoClose={1500} hideProgressBar />
+      
+      {/* HEADER PREMIUM */}
+      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
+        <div className="flex items-center gap-6">
+          <button onClick={() => navigate("/micuenta")} className="p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-2xl" />
+          </button>
+          <div className="flex items-center gap-5">
+            <div className="bg-indigo-600 p-4 rounded-2xl shadow-lg">
+              <FaUserMd className="text-3xl text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">Staff Médico</h2>
+              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2">Gestión de profesionales del centro</p>
+            </div>
+          </div>
+        </div>
+        <button onClick={() => navigate("/micuenta")} className="text-slate-400 hover:text-white text-4xl font-light p-2">
+          <FaTimes />
+        </button>
+      </header>
+
+      {/* BARRA DE ACCIONES Y FILTROS */}
+      <div className="bg-white border-b border-slate-200 px-6 md:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-6 z-10">
+        <button
+          onClick={() => setShowModalAsociarProfesional(true)}
+          className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-2xl transition-all shadow-xl shadow-indigo-100 active:scale-95"
         >
-          {/* Encabezado con gradiente profesional */}
-          <header className="bg-gradient-to-r from-sky-600 to-blue-700 text-white p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-full">
-                  <FaUserMd size={24} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Gestión de Profesionales</h2>
-                  <p className="text-sky-100 text-sm mt-0.5">
-                    Administra los médicos asociados a tu centro
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate("/micuenta")}
-                className="text-white hover:bg-white/20 rounded-full p-2 transition"
-                aria-label="Cerrar"
-              >
-                <FaTimes size={20} />
-              </button>
-            </div>
-          </header>
+          <FaUserPlus size={18} /> Vincular Profesional
+        </button>
 
-          {/* Cuerpo principal */}
-          <main className="flex-1 p-6 bg-gray-50 overflow-y-auto">
-            {/* Botón principal */}
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-              <button
-                onClick={() => setShowModalAsociarProfesional(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-              >
-                <FaUserPlus /> Agregar Médico
-              </button>
-
-              {/* Controles de vista y filtros */}
-              <div className="flex flex-wrap gap-3 items-center">
-                <div className="flex items-center border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setViewMode("table")}
-                    className={`p-2 ${viewMode === "table" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"} transition`}
-                  >
-                    <FaList />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("cards")}
-                    className={`p-2 ${viewMode === "cards" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"} transition`}
-                  >
-                    <FaThLarge />
-                  </button>
-                </div>
-
-                <select
-                  value={filtroEspecialidad}
-                  onChange={(e) => setFiltroEspecialidad(e.target.value)}
-                  className="p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Todas las especialidades</option>
-                  {especialidades.map((esp) => (
-                    <option key={esp} value={esp}>
-                      {esp}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Vista en tarjetas (móvil) */}
-            {viewMode === "cards" ? (
-              <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {profesionalesFiltradosYOrdenados.length === 0 ? (
-                  <div className="col-span-full text-center py-10 bg-white rounded-xl shadow-sm">
-                    <FaUserMd className="text-gray-300 mx-auto mb-3" size={40} />
-                    <p className="text-gray-500 text-lg">No hay médicos asociados</p>
-                    {filtroEspecialidad && (
-                      <button
-                        onClick={() => setFiltroEspecialidad("")}
-                        className="text-blue-600 text-sm underline mt-2"
-                      >
-                        Limpiar filtro
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  profesionalesFiltradosYOrdenados.map((prof) => (
-                    <div
-                      key={prof.id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-blue-100 rounded-full">
-                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-800">{prof.apellido}, {prof.nombre}</h3>
-                          <p className="text-sm text-gray-600">{prof.especialidad}</p>
-                        </div>
-                      </div>
-
-                      <div className="text-sm text-gray-500 space-y-1 mb-4">
-                        <p><strong>Matrícula:</strong> {prof.matricula}</p>
-                        <p><strong>Teléfono:</strong> {prof.telefono}</p>
-                      </div>
-
-                      <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                        <button
-                          onClick={() => handleBotonTurnos(prof.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition"
-                        >
-                          Turnos
-                        </button>
-                        <button
-                          onClick={() => handleDesvincularProfesional(prof.id)}
-                          disabled={deletingIds.has(prof.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm rounded-lg transition disabled:opacity-60"
-                        >
-                          {deletingIds.has(prof.id) ? (
-                            <FaSpinner className="animate-spin" size={14} />
-                          ) : (
-                            <FaTrashAlt size={14} />
-                          )}
-                          {deletingIds.has(prof.id) ? "Desvinculando..." : "Eliminar"}
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              /* Vista en tabla (escritorio) */
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 text-gray-700 text-sm uppercase tracking-wide">
-                      <tr>
-                        <th
-                          className="py-4 px-5 text-left font-semibold cursor-pointer hover:bg-gray-100"
-                          onClick={() => cambiarOrden("nombre")}
-                        >
-                          Nombre {getSortIcon("nombre")}
-                        </th>
-                        <th
-                          className="py-4 px-5 text-left font-semibold cursor-pointer hover:bg-gray-100"
-                          onClick={() => cambiarOrden("especialidad")}
-                        >
-                          Especialidad {getSortIcon("especialidad")}
-                        </th>
-                        <th className="py-4 px-5 text-left font-semibold">Matrícula</th>
-                        <th className="py-4 px-5 text-left font-semibold">Teléfono</th>
-                        <th className="py-4 px-5 text-left font-semibold">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {profesionalesFiltradosYOrdenados.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="py-8 text-center text-gray-500">
-                            <FaUserMd className="mx-auto mb-2 text-gray-300" size={24} />
-                            No hay médicos asociados
-                            {filtroEspecialidad && (
-                              <button
-                                onClick={() => setFiltroEspecialidad("")}
-                                className="block mx-auto mt-2 text-blue-600 text-sm underline"
-                              >
-                                Limpiar filtro
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ) : (
-                        profesionalesFiltradosYOrdenados.map((prof) => (
-                          <tr key={prof.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="py-4 px-5">
-                              <div className="flex items-center gap-3">
-                                <div className="p-1 bg-blue-100 rounded-full">
-                                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                  </svg>
-                                </div>
-                                <div>
-                                  <div className="font-medium text-gray-900">{prof.apellido}, {prof.nombre}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-5 text-gray-700">{prof.especialidad}</td>
-                            <td className="py-4 px-5 text-gray-600 text-sm">{prof.matricula}</td>
-                            <td className="py-4 px-5 text-gray-600 text-sm">{prof.telefono}</td>
-                            <td className="py-4 px-5">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleBotonTurnos(prof.id)}
-                                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
-                                  aria-label="Ver turnos"
-                                >
-                             <span className="text-lg">📅</span>
-                                </button>
-                                <button
-                                  onClick={() => handleDesvincularProfesional(prof.id)}
-                                  disabled={deletingIds.has(prof.id)}
-                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition disabled:opacity-60"
-                                  aria-label="Eliminar"
-                                >
-                                  {deletingIds.has(prof.id) ? (
-                                    <FaSpinner className="animate-spin" size={16} />
-                                  ) : (
-                                    <FaTrashAlt size={16} />
-                                  )}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </main>
-
-          {/* Footer */}
-          <footer className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm text-gray-600">
-            <span>
-              Mostrando <strong>{profesionalesFiltradosYOrdenados.length}</strong> profesional(es)
-            </span>
-            <button
-              onClick={() => navigate("/micuenta")}
-              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition"
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+            <select
+              value={filtroEspecialidad}
+              onChange={(e) => setFiltroEspecialidad(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-sm text-slate-700 focus:border-indigo-500 outline-none appearance-none transition-all"
             >
-              Cerrar
+              <option value="">Todas las especialidades</option>
+              {especialidades.map((esp) => (
+                <option key={esp} value={esp}>{esp}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="hidden lg:flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === "table" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              <FaList size={18} />
             </button>
-          </footer>
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === "cards" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+            >
+              <FaThLarge size={18} />
+            </button>
+          </div>
         </div>
       </div>
+
+      <main className="flex-1 overflow-y-auto p-6 md:p-12 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          
+          {profesionalesFiltradosYOrdenados.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-300">
+              <FaUserMd size={100} className="opacity-10 mb-6" />
+              <p className="text-2xl font-black opacity-20 tracking-tighter uppercase">No hay profesionales registrados</p>
+            </div>
+          ) : viewMode === "cards" ? (
+            /* VISTA DE CARDS */
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 animate-slide-up">
+              {profesionalesFiltradosYOrdenados.map((prof) => (
+                <div key={prof.id} className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-600 transition-all duration-500 z-0 opacity-20 group-hover:opacity-10"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-5 mb-8">
+                      <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                        <FaUserMd size={28} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tighter uppercase leading-tight">{prof.apellido}, {prof.nombre}</h3>
+                        <span className="text-indigo-600 font-black text-[10px] uppercase tracking-widest">{prof.especialidad}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Matrícula</p>
+                        <p className="text-sm font-black text-slate-700">{prof.matricula}</p>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Teléfono</p>
+                        <p className="text-sm font-black text-slate-700">{prof.telefono}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleBotonTurnos(prof.id)}
+                        className="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200"
+                      >
+                        Gestionar Turnos
+                      </button>
+                      <button
+                        onClick={() => handleDesvincularProfesional(prof.id)}
+                        disabled={deletingIds.has(prof.id)}
+                        className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-600 hover:text-white transition-all"
+                      >
+                        {deletingIds.has(prof.id) ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* VISTA DE TABLA */
+            <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden animate-slide-up">
+              <table className="w-full">
+                <thead className="bg-slate-900 text-white">
+                  <tr>
+                    <th className="p-8 text-left font-black text-[10px] uppercase tracking-widest cursor-pointer" onClick={() => cambiarOrden("nombre")}>
+                      Profesional {getSortIcon("nombre")}
+                    </th>
+                    <th className="p-8 text-left font-black text-[10px] uppercase tracking-widest cursor-pointer" onClick={() => cambiarOrden("especialidad")}>
+                      Especialidad {getSortIcon("especialidad")}
+                    </th>
+                    <th className="p-8 text-left font-black text-[10px] uppercase tracking-widest">Matrícula</th>
+                    <th className="p-8 text-left font-black text-[10px] uppercase tracking-widest text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {profesionalesFiltradosYOrdenados.map((prof) => (
+                    <tr key={prof.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="p-8">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <FaUserMd />
+                          </div>
+                          <span className="font-black text-slate-800 uppercase tracking-tight">{prof.apellido}, {prof.nombre}</span>
+                        </div>
+                      </td>
+                      <td className="p-8">
+                        <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[10px] uppercase tracking-widest">
+                          {prof.especialidad}
+                        </span>
+                      </td>
+                      <td className="p-8 font-bold text-slate-500">{prof.matricula}</td>
+                      <td className="p-8">
+                        <div className="flex items-center justify-end gap-3">
+                          <button
+                            onClick={() => handleBotonTurnos(prof.id)}
+                            className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-600 hover:bg-slate-900 hover:text-white rounded-xl font-black text-[10px] tracking-widest uppercase transition-all"
+                          >
+                            <FaCalendarAlt /> Agenda
+                          </button>
+                          <button
+                            onClick={() => handleDesvincularProfesional(prof.id)}
+                            disabled={deletingIds.has(prof.id)}
+                            className="p-3 text-slate-300 hover:text-red-500 transition-colors"
+                          >
+                            {deletingIds.has(prof.id) ? <FaSpinner className="animate-spin" /> : <FaTrashAlt size={18} />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* FOOTER RESUMEN */}
+      <footer className="bg-white border-t border-slate-200 px-12 py-6 flex justify-between items-center">
+        <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest">
+          Mostrando <span className="text-indigo-600">{profesionalesFiltradosYOrdenados.length}</span> profesionales
+        </p>
+      </footer>
 
       {/* Modal de asociación */}
       {showModalAsociarProfesional && (
@@ -432,9 +340,7 @@ const GestionProfesionales = ({ profesionalVinculado, consultorioTipo }) => {
           profesionalVinculado={profesionalVinculado}
         />
       )}
-
-      <ToastContainer position="bottom-right" autoClose={1500} hideProgressBar />
-    </>
+    </div>
   );
 };
 

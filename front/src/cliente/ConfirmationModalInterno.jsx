@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FaCheckCircle, FaExclamationCircle, FaTimes, FaCalendarAlt, FaUser, FaIdCard, FaPhone, FaShieldAlt, FaAngleLeft, FaCheck, FaClock, FaStethoscope,FaMapMarkerAlt } from "react-icons/fa";
+import { 
+  FaCheckCircle, 
+  FaCheck, 
+  FaExclamationCircle, 
+  FaTimes, 
+  FaUser, 
+  FaIdCard, 
+  FaPhone, 
+  FaShieldAlt, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaStethoscope, 
+  FaMapMarkerAlt, 
+  FaAngleLeft,
+  FaSpinner 
+} from "react-icons/fa";
 import useAllCoberturas from "../../customHooks/useAllCoberturas";
 import { useParams, useNavigate } from "react-router";
 import useProfesionalxId from "../../customHooks/useProfesionalxId";
@@ -13,8 +28,7 @@ const ConfirmationModalInterno = ({
   ordenTurno,
   actualizarTurnos,
 }) => {
-  const { consultorioId } = useParams();
-  const { profesionalId } = useParams();
+  const { consultorioId, profesionalId } = useParams();
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,8 +36,8 @@ const ConfirmationModalInterno = ({
   const [isSuccess, setIsSuccess] = useState(false);
 
   const { coberturas } = useAllCoberturas();
-  const { profesional: prof, isLoading: loadingProfesional } = useProfesionalxId(profesionalId);
-  const { consultorio: consul, isLoading: loadingConsultorio } = useConsultorioxId(consultorioId);
+  const { profesional: prof } = useProfesionalxId(profesionalId);
+  const { consultorio: consul } = useConsultorioxId(consultorioId);
 
   const profesional = prof?.[0];
   const consultorio = consul?.[0];
@@ -34,19 +48,17 @@ const ConfirmationModalInterno = ({
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Formatear fecha y hora
+  // --- LÓGICA DE FORMATEO (CONSERVADA) ---
   const formatearFechaSQL = (fecha) => {
     if (!fecha) return "N/A";
     const date = new Date(fecha);
-    let fechaFormateada = date.toLocaleDateString("es-AR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    let f = date.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return f.charAt(0).toUpperCase() + f.slice(1);
+  };
 
-    // Capitalizar la primera letra
-    return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  const definirTitulo = (value) => {
+    const map = { doctor: 'Dr.', doctora: 'Dra.', licenciado: 'Lic.', licenciada: 'Lic.' };
+    return map[value] || '';
   };
 
   const formatearHora = (hora) => {
@@ -55,27 +67,13 @@ const ConfirmationModalInterno = ({
     return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
   };
 
-  const definirTitulo = (value) => {
-    switch (value) {
-      case 'doctor':
-        return 'Dr.';
-      case 'doctora':
-        return 'Dra.';
-      case 'licenciado':
-      case 'licenciada':
-        return 'Lic.';
-      default:
-        return '';
-    }
-  };
-
-  // Reservar turno
+  // --- RESERVAR TURNO INTERNO (MENSAJE PARA EL PACIENTE) ---
   const reservarTurno = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-      const response = await axios.put(
+      await axios.put(
         `${API_URL}/api/reservarturno/${selectedTurno?.id}`,
         {
           nombre_paciente: formData.nombre,
@@ -92,301 +90,201 @@ const ConfirmationModalInterno = ({
       );
 
       setIsSuccess(true);
-      toast.success("Turno reservado")
+      toast.success("Turno reservado con éxito");
 
-      // 🟢 ENLACE DE WHATSAPP AUTOMÁTICO - Mensaje mejorado
       const nombreProfesional = `${definirTitulo(profesional?.titulo)} ${profesional?.nombre} ${profesional?.apellido}`.trim();
-      const fechaFormateada = formatearFechaSQL(selectedTurno.fecha);
-      const horaFormateada = formatearHora(selectedTurno.hora);
-      const direccionCompleta = `${consultorio?.direccion}, ${consultorio?.localidad}`;
+      
+      const mensaje = `¡Hola ${formData.nombre}!\nTe agendé el siguiente turno:\n\nFecha: ${formatearFechaSQL(selectedTurno.fecha)}\nHora: ${formatearHora(selectedTurno.hora)}\nDirección: ${consultorio?.direccion}, ${consultorio?.localidad}\n\nIMPORTANTE: Si no podés asistir, reprogramá aquí:\nhttps://turnate.site/cancelar-turno/${selectedTurno?.id}\n\n¡Te esperamos!\nSaludos, ${nombreProfesional}`;
 
-      const mensaje = `¡Hola ${formData.nombre}!
-      Te agendé el siguiente turno:
-      
-      Fecha: ${fechaFormateada}
-      Hora: ${horaFormateada}
-      Dirección: ${direccionCompleta}
-      
-      IMPORTANTE
-      Si no podés asistir, por favor reprogramá tu turno desde aquí:
-      https://turnate.site/cancelar-turno/${selectedTurno?.id}
-      
-      Tolerancia de espera: 15 minutos
+      let tel = formData.telefono.replace(/\D/g, '');
+      if (tel.startsWith('9')) tel = '54' + tel;
+      else if (tel.startsWith('11') && tel.length === 10) tel = '549' + tel;
+      else if (!tel.startsWith('54')) tel = '549' + tel;
 
-      ¡Te esperamos! 
-      
-      Saludos, ${nombreProfesional}
-      
-      Turno generado desde https://turnate.site`;
-      
-
-      
-
-// Formatear número: asumimos que formData.telefono tiene el número sin + ni espacios
-// Para Argentina, asumimos prefijo 54 y si empieza con 9 o 11, lo ajustamos
-let telefono = formData.telefono.replace(/\D/g, ''); // Solo dígitos
-
-// Si empieza con 9 (celular argentino), agregamos 54 adelante
-if (telefono.startsWith('9')) {
-  telefono = '54' + telefono;
-} 
-// Si empieza con 11 (teléfono de Buenos Aires), también lo convertimos a móvil
-else if (telefono.startsWith('11') && telefono.length === 10) {
-  telefono = '549' + telefono;
-}
-// Si ya tiene 54, lo dejamos tal cual
-else if (!telefono.startsWith('54')) {
-  // Puedes ajustar lógica según tu caso, ejemplo genérico:
-  telefono = '549' + telefono; // asume celular argentino por defecto
-}
-
-const whatsappUrl = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+      const whatsappUrl = `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`;
 
       setTimeout(() => {
+        window.open(whatsappUrl, '_blank');
         navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`);
         setIsSubmitting(false);
-        window.open(whatsappUrl, '_blank');
-      }, 1500);
+      }, 2000);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Error al conectar con el servidor.";
-      setSubmitError(errorMessage);
+      setSubmitError(error.response?.data?.message || "Error al conectar con el servidor.");
+      setIsSubmitting(false);
     }
   };
+
   useEffect(() => {
-    // Bloquea el scroll al montar
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
-    // Restaura el scroll al desmontar
-    return () => {
-      document.body.style.overflow = prevOverflow || 'auto';
-    };
+    return () => { document.body.style.overflow = prevOverflow || 'auto'; };
   }, []);
-  return (
-    <>
-      {/* Overlay oscuro con blur */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-[300] animate-fade-in"
-      >
-        <div
-          className="bg-white rounded-2xl shadow-xl w-screen sm:max-w-md max-h-[90dvh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-gray-100"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Encabezado con gradiente */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 relative rounded-t-2xl">
-            <button
-              onClick={() => !isSubmitting && navigate(-1)}
-              disabled={isSubmitting}
-              className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-all duration-300 hover:scale-110 active:scale-95"
-              aria-label="Cerrar"
-            >
-              <FaTimes size={20} />
-            </button>
 
-            <div className="flex items-center gap-3">
-              <FaCheckCircle className="text-2xl" />
-              <div>
-                <h3 className="text-2xl font-bold">
-                  {isSuccess ? "¡Turno Confirmado!" : "Revisa tu Reserva"}
-                </h3>
-                <p className="text-blue-100 text-sm opacity-90">
-                  {isSuccess
-                    ? "Tu turno ha sido reservado correctamente."
-                    : "Confirma los datos antes de continuar."}
-                </p>
-              </div>
+  return (
+    <div className="fixed inset-0 z-[400] flex flex-col h-screen w-full bg-slate-50 overflow-hidden animate-fade-in font-sans">
+      <ToastContainer />
+      
+      {/* HEADER PREMIUM */}
+      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
+        <div className="flex items-center gap-6">
+          <button onClick={() => !isSubmitting && navigate(-1)} className="p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaAngleLeft className="text-2xl" />
+          </button>
+          <div className="flex items-center gap-5">
+            <div className="bg-indigo-600 p-4 rounded-2xl shadow-lg">
+              <FaCheckCircle className="text-3xl text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">
+                {isSuccess ? "¡Turno Confirmado!" : "Confirmación Interna"}
+              </h2>
+              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2">
+                {isSuccess ? "Notificando al paciente..." : "Verifica los datos de la reserva"}
+              </p>
             </div>
           </div>
+        </div>
+        {!isSubmitting && (
+          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
+            <FaTimes />
+          </button>
+        )}
+      </header>
 
-          {/* Cuerpo scrollable */}
-          <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50">
-            {isSuccess ? (
-              // Estado de éxito
-              <div className="text-center py-8">
-                <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4 animate-bounce" />
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Reserva Confirmada!</h2>
-                <p className="text-gray-600 text-sm">
-                  Tu turno ha sido reservado exitosamente.
-                </p>
-                <p className="text-gray-500 text-sm mt-1">
-                  Recibirás una confirmación por WhatsApp.
-                </p>
+      <main className="flex-1 overflow-y-auto bg-slate-50 py-10 px-6 flex flex-col items-center">
+        <div className="w-full max-w-4xl space-y-8 pb-20">
+          
+          {isSuccess ? (
+            <div className="bg-white p-12 md:p-20 rounded-[3rem] border border-slate-200 shadow-xl text-center space-y-6 animate-slide-up">
+              <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                <FaCheckCircle size={60} className="animate-bounce" />
               </div>
-            ) : (
-              // Estado de confirmación
-              <>
-                {/* Detalles del turno */}
-                {selectedTurno && (
-                  <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-                    <h4 className="font-semibold text-gray-800 mb-4 text-lg flex items-center gap-2">
-                      <FaCalendarAlt className="text-blue-600" /> Detalles del Turno
-                    </h4>
-                    <div className="space-y-3 text-sm text-gray-700">
-                      <div className="flex items-start gap-2">
-                        <FaCalendarAlt className="text-blue-600 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Fecha:</span>{" "}
-                          {formatearFechaSQL(selectedTurno.fecha)}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaClock className="text-orange-500 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Hora:</span>{" "}
-                          {formatearHora(selectedTurno.hora)}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaUser className="text-indigo-600 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Orden:</span>{" "}
-                          {ordenTurno}° turno
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaStethoscope className="text-purple-600 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Profesional:</span>{" "}
-                          {definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaStethoscope className="text-purple-500 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Especialidad:</span>{" "}
-                          {profesional?.especialidad}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaMapMarkerAlt className="text-red-500 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Establecimiento:</span>{" "}
-                          {consultorio?.tipo === "Particular"
-                            ? "Consultorio Particular"
-                            : `Centro médico ${consultorio?.nombre}`}
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FaMapMarkerAlt className="text-red-400 mt-1 flex-shrink-0" size={16} />
-                        <div>
-                          <span className="font-medium text-gray-600">Dirección:</span>{" "}
-                          {consultorio?.direccion}, {consultorio?.localidad}
-                        </div>
-                      </div>
+              <h2 className="text-4xl font-black text-slate-800 tracking-tighter">¡Reserva Exitosa!</h2>
+              <p className="text-slate-500 text-lg font-medium leading-relaxed max-w-md mx-auto">
+                El turno ha sido agendado. Estamos abriendo WhatsApp para que le envíes el comprobante al paciente.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-8 animate-slide-up">
+              
+              {/* CARD DETALLES DEL TURNO */}
+              <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-200 shadow-sm space-y-10">
+                <h3 className="text-slate-800 text-xl font-black flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <FaCalendarAlt className="text-indigo-600" /> Datos del Turno
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                  <div className="flex gap-5">
+                    <div className="bg-slate-50 p-4 h-fit rounded-2xl text-indigo-600 shadow-sm"><FaCalendarAlt size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha Programada</p>
+                      <p className="text-xl font-black text-slate-800 tracking-tight">{formatearFechaSQL(selectedTurno?.fecha)}</p>
                     </div>
                   </div>
-                )}
+                  
+                  <div className="flex gap-5">
+                    <div className="bg-slate-50 p-4 h-fit rounded-2xl text-orange-500 shadow-sm"><FaClock size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Horario de Inicio</p>
+                      <p className="text-xl font-black text-slate-800 tracking-tight">{formatearHora(selectedTurno?.hora)} hs</p>
+                    </div>
+                  </div>
 
-                {/* Datos del paciente */}
-                <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-                  <h4 className="font-semibold text-gray-800 mb-4 text-lg flex items-center gap-2">
-                    <FaUser className="text-green-600" /> Tus Datos
-                  </h4>
-                  <div className="space-y-3 text-sm text-gray-700">
-                    <div className="flex items-start gap-2">
-                      <FaUser className="text-blue-600 mt-1 flex-shrink-0" size={16} />
-                      <div>
-                        <span className="font-medium text-gray-600">Nombre:</span> {formData?.nombre}
-                      </div>
+                  <div className="flex gap-5">
+                    <div className="bg-slate-50 p-4 h-fit rounded-2xl text-purple-600 shadow-sm"><FaStethoscope size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Profesional Asignado</p>
+                      <p className="text-xl font-black text-slate-800 tracking-tight capitalize">{definirTitulo(profesional?.titulo)} {profesional?.nombre} {profesional?.apellido}</p>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <FaUser className="text-indigo-600 mt-1 flex-shrink-0" size={16} />
-                      <div>
-                        <span className="font-medium text-gray-600">Apellido:</span> {formData?.apellido}
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <FaIdCard className="text-green-600 mt-1 flex-shrink-0" size={16} />
-                      <div>
-                        <span className="font-medium text-gray-600">DNI:</span> {formData?.dni}
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <FaPhone className="text-orange-500 mt-1 flex-shrink-0" size={16} />
-                      <div>
-                        <span className="font-medium text-gray-600">Teléfono:</span> {formData?.telefono}
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <FaShieldAlt className="text-purple-600 mt-1 flex-shrink-0" size={16} />
-                      <div>
-                        <span className="font-medium text-gray-600">Cobertura:</span>{" "}
-                        {coberturaElegida ? (
-                          coberturaElegida.nombre === coberturaElegida.siglas
-                            ? coberturaElegida.nombre
-                            : `${coberturaElegida.siglas} - ${coberturaElegida.nombre}`
-                        ) : "Particular"}
-                      </div>
+                  </div>
+
+                  <div className="flex gap-5">
+                    <div className="bg-slate-50 p-4 h-fit rounded-2xl text-red-500 shadow-sm"><FaMapMarkerAlt size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Establecimiento</p>
+                      <p className="text-xl font-black text-slate-800 tracking-tight">{consultorio?.direccion}</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{consultorio?.localidad}</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Error */}
-                {submitError && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
-                    <FaExclamationCircle className="mt-0.5 flex-shrink-0" size={20} />
-                    <div>
-                      <p className="font-semibold">Error al reservar</p>
-                      <p className="mt-1">{submitError}</p>
-                    </div>
+              {/* CARD DATOS PACIENTE */}
+              <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-200 shadow-sm space-y-10">
+                <h3 className="text-slate-800 text-xl font-black flex items-center gap-3 border-b border-slate-100 pb-4">
+                  <FaUser className="text-indigo-600" /> Información del Paciente
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaUser size={10} /> Nombre y Apellido</p>
+                    <p className="text-xl font-black text-slate-800 uppercase tracking-tight">{formData?.apellido}, {formData?.nombre}</p>
                   </div>
-                )}
-              </>
-            )}
-          </div>
+                  <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaIdCard size={10} /> DNI / Documento</p>
+                    <p className="text-xl font-black text-slate-800">{formData?.dni}</p>
+                  </div>
+                  <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaShieldAlt size={10} /> Cobertura Médica</p>
+                    <p className="text-xl font-black text-indigo-600 uppercase tracking-tight">
+                      {coberturaElegida ? (coberturaElegida.nombre === coberturaElegida.siglas ? coberturaElegida.nombre : `${coberturaElegida.siglas} - ${coberturaElegida.nombre}`) : "Particular"}
+                    </p>
+                  </div>
+                  <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><FaPhone size={10} /> Teléfono Móvil</p>
+                    <p className="text-xl font-black text-slate-800">{formData?.telefono}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-          {/* Footer */}
-          <div className="p-6 bg-white border-t border-gray-200">
+          {/* MENSAJE DE ERROR */}
+          {submitError && (
+            <div className="p-8 bg-red-50 border-2 border-red-100 rounded-[2rem] text-red-600 font-black flex items-center gap-5 shadow-sm">
+              <FaExclamationCircle className="text-3xl flex-shrink-0" />
+              <div>
+                <p className="uppercase text-[10px] tracking-widest mb-1">Error de procesamiento</p>
+                <p className="text-lg tracking-tight leading-none">{submitError}</p>
+              </div>
+            </div>
+          )}
+
+          {/* FOOTER DE ACCIONES */}
+          <div className="flex flex-col md:flex-row gap-5 pb-20">
             {!isSuccess ? (
-              <div className="flex gap-3">
+              <>
                 <button
-                  type="button"
-                  onClick={() => navigate(-1)}
+                  type="button" onClick={() => !isSubmitting && navigate(-1)}
                   disabled={isSubmitting}
-                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 active:bg-gray-300 transition-colors font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-70"
+                  className="flex-1 py-6 px-8 bg-white border-2 border-slate-200 text-slate-500 rounded-3xl font-black tracking-widest uppercase hover:bg-slate-50 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  <FaAngleLeft size={16} /> Editar
+                  <FaAngleLeft /> CORREGIR DATOS
                 </button>
                 <button
-                  type="button"
-                  onClick={reservarTurno}
+                  type="button" onClick={reservarTurno}
                   disabled={isSubmitting}
-                  className={`
-                    flex-1 py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300
-                    flex items-center justify-center gap-2
-                    ${isSubmitting
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg'
-                    }
-                  `}
+                  className={`flex-[2] py-6 px-8 rounded-3xl font-black tracking-[0.2em] text-white shadow-xl transition-all flex items-center justify-center gap-3
+                    ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-200 active:scale-95'}`}
                 >
                   {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-2 w-4 border-t-2 border-white"></div>
-                      Confirmando...
-                    </>
+                    <><FaSpinner className="animate-spin" /> PROCESANDO...</>
                   ) : (
-                    <>
-                      <FaCheck size={18} />
-                      Confirmar Reserva
-                    </>
+                    <><FaCheck /> AGENDAR Y NOTIFICAR</>
                   )}
                 </button>
-              </div>
+              </>
             ) : (
               <button
-                type="button"
-                onClick={() => navigate('/')}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 hover:scale-105 active:scale-100 shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                onClick={() => navigate(`/micuenta/panelturnos/${consultorio?.id}/${profesional?.id}`)}
+                className="w-full py-7 bg-slate-900 text-white rounded-3xl font-black tracking-[0.3em] hover:bg-indigo-600 shadow-2xl transition-all uppercase"
               >
-                <FaAngleLeft size={18} /> Volver al Inicio
+                VOLVER AL PANEL DE TURNOS
               </button>
             )}
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

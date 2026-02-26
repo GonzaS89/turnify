@@ -1,19 +1,22 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import { FaPlayCircle, FaArrowRight } from "react-icons/fa";
 
 const DualYouTubeSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Animaciones
+  const videoConsultorios = "G5VylYGq3_k"; 
+  const videoCentros = "eEzls-hZghY";
+
+  const embedUrl = (id) =>
+    `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&showinfo=0&modestbranding=1`;
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
+      transition: { staggerChildren: 0.2, delayChildren: 0.3 },
     },
   };
 
@@ -26,85 +29,53 @@ const DualYouTubeSection = () => {
     },
   };
 
-  // IDs de los videos de YouTube (reemplazalos con los reales)
-  const videoConsultorios = "G5VylYGq3_k"; // ← Video para médicos individuales
-  const videoCentros = "eEzls-hZghY"; // ← Video para centros médicos
-
-  const embedUrl = (id) =>
-    `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&showinfo=0&modestbranding=1`;
-
   return (
     <section
-      className="py-16 md:py-24 px-6 sm:px-8 lg:px-12 relative max-w-7xl mx-auto"
-      aria-labelledby="dual-video-title"
+      ref={ref}
+      className="py-24 px-6 max-w-7xl mx-auto relative overflow-hidden"
       id="videos"
     >
-      {/* Fondos decorativos sutiles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-gradient-to-l from-pink-100 to-rose-100 rounded-full opacity-25 blur-3xl"></div>
-      </div>
-
       <motion.div
-        ref={ref}
         variants={containerVariants}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
         className="relative z-10"
       >
-        {/* Badge diferenciada */}
-        <motion.div
-  variants={itemVariants}
-  className="flex justify-center mb-6"
->
-  <div className="inline-flex justify-center items-center gap-3 px-6 py-3 backdrop-blur-md 
-    border border-indigo-200 text-indigo-700 font-semibold text-sm uppercase tracking-wider 
-    rounded-full shadow-md bg-white/70"
-  >
-    {/* Punto animado */}
-    <span className="relative flex h-2.5 w-2.5">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
-    </span>
-    
-    {/* Texto */}
-    <span>Videos explicativos</span>
-  </div>
-</motion.div>
+        {/* ===== ENCABEZADO ===== */}
+        <div className="text-center max-w-4xl mx-auto mb-20 space-y-6">
+          <motion.div variants={itemVariants} className="flex justify-center">
+            <div className="inline-flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100">
+              <span className="text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em]">
+                Centro de aprendizaje
+              </span>
+            </div>
+          </motion.div>
 
-        {/* Título principal */}
-        <motion.h2
-          id="video-title"
-          variants={itemVariants}
-          className="text-4xl sm:text-5xl md:text-4xl xl:text-6xl font-extrabold text-gray-900 text-center mb-6 leading-tight"
-        >
-          Conocé en acción cómo funciona{" "}
-          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Turnate
-          </span>
-        </motion.h2>
+          <motion.h2
+            variants={itemVariants}
+            className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter uppercase"
+          >
+            Conocé Turnate <br />
+            <span className="text-indigo-600">en acción</span>
+          </motion.h2>
 
-        <motion.p
-          variants={itemVariants}
-          className="text-lg md:text-base xl:text-xl text-gray-600 max-w-4xl mx-auto mb-16 text-center leading-relaxed"
-        >
-          Elegí el camino que mejor se adapta a tu modelo: desde el consultorio
-          individual hasta el centro médico con múltiples especialistas. Te
-          mostramos cómo funciona en ambos casos.
-        </motion.p>
+          <motion.p
+            variants={itemVariants}
+            className="text-slate-500 font-bold text-lg md:text-xl max-w-2xl mx-auto pt-4"
+          >
+            Elegí el video tutorial según tu modelo: gestión individual para médicos independientes o panel administrativo para grandes centros.
+          </motion.p>
+        </div>
 
-        {/* Grid de videos */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 max-w-6xl mx-auto"
-        >
-          {/* Video - Consultorios */}
-          <div className="flex flex-col">
-            <div className="bg-white p-1 rounded-3xl shadow-xl border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="aspect-video rounded-2xl overflow-hidden">
+        {/* ===== GRID DE VIDEOS ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Video 1 - Consultorios */}
+          <motion.div variants={itemVariants} className="space-y-8 flex flex-col">
+            <div className="bg-white p-3 rounded-[3rem] shadow-2xl border border-slate-100 group transition-all duration-500">
+              <div className="aspect-video rounded-[2.5rem] overflow-hidden relative">
                 <iframe
                   src={embedUrl(videoConsultorios)}
-                  title="Tutorial para consultorios médicos - Turnate"
+                  title="Tutorial para consultorios médicos"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -113,29 +84,23 @@ const DualYouTubeSection = () => {
                 ></iframe>
               </div>
             </div>
-            <div className="mt-5 text-center">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Para{" "}
-                <span className="text-indigo-600">
-                  consultorios individuales
-                </span>
+            <div className="text-center md:text-left px-4">
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter flex items-center justify-center md:justify-start gap-3">
+                <FaPlayCircle className="text-indigo-600" /> Consultorios
               </h3>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Gestioná tu agenda con total autonomía, mejorá la comunicación
-                con tus pacientes y aumentá tu visibilidad en la plataforma.
-                Ideal para médicos independientes que buscan profesionalizar su
-                práctica sin complicaciones.
+              <p className="mt-3 text-slate-500 font-bold leading-relaxed">
+                Ideal para profesionales autónomos. Aprendé a configurar tu disponibilidad, gestionar pacientes y reducir ausencias con avisos automáticos.
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Video - Centros Médicos */}
-          <div className="flex flex-col">
-            <div className="bg-white p-1 rounded-3xl shadow-xl border border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="aspect-video rounded-2xl overflow-hidden">
+          {/* Video 2 - Centros Médicos */}
+          <motion.div variants={itemVariants} className="space-y-8 flex flex-col">
+            <div className="bg-white p-3 rounded-[3rem] shadow-2xl border border-slate-100 group transition-all duration-500">
+              <div className="aspect-video rounded-[2.5rem] overflow-hidden relative">
                 <iframe
                   src={embedUrl(videoCentros)}
-                  title="Tutorial para centros médicos - Turnate"
+                  title="Tutorial para centros médicos"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -144,62 +109,38 @@ const DualYouTubeSection = () => {
                 ></iframe>
               </div>
             </div>
-            <div className="mt-5 text-center">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Para <span className="text-purple-600">centros médicos</span>
+            <div className="text-center md:text-left px-4">
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter flex items-center justify-center md:justify-start gap-3">
+                <FaPlayCircle className="text-slate-900" /> Centros Médicos
               </h3>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Gestioná múltiples profesionales, especialidades y turnos
-                simultáneos. Con panel administrativo y sincronización en tiempo
-                real.
+              <p className="mt-3 text-slate-500 font-bold leading-relaxed">
+                Dominá la gestión de múltiples especialistas, agendas simultáneas y el panel de administración centralizado para tu entidad.
               </p>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
-        {/* CTA opcional debajo */}
-        <motion.div variants={itemVariants} className="mt-16 text-center">
-          <a
-            href="https://wa.me/5493815588504?text=Hola,%20quiero%20más%20información%20para%20mi%20consultorio%20o%20centro%20médico"
+        {/* ===== CALL TO ACTION ===== */}
+        <motion.div variants={itemVariants} className="mt-24 text-center">
+          <motion.a
+            href="https://wa.me/5493815588504"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-4 px-12 py-6 bg-slate-900 text-white font-black text-sm uppercase tracking-[0.2em] rounded-[2.5rem] shadow-2xl hover:bg-indigo-600 transition-all duration-300"
           >
-            Comunicáte con nosotros
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
-          </a>
-          <p className="text-sm text-gray-500 mt-4">
-            Asesoramiento gratuito y personalizado según tu modelo de negocio.
+            Quiero asesoramiento gratuito
+            <FaArrowRight />
+          </motion.a>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-8">
+            ¿Tenés dudas técnicas? Nuestro soporte está listo para ayudarte.
           </p>
         </motion.div>
       </motion.div>
 
-      {/* Animación de brillo (compartida) */}
-      <style jsx>{`
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        .animate-shine {
-          animation: shine 2s infinite;
-        }
-      `}</style>
+      {/* Decoraciones de fondo sutiles */}
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 -z-10 w-96 h-96 bg-indigo-50 rounded-full blur-[120px] opacity-60"></div>
     </section>
   );
 };

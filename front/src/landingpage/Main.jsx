@@ -119,15 +119,15 @@ const Main = ({ openLogin }) => {
     <main className="container relative mx-auto">
       <Header openLogin={openLogin} openModalProf={openModalProf}/>
       <Hero enviarIds={recibirIds} />
-        <hr className="my-16 border-gray-500 border-t-2" />
+        <hr className="my-16 border-gray-200 border-t-2" />
       <Steps />
-      <hr className="my-16 border-gray-500 border-t-2" />
+      <hr className="my-16 border-gray-200 border-t-2" />
       <Benefits />
-      <hr className="my-16 border-gray-500 border-t-2" />
+      <hr className="my-16 border-gray-200 border-t-2" />
       {/* <YouTubeEmbed /> */}
       <DualYouTubeSection />
 
-            <hr className="my-16 border-gray-500 border-t-2" />
+            <hr className="my-16 border-gray-200 border-t-2" />
 
       {/* <Testimonials />
       <hr className="my-16 border-gray-200 border-t-2" /> */}
