@@ -40,7 +40,7 @@ import Main from "./landingpage/Main";
 
 import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
 
-import PanelAdmin from "./admin/PanelAdmin";
+import PanelAdmin from "./admin/PanelAdmin.jsx";
 
 
 

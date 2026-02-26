@@ -94,7 +94,25 @@ const ConfirmationModalInterno = ({
 
       const nombreProfesional = `${definirTitulo(profesional?.titulo)} ${profesional?.nombre} ${profesional?.apellido}`.trim();
       
-      const mensaje = `¡Hola ${formData.nombre}!\nTe agendé el siguiente turno:\n\nFecha: ${formatearFechaSQL(selectedTurno.fecha)}\nHora: ${formatearHora(selectedTurno.hora)}\nDirección: ${consultorio?.direccion}, ${consultorio?.localidad}\n\nIMPORTANTE: Si no podés asistir, reprogramá aquí:\nhttps://turnate.site/cancelar-turno/${selectedTurno?.id}\n\n¡Te esperamos!\nSaludos, ${nombreProfesional}`;
+    const mensaje = `📌 *TURNO AGENDADO* - Turnate 🩺
+
+¡Hola ${formData.nombre}! 👋
+Se ha reservado con éxito tu turno con:
+👨‍⚕️ *${nombreProfesional}*
+
+📅 *DÍA:* ${formatearFechaSQL(selectedTurno.fecha)}
+⏰ *HORA:* ${formatearHora(selectedTurno.hora)} hs
+📍 *DIRECCIÓN:* ${consultorio?.direccion}, ${consultorio?.localidad}
+
+✅ *POR FAVOR, CONFIRMÁ este mensaje para asegurar que lo recibiste.*
+
+---
+⚠️ *COMPROMISO MÉDICO:*
+Si por algún motivo no podés asistir, te pedimos que reprogrames o canceles a través del siguiente link. Esto permite que otro paciente que lo necesite pueda ocupar el lugar:
+
+🔗 https://turnate.site/cancelar-turno/${selectedTurno?.id}
+
+¡Te esperamos!`;
 
       let tel = formData.telefono.replace(/\D/g, '');
       if (tel.startsWith('9')) tel = '54' + tel;

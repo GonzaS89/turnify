@@ -6,18 +6,9 @@ import CrearConsultorioModal from "../cliente/CrearConsultorioModal";
 
 // CARGA DE ICONOS
 import {
-  FaCalendarAlt,
-  FaCog,
-  FaShieldAlt,
-  FaStethoscope,
-  FaIdCard,
-  FaChevronRight,
-  FaClock,
-  FaCheckCircle,
-  FaPlus,
-  FaShareAlt,
-  FaCircleNotch,
-  FaExclamationTriangle
+  FaCalendarAlt, FaShieldAlt, FaStethoscope, FaIdCard, FaChevronRight,
+  FaClock, FaCheckCircle, FaPlus, FaShareAlt, FaCircleNotch,
+  FaExclamationTriangle, FaWhatsapp, FaCalendarDay
 } from "react-icons/fa";
 import { FaHouseMedical } from "react-icons/fa6";
 
@@ -28,30 +19,19 @@ import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalC
 
 // CARGA DE LAYOUTS
 import ModalListaTurnos from "../cliente/ModalListaTurnos";
+import { toast, ToastContainer } from "react-toastify";
 
 const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
-  const [showModalAsociarProfesional, setShowModalAsociarProfesional] = useState(false);
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
   const [showModalCrearConsultorio, setShowModalCrearConsultorio] = useState(false);
-  const [refreshProfesionales, setRefreshProfesionales] = useState(null);
 
   const perfilID = perfil?.id;
   const perfilTipo = perfil.tipo;
 
-  const {
-    consultorios: consultoriosObtenidos,
-    isLoading: isLoadingConsultoriosxIdPerfil,
-    error: errorConsultoriosxIdPerfil,
-    fetchConsultorio,
-  } = useObtenerConsultorioxIdPerfil(perfilID);
-
-  const {
-    profesional: profesionalesObtenidos,
-    isLoading: isLoadingProfesionalesxIdPerfil,
-    error: errorProfesionalesxIdPerfil,
-    fetchProfesional,
-  } = useObtenerProfesionalxIdPerfil(perfilID);
+  // Datos de Consultorios y Profesional
+  const { consultorios: consultoriosObtenidos, fetchConsultorio } = useObtenerConsultorioxIdPerfil(perfilID);
+  const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionales, error: errorProfesionales, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
 
   const medico = profesionalesObtenidos?.[0] || null;
   const medicoID = medico?.id;
@@ -61,9 +41,9 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const [ConsultorioSelecID, setConsultorioSelecID] = useState(storedSelection);
 
   useEffect(() => {
-    if (consultoriosObtenidos && consultoriosObtenidos.length > 0) {
-      const primerId = consultoriosObtenidos[0].id;
+    if (consultoriosObtenidos?.length > 0) {
       if (!ConsultorioSelecID) {
+        const primerId = consultoriosObtenidos[0].id;
         setConsultorioSelecID(primerId);
         localStorage.setItem("consultorioSeleccionadoId", primerId);
       }
@@ -71,289 +51,220 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
       setConsultorioSelecID(null);
       localStorage.removeItem("consultorioSeleccionadoId");
     }
-  }, [consultoriosObtenidos]);
+  }, [consultoriosObtenidos, ConsultorioSelecID]);
 
-  const noHayConsultorioAsociados = !consultoriosObtenidos || consultoriosObtenidos.length === 0;
-  const noHayProfesionalesAsociados = !profesionalesObtenidos || profesionalesObtenidos.length === 0;
-
-  const {
-    turnos,
-    isLoading: isLoadingTurnos,
-    error: errorTurnos,
-  } = useProfessionalConsultorioTurnos(medicoID, ConsultorioSelecID);
-
-  const refrescarListaProfesionales = () => {
-    setRefreshProfesionales((prev) => prev + 1);
-  };
+  // Hook de turnos (obtiene todos los estados)
+  const { turnos, isLoading: isLoadingTurnos } = useProfessionalConsultorioTurnos(medicoID, ConsultorioSelecID);
 
   useEffect(() => {
-    if (profesionalesObtenidos?.[0] === undefined) {
-      setShowModalAsociarProfesional(true);
-    } else {
-      setShowModalAsociarProfesional(false);
-    }
-    enviarMedicoID(medicoID);
-  }, [profesionalesObtenidos, medicoID]);
+    if (medicoID) enviarMedicoID(medicoID);
+  }, [medicoID, enviarMedicoID]);
 
-  const turnsToday = (estado) => {
-    if (!turnos || turnos.length === 0) return 0;
-    const today = new Date();
-    const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-    return turnos.filter(
-      (turno) => new Date(turno.fecha).toISOString().split("T")[0] === todayFormatted && turno.estado === estado
-    ).length;
-  };
+  // --- LÓGICA DE FILTRADO: SOLO RESERVADOS DE HOY ---
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  
+  const turnosReservadosHoy = turnos?.filter(t => 
+    new Date(t.fecha).toLocaleDateString('en-CA') === todayStr && 
+    t.estado === "reservado"
+  ).sort((a, b) => a.hora.localeCompare(b.hora)) || [];
 
-  const todayFormatted = new Date()
-    .toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "short", year: "numeric" })
-    .replace(/^\w/, (c) => c.toUpperCase());
+  // Contadores para las StatCards (usando todos los turnos del hook)
+  const countByEstado = (estado) => turnos?.filter(t => 
+    new Date(t.fecha).toLocaleDateString('en-CA') === todayStr && t.estado === estado
+  ).length || 0;
 
-  if (isLoadingProfesionalesxIdPerfil) return <LoadingCard />;
+  const todayFormatted = new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
 
-  if (errorProfesionalesxIdPerfil || !perfil) {
-    return (
-      <ErrorCard
-        title="Error de Sistema"
-        message={errorProfesionalesxIdPerfil?.message || "Error al cargar la interfaz del consultorio."}
-      />
-    );
-  }
+  if (isLoadingProfesionales) return <LoadingCard />;
+  if (errorProfesionales || !perfil) return <ErrorCard title="Error de Sistema" message={errorProfesionales?.message || "Error al cargar la interfaz."} />;
+
+  const noHayConsultorios = !consultoriosObtenidos || consultoriosObtenidos.length === 0;
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-10 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-12">
         
-        {/* ===== ENCABEZADO EXECUTIVE ===== */}
-        <header className="bg-slate-900 text-white rounded-[3rem] shadow-2xl p-10 sm:p-14 mb-12 relative overflow-hidden border border-slate-800">
+        {/* ENCABEZADO EXECUTIVE */}
+        <header className="bg-slate-900 text-white rounded-[3.5rem] shadow-2xl p-10 sm:p-14 relative overflow-hidden border border-slate-800">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-            
             <div className="flex-1">
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tighter italic leading-none mb-10 uppercase">
+              <h1 className="text-4xl sm:text-5xl font-black tracking-tighter italic leading-none mb-10 uppercase">
                 Panel de <span className="text-indigo-500 not-italic">Gestión</span>
               </h1>
-
-              {medico ? (
+              {medico && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8">
-                  <div className="w-28 h-28 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white font-black text-4xl shadow-2xl shadow-indigo-500/20">
+                  <div className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white font-black text-3xl shadow-2xl">
                     {medico.nombre.charAt(0)}{medico.apellido.charAt(0)}
                   </div>
                   <div>
-                    <h2 className="text-4xl font-black tracking-tight mb-3">
-                      Dr. {medico.nombre} {medico.apellido}
-                    </h2>
-                    <div className="flex flex-wrap gap-4 text-xs font-black uppercase tracking-widest text-slate-400">
-                      <span className="flex items-center gap-2 bg-slate-800 px-5 py-2.5 rounded-2xl border border-slate-700">
-                        <FaStethoscope className="text-indigo-400" size={16} /> {medico.especialidad}
+                    <h2 className="text-3xl font-black tracking-tight mb-2">Dr. {medico.nombre} {medico.apellido}</h2>
+                    <div className="flex flex-wrap gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <span className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700">
+                        <FaStethoscope className="text-indigo-400" /> {medico.especialidad}
                       </span>
-                      <span className="flex items-center gap-2 bg-slate-800 px-5 py-2.5 rounded-2xl border border-slate-700">
-                        <FaIdCard className="text-indigo-400" size={16} /> Matrícula: {medico.matricula}
+                      <span className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700">
+                        <FaIdCard className="text-indigo-400" /> MP: {medico.matricula}
                       </span>
                     </div>
-                    
-                    {consultoriosObtenidos.length > 0 && (
-                      <div className="mt-8">
-                        <button
-                          onClick={async () => {
-                            const url = `https://turnate.site/turnos/${medicoSlug}`;
-                            const text = "¡Reservá tu turno desde este enlace!";
-                            if (navigator.share) {
-                              try { await navigator.share({ title: "Turnate", text, url }); } catch (err) { console.error(err); }
-                            } else {
-                              navigator.clipboard.writeText(url);
-                              alert("Enlace copiado al portapapeles");
-                            }
-                          }}
-                          className="inline-flex items-center gap-3 px-8 py-5 bg-indigo-600 text-white font-black rounded-[1.5rem] shadow-xl hover:bg-indigo-500 hover:scale-[1.05] active:scale-95 transition-all uppercase tracking-[0.2em] text-xs"
-                        >
-                          <FaShareAlt /> Compartir Enlace de Turnos
-                        </button>
-                      </div>
-                    )}
+                    <button onClick={() => {
+                        const url = `https://turnate.site/turnos/${medicoSlug}`;
+                        navigator.clipboard.writeText(url);
+                        toast.success("Enlace de reserva copiado");
+                      }} 
+                      className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-black rounded-xl shadow-lg hover:bg-indigo-500 transition-all uppercase tracking-widest text-[10px]"
+                    >
+                      <FaShareAlt /> Compartir Enlace
+                    </button>
                   </div>
                 </div>
-              ) : (
-                <p className="text-slate-500 text-2xl font-black italic">No se detectó profesional vinculado...</p>
               )}
             </div>
 
-            {/* LISTADO DE SEDES / CONSULTORIOS */}
-            <div className="w-full lg:w-[400px] space-y-5 bg-slate-800/50 p-8 rounded-[2.5rem] border border-slate-700/50">
-              <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-4">Sedes de Atención</h3>
-              <div className="max-h-72 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-                {consultoriosObtenidos?.map((consultorio) => {
-                  const isSelected = ConsultorioSelecID === consultorio.id;
-                  return (
-                    <button
-                      key={consultorio.id}
-                      onClick={() => {
-                        if (ConsultorioSelecID !== consultorio.id) {
-                          setConsultorioSelecID(consultorio.id);
-                          localStorage.setItem("consultorioSeleccionadoId", consultorio.id);
-                        }
-                      }}
-                      className={`w-full p-6 rounded-[2rem] transition-all flex items-center gap-5 border-2 text-left ${
-                        isSelected 
-                        ? "bg-white border-indigo-500 text-slate-900 shadow-xl scale-[1.02]" 
-                        : "bg-slate-900/50 border-transparent text-slate-400 hover:bg-slate-700"
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isSelected ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-600"}`}>
-                        <FaHouseMedical size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-black text-base uppercase truncate leading-tight ${isSelected ? "text-slate-900" : "text-white"}`}>
-                          {consultorio.nombre}
-                        </p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 truncate mt-1">
-                          {consultorio.direccion}
-                        </p>
-                      </div>
-                      {isSelected && <FaCheckCircle className="text-indigo-600" size={20} />}
-                    </button>
-                  );
-                })}
+            {/* LISTADO DE SEDES */}
+            <div className="w-full lg:w-[380px] space-y-4 bg-slate-800/30 p-6 rounded-[2.5rem] border border-slate-700/50">
+              <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] ml-2">Sedes Activas</h3>
+              <div className="max-h-60 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                {consultoriosObtenidos?.map((c) => (
+                  <button key={c.id} onClick={() => { setConsultorioSelecID(c.id); localStorage.setItem("consultorioSeleccionadoId", c.id); }}
+                    className={`w-full p-4 rounded-2xl transition-all flex items-center gap-4 border-2 text-left ${ConsultorioSelecID === c.id ? "bg-white border-indigo-500 text-slate-900 shadow-lg scale-[1.02]" : "bg-slate-900/40 border-transparent text-slate-400 hover:bg-slate-800"}`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${ConsultorioSelecID === c.id ? "bg-indigo-600 text-white" : "bg-slate-800"}`}><FaHouseMedical size={16} /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-black text-xs uppercase truncate ${ConsultorioSelecID === c.id ? "text-slate-900" : "text-white"}`}>{c.nombre}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter opacity-50 truncate">{c.direccion}</p>
+                    </div>
+                  </button>
+                ))}
               </div>
-              <button
-                onClick={() => setShowModalCrearConsultorio(true)}
-                className="w-full py-5 border-2 border-dashed border-slate-600 text-slate-400 font-black rounded-[2rem] hover:border-indigo-500 hover:text-indigo-400 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3"
-              >
-                <FaPlus /> Agregar Nueva Sede
+              <button onClick={() => setShowModalCrearConsultorio(true)} className="w-full py-4 border-2 border-dashed border-slate-700 text-slate-500 font-black rounded-2xl hover:border-indigo-500 hover:text-indigo-400 transition-all uppercase tracking-widest text-[9px] flex items-center justify-center gap-2">
+                <FaPlus size={10} /> Agregar Nueva Sede
               </button>
             </div>
           </div>
         </header>
 
-        {/* ===== ACCESOS RÁPIDOS ===== */}
-        {consultoriosObtenidos?.length > 0 && (
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <ActionCard
-              title="MI AGENDA"
-              description="Visualice y gestione sus turnos del día."
-              icon={FaCalendarAlt}
-              color="indigo"
-              onClick={() => {
-                if (ConsultorioSelecID && medicoID) navigate(`/micuenta/panelturnos/${ConsultorioSelecID}/${medicoID}`);
-                else alert("Seleccione un consultorio.");
-              }}
-              value={isLoadingTurnos ? "..." : turnsToday("reservado")}
-            />
-          
-            <ActionCard
-              title="COBERTURAS"
-              description="Gestione convenios con prepagas."
-              icon={FaShieldAlt}
-              color="blue"
-              onClick={() => navigate(`/micuenta/gestioncoberturas/${ConsultorioSelecID}`)}
-            />
-          </section>
-        )}
-
-        {/* ===== ESTADÍSTICAS DEL DÍA ===== */}
-        {medico && !noHayConsultorioAsociados && (
-          <div className="bg-white rounded-[3rem] shadow-xl p-12 border border-slate-100 mb-12">
-            <div className="flex items-center justify-between mb-10 border-b border-slate-50 pb-6">
-              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">
-                Resumen de Actividad <span className="text-indigo-600">/</span> {todayFormatted}
-              </h3>
+        {!noHayConsultorios && (
+          <>
+            {/* ESTADÍSTICAS RÁPIDAS DEL DÍA */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard label="Pacientes Hoy" value={countByEstado("reservado")} icon={FaCalendarAlt} color="text-indigo-600" />
+              <StatCard label="Huecos Libres" value={countByEstado("disponible")} icon={FaClock} color="text-emerald-500" />
+              <StatCard label="Ya Atendidos" value={countByEstado("finalizado")} icon={FaCheckCircle} color="text-blue-500" />
+              <StatCard label="Gestionar Agenda" value="AGENDA" icon={FaChevronRight} color="text-slate-900" onClick={() => navigate(`/micuenta/panelturnos/${ConsultorioSelecID}/${medicoID}`)} clickable />
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-              <StatCard label="Reservas Hoy" value={turnsToday("reservado")} icon={FaCalendarAlt} color="text-indigo-600" />
-              <StatCard label="Libres" value={turnsToday("disponible")} icon={FaClock} color="text-emerald-600" />
-              <StatCard label="Finalizados" value={turnsToday("finalizado")} icon={FaCheckCircle} color="text-blue-600" />
-              <StatCard 
-                label="Abrir Agenda" 
-                value="VER" 
-                icon={FaChevronRight} 
-                color="text-slate-900" 
-                onClick={() => setShowModalListaTurnos(true)} 
-                clickable 
-              />
-            </div>
-          </div>
+
+            {/* HOJA DE RUTA: SOLO RESERVADOS */}
+            <section className="bg-white rounded-[3.5rem] p-10 shadow-xl border border-slate-100">
+              <div className="flex items-center justify-between mb-10 border-b border-slate-50 pb-8">
+                <div className="flex items-center gap-5">
+                  <div className="bg-indigo-600 p-4 rounded-[1.5rem] text-white shadow-lg">
+                    <FaCalendarDay size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Agenda de Pacientes</h3>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Pendientes para hoy: {todayFormatted}</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowModalListaTurnos(true)} className="px-6 py-3 bg-slate-50 text-slate-500 font-black rounded-xl text-[10px] uppercase hover:bg-indigo-50 transition-all border border-slate-100">
+                  Ver Historial / Futuros
+                </button>
+              </div>
+
+              {isLoadingTurnos ? (
+                <div className="py-20 text-center"><FaCircleNotch className="animate-spin text-indigo-600 mx-auto" size={40} /></div>
+              ) : turnosReservadosHoy.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {turnosReservadosHoy.map((turno) => (
+                    <PacienteDiaCard key={turno.id} turno={turno} />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-24 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+                  <div className="max-w-xs mx-auto space-y-4">
+                     <p className="text-slate-300 flex justify-center"><FaCalendarAlt size={40} /></p>
+                     <p className="text-slate-400 font-black uppercase italic tracking-widest text-sm">
+                       No tenés pacientes reservados para hoy
+                     </p>
+                  </div>
+                </div>
+              )}
+            </section>
+          </>
         )}
 
-        {/* MODALES */}
-        {showModalCrearConsultorio && (
-          <CrearConsultorioModal
-            isOpen={true} onClose={() => setShowModalCrearConsultorio(false)}
-            perfilID={perfilID} profesionalID={medicoID} perfilTipo={perfilTipo}
-            actualizarConsultorio={fetchConsultorio}
-          />
-        )}
-
-        {noHayProfesionalesAsociados && (
-          <AsociarProfesionalAPerfil
-            perfilID={perfilID} perfil={perfil} onClose={() => setShowModalAsociarProfesional(false)}
-            refrescarListaProfesionales={refrescarListaProfesionales} profesionalVinculado={!!medicoID}
-            actualizarProfesionales={fetchProfesional}
-          />
-        )}
-
-        {showModalListaTurnos && (
-          <ModalListaTurnos turnos={turnos} onClose={() => setShowModalListaTurnos(false)} />
-        )}
+        {/* MODALES Y ASOCIACIONES */}
+        <CrearConsultorioModal isOpen={showModalCrearConsultorio} onClose={() => setShowModalCrearConsultorio(false)} perfilID={perfilID} profesionalID={medicoID} perfilTipo={perfilTipo} onSuccess={fetchConsultorio} />
+        {showModalListaTurnos && <ModalListaTurnos turnos={turnos} onClose={() => setShowModalListaTurnos(false)} />}
+        {!medico && <AsociarProfesionalAPerfil perfilID={perfilID} perfil={perfil} onClose={() => {}} actualizarProfesionales={fetchProfesional} />}
       </div>
+      <ToastContainer position="bottom-right" autoClose={2000} hideProgressBar theme="dark" />
     </div>
   );
 };
 
-// ===== COMPONENTES AUXILIARES REDISEÑADOS =====
-
-const ActionCard = ({ title, description, icon: Icon, color, onClick, value }) => {
-  const themes = {
-    indigo: "from-indigo-600 to-indigo-800",
-    slate: "from-slate-800 to-slate-950",
-    blue: "from-blue-700 to-blue-900"
-  };
-
+// COMPONENTE TARJETA DE PACIENTE (EXECUTIVE STYLE)
+const PacienteDiaCard = ({ turno }) => {
   return (
-    <div
-      onClick={onClick}
-      className="group relative bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100 cursor-pointer transition-all hover:scale-[1.04] hover:shadow-2xl active:scale-95"
-    >
-      <div className={`inline-flex p-6 rounded-[1.5rem] bg-gradient-to-br ${themes[color]} text-white mb-10 shadow-lg group-hover:scale-110 transition-transform`}>
-        <Icon size={28} />
+    <div className="p-6 rounded-[2.5rem] bg-white border border-indigo-100 shadow-md ring-1 ring-indigo-50 transition-all hover:shadow-xl hover:-translate-y-1">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="bg-slate-900 px-4 py-2 rounded-2xl">
+            <span className="text-white font-black text-sm">{turno.hora.slice(0, 5)}</span>
+          </div>
+          <div>
+            <p className="text-slate-900 font-black text-sm uppercase tracking-tighter leading-none mb-1">
+              {turno.apellido_paciente}, {turno.nombre_paciente}
+            </p>
+            <p className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{turno.cobertura || 'Particular'}</p>
+          </div>
+        </div>
+        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
       </div>
-      <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tighter uppercase">{title}</h3>
-      <p className="text-slate-400 text-xs font-black uppercase tracking-widest leading-relaxed mb-8">{description}</p>
-      <div className="flex items-center justify-between border-t border-slate-50 pt-8">
-        <span className="text-4xl font-black text-slate-900">{value ?? "IR"}</span>
-        <FaChevronRight className="text-slate-200 group-hover:text-indigo-600 transition-colors" size={20} />
+
+      <div className="flex items-center justify-between pt-5 border-t border-slate-50">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Identidad</span>
+          <span className="text-xs font-bold text-slate-600">DNI {turno.DNI}</span>
+        </div>
+        {turno.telefono && (
+          <a 
+            href={`https://wa.me/${turno.telefono}`} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+          >
+            <FaWhatsapp size={14} /> WhatsApp
+          </a>
+        )}
       </div>
     </div>
   );
 };
 
+// COMPONENTES AUXILIARES
 const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
-  <div
-    onClick={clickable ? onClick : undefined}
-    className={`p-10 rounded-[2.5rem] border-2 transition-all flex flex-col items-center justify-center ${
-      clickable 
-      ? "border-indigo-100 bg-indigo-50/20 cursor-pointer hover:border-indigo-600 hover:bg-white hover:shadow-2xl" 
-      : "border-slate-50 bg-slate-50/50"
-    }`}
-  >
-    <Icon className={`${color} mb-5`} size={30} />
-    <span className="text-5xl font-black text-slate-900 tracking-tighter mb-2 leading-none">{value}</span>
-    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{label}</span>
+  <div onClick={clickable ? onClick : undefined} className={`p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm transition-all flex flex-col items-center justify-center ${clickable ? "cursor-pointer hover:border-indigo-500 hover:shadow-xl" : ""}`}>
+    <Icon className={`${color} mb-4`} size={24} />
+    <span className="text-4xl font-black text-slate-900 tracking-tighter mb-1">{value}</span>
+    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">{label}</span>
   </div>
 );
 
 const LoadingCard = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
-    <div className="p-20 bg-white rounded-[4rem] shadow-2xl text-center border border-slate-100">
-      <FaCircleNotch className="animate-spin text-indigo-600 mx-auto mb-10" size={80} />
-      <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">Sincronizando<span className="text-indigo-600">...</span></h2>
+    <div className="text-center">
+      <FaCircleNotch className="animate-spin text-indigo-600 mx-auto mb-6" size={50} />
+      <h2 className="text-xl font-black text-slate-900 tracking-widest uppercase italic">Sincronizando Turnate...</h2>
     </div>
   </div>
 );
 
 const ErrorCard = ({ title, message }) => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
-    <div className="bg-white rounded-[4rem] shadow-2xl p-20 max-w-2xl w-full text-center border-b-[12px] border-red-500">
-      <FaExclamationTriangle className="text-red-500 mx-auto mb-10" size={80} />
-      <h2 className="text-5xl font-black text-slate-900 tracking-tighter mb-6 uppercase">{title}</h2>
-      <p className="text-slate-500 font-bold text-xl leading-relaxed italic">{message}</p>
+    <div className="bg-white rounded-[3rem] shadow-2xl p-16 max-w-xl w-full text-center border-t-[8px] border-red-500">
+      <FaExclamationTriangle className="text-red-500 mx-auto mb-6" size={60} />
+      <h2 className="text-3xl font-black text-slate-900 tracking-tighter mb-4 uppercase">{title}</h2>
+      <p className="text-slate-500 font-bold italic">{message}</p>
     </div>
   </div>
 );
