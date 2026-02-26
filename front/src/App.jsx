@@ -39,6 +39,8 @@ import Main from "./landingpage/Main";
 
 
 import PlantillaCodigosActivacion from "./Layouts/PlantillaCodigosActivacion";
+import LoginAdmin from "./admin/LoginAdmin";
+import PanelAdmin from "./admin/PanelAdmin";
 
 
 
@@ -164,6 +166,7 @@ const App = () => {
             <Route path="/micuenta/gestioncoberturas/:consultorioId" element={<GestionCoberturas />} />
             <Route path="/micuenta/gestionprofesionales/:consultorioId" element={<GestionProfesionales />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/admin" element={<LoginAdmin closeLogin={closeLogin} />} />
           </Routes>
         </main>
       </div>
