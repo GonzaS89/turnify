@@ -8,25 +8,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   FaUserMd,
   FaCalendarAlt,
-  FaClock,
   FaHospital,
-  FaHome,
-  FaExclamationTriangle,
-  FaInfoCircle,
   FaTimes,
   FaArrowLeft,
 } from "react-icons/fa";
-import { MdOutlineErrorOutline } from "react-icons/md";
 import { BiLoaderCircle } from "react-icons/bi";
 
 const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { profesionalSlug } = useParams();
+  
+  const [paso, setPaso] = useState(0);
   const [profesionalId, setProfesionalId] = useState(null);
-  const fechaRefs = useRef({});
 
-  // --- LÓGICA DE DATOS ORIGINAL ---
   useEffect(() => {
     const fetchProfesionalId = async () => {
       try {
@@ -38,7 +33,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     fetchProfesionalId();
   }, [profesionalSlug]);
 
-  const { profesional, isLoading: isLoadingProfesional, error: errorProfesional } = useProfesionalxId(profesionalId || 0);
+  const { profesional, isLoading: isLoadingProfesional } = useProfesionalxId(profesionalId || 0);
   const { consultorios, isLoading: isLoadingConsultorios } = useProfessionalConsultorios(profesionalId || 0);
   const [consultorioSelec, setConsultorioSelec] = useState(null);
 
@@ -48,7 +43,7 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     }
   }, [consultorios, isLoadingConsultorios]);
 
-  const { turnos, isLoading: isLoadingTurnos, error: errorTurnos } = useProfessionalConsultorioTurnos(profesionalId || 0, consultorioSelec || 0);
+  const { turnos, isLoading: isLoadingTurnos } = useProfessionalConsultorioTurnos(profesionalId || 0, consultorioSelec || 0);
   const [fechaSeleccionada, setFechaSeleccionada] = useState("");
 
   const medico = useMemo(() => {
@@ -79,45 +74,27 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     return map[medico?.titulo] || "";
   }, [medico?.titulo]);
 
-  // --- FORMATEO ORIGINAL DE FECHAS ---
-  const formatearFechaSQL = fecha => {
-    const date = new Date(fecha);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const formatearSoloDia = fecha => new Date(fecha).getDate().toString().padStart(2, "0");
-  const obtenerDiaDeLaSemanaCorto = fecha =>
-    new Date(fecha).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
-  const obtenerMesCorto = fecha =>
-    new Date(fecha).toLocaleDateString("es-ES", { month: "short" }).replace(".", "");
+  const obtenerDiaDeLaSemanaCorto = fecha => new Date(fecha).toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
 
-  const handleFechaChange = e => setFechaSeleccionada(e.target.value);
   const handleSelectTurno = (turno, index) => {
     navigate(`/formulario-usuario/${consultorioSelec}/${profesionalId}`);
     enviarTurnoYOrden(turno, index + 1);
     onClose?.();
   };
 
-  useEffect(() => {
-    setFechaSeleccionada("");
-  }, [consultorioSelec]);
-
-  useEffect(() => {
-    if (fechaSeleccionada && fechaRefs.current[fechaSeleccionada]) {
-      fechaRefs.current[fechaSeleccionada].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-  }, [fechaSeleccionada]);
+  const irAtras = () => {
+    if (paso > 0) setPaso(paso - 1);
+    else navigate("/buscarprofesionales");
+  };
 
   return (
     <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in">
       
-      {/* HEADER: Pantalla Completa - Estilo Azul/Indigo */}
+      {/* HEADER */}
       <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
         <div className="flex items-center gap-6">
-          <button onClick={() => navigate("/buscarprofesionales")} className="p-3 hover:bg-white/10 rounded-full transition-all">
+          <button onClick={irAtras} className="p-3 hover:bg-white/10 rounded-full transition-all">
             <FaArrowLeft className="text-2xl" />
           </button>
           <div className="flex items-center gap-5">
@@ -135,104 +112,98 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
         </button>
       </header>
 
+      {/* CONTENEDOR RESPONSIVO */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
-        {/* PANEL IZQUIERDO: Consultorios */}
-        <aside className="lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 p-8 overflow-y-auto">
+        {/* --- VISTA MÓVIL (WIZARD) --- */}
+        <div className="lg:hidden flex-1 overflow-y-auto p-6 space-y-8">
+            <div className="flex justify-center gap-2">
+                {[0, 1, 2].map(n => <div key={n} className={`h-2 rounded-full ${paso >= n ? 'bg-indigo-600 w-8' : 'bg-slate-200 w-2'}`}></div>)}
+            </div>
+
+            {paso === 0 && (
+                <div className="space-y-4">
+                    <h3 className="font-bold text-slate-800 text-xl">1. Sede de Atención</h3>
+                    {consultorios?.map((cons) => (
+                        <div key={cons.id} onClick={() => { setConsultorioSelec(cons.id); setPaso(1); }} className={`flex items-center gap-4 p-6 rounded-[1.5rem] border-2 transition-all cursor-pointer ${cons.id === consultorioSelec ? "border-indigo-600 bg-indigo-50 shadow-md" : "border-slate-100 bg-white"}`}>
+                            <FaHospital className={`text-2xl ${cons.id === consultorioSelec ? "text-indigo-600" : "text-slate-400"}`} />
+                            <div>
+                                {/* <p className="font-bold">{cons.nombre || "Sede"}</p> */}
+                                <p className="text-slate-600 text-sm">{cons.direccion}</p>
+                                <p className="text-indigo-800 uppercase font-bold text-sm">{cons.localidad}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {paso === 1 && (
+                <div className="space-y-4">
+                    <h3 className="font-bold text-slate-800 text-xl">2. Selecciona Fecha</h3>
+                    {isLoadingTurnos ? <BiLoaderCircle className="animate-spin text-indigo-600 text-4xl mx-auto" /> : (
+                        <div className="grid grid-cols-4 gap-2">
+                            {fechasUnicas.map((fecha, index) => (
+                                <button key={index} onClick={() => { setFechaSeleccionada(fecha); setPaso(2); }} className={`p-4 rounded-2xl font-black border-2 ${fecha === fechaSeleccionada ? 'bg-indigo-600 text-white' : 'bg-white border-slate-100'}`}>
+                                    <span className="text-[9px] uppercase block">{obtenerDiaDeLaSemanaCorto(fecha)}</span>
+                                    {formatearSoloDia(fecha)}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {paso === 2 && (
+                <div className="space-y-4">
+                    <h3 className="font-bold text-slate-800 text-xl">3. Horarios</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        {turnosFiltrados.map((turno, index) => (
+                            <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+
+        {/* --- VISTA ESCRITORIO --- */}
+        <aside className="hidden lg:block lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 p-8 overflow-y-auto">
           <h3 className="text-slate-800 text-xl font-black mb-8">Sedes de Atención</h3>
           <div className="space-y-4">
             {consultorios?.map((cons) => (
-              <div
-                key={cons.id}
-                onClick={() => setConsultorioSelec(cons.id)}
-                className={`p-6 rounded-[1.5rem] border-2 transition-all cursor-pointer ${
-                  cons.id === consultorioSelec ? "border-indigo-600 bg-indigo-50 shadow-md" : "border-slate-100 bg-white"
-                }`}
-              >
-                <div className="flex gap-4">
-                  <div className={`p-3 rounded-xl h-fit ${cons.id === consultorioSelec ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                    {cons.tipo === "Particular" ? <FaHome /> : <FaHospital />}
-                  </div>
-                  <div>
-                    <p className={`font-bold text-lg ${cons.id === consultorioSelec ? 'text-indigo-900' : 'text-slate-700'}`}>
-                      {cons.nombre || "Sede"}
-                    </p>
-                    <p className="text-slate-400 text-sm">{cons.direccion}</p>
-                    <p className="text-indigo-500 text-xs font-black mt-2 uppercase">{cons.localidad}</p>
-                  </div>
+              <div key={cons.id} onClick={() => setConsultorioSelec(cons.id)} className={`flex items-center gap-4 p-6 rounded-[1.5rem] border-2 transition-all cursor-pointer ${cons.id === consultorioSelec ? "border-indigo-600 bg-indigo-50 shadow-md" : "border-slate-100 bg-white"}`}>
+                <FaHospital className={`text-2xl ${cons.id === consultorioSelec ? "text-indigo-600" : "text-slate-400"}`} />
+                <div>
+                  {/* <p className={`font-bold text-lg ${cons.id === consultorioSelec ? 'text-indigo-900' : 'text-slate-700'}`}>{cons.nombre || "Sede"}</p> */}
+                  <p className="text-slate-400 text-sm">{cons.direccion}</p>
+                  <p className="text-indigo-700 uppercase font-bold text-sm">{cons.localidad}</p>
                 </div>
               </div>
             ))}
           </div>
         </aside>
 
-        {/* PANEL DERECHO: Agenda y Turnos */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-12">
-          
-          {/* SECTOR FECHAS (Formato de botones original) */}
+        <main className="hidden lg:block flex-1 overflow-y-auto p-12">
           <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm mb-12">
             <label className="text-slate-800 text-xl font-black mb-8 flex items-center gap-3">
               <FaCalendarAlt className="text-indigo-600" /> Seleccionar Fecha
             </label>
-
-            {isLoadingTurnos ? (
-              <div className="py-10 text-center"><BiLoaderCircle className="animate-spin text-indigo-600 text-4xl mx-auto" /></div>
-            ) : fechasUnicas.length === 0 ? (
-              <p className="text-slate-400 font-bold text-center py-10">Sin disponibilidad próximamente.</p>
-            ) : (
-              <div className="flex gap-3 overflow-x-auto pb-4 px-2 scrollbar-hide">
-                {fechasUnicas.map((fecha, index) => {
-                  const isActive = fecha === fechaSeleccionada;
-                  return (
-                    <button
-                      key={index}
-                      ref={el => fechaRefs.current[fecha] = el}
-                      onClick={() => handleFechaChange({ target: { value: fecha } })}
-                      className={`
-                        flex-shrink-0 px-6 py-6 rounded-[2rem] font-bold transition-all duration-300 border-2 flex flex-col items-center min-w-[90px]
-                        ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl' : 'bg-white text-slate-500 border-slate-100 hover:border-indigo-300'}
-                      `}
-                    >
-                      <span className="text-[10px] uppercase tracking-widest mb-1">{obtenerDiaDeLaSemanaCorto(fecha)}</span>
-                      <span className="text-2xl font-black">{formatearSoloDia(fecha)}</span>
-                      <span className="text-xs uppercase mt-1">{obtenerMesCorto(fecha)}</span>
-                      {fecha === todayDate && (
-                        <span className="mt-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">Hoy</span>
-                      )}
-                    </button>
-                  );
-                })}
+            {isLoadingTurnos ? <BiLoaderCircle className="animate-spin text-indigo-600 text-4xl mx-auto" /> : (
+              <div className="flex gap-3 overflow-x-auto pb-4 px-2">
+                {fechasUnicas.map((fecha, index) => (
+                  <button key={index} onClick={() => setFechaSeleccionada(fecha)} className={`flex-shrink-0 px-6 py-6 rounded-[2rem] font-bold transition-all border-2 flex flex-col items-center min-w-[90px] ${fecha === fechaSeleccionada ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 border-slate-100'}`}>
+                    <span className="text-[10px] uppercase tracking-widest">{obtenerDiaDeLaSemanaCorto(fecha)}</span>
+                    <span className="text-2xl font-black">{formatearSoloDia(fecha)}</span>
+                  </button>
+                ))}
               </div>
             )}
           </div>
-
-          {/* TURNOS (Mapeo original) */}
-          <div className="space-y-6">
-            {!fechaSeleccionada && fechasUnicas.length > 0 && (
-              <div className="text-center py-20 bg-indigo-50/30 rounded-[2rem] border border-dashed border-indigo-100">
-                <FaInfoCircle className="mx-auto text-indigo-300 text-5xl mb-4" />
-                <p className="text-indigo-900 font-bold text-lg">Selecciona una fecha para ver los turnos disponibles.</p>
-              </div>
-            )}
-
-            {fechaSeleccionada && (
-              <>
-                <h3 className="text-slate-800 text-2xl font-black flex items-center gap-3 mb-8">
-                  <FaClock className="text-indigo-600" /> Turnos — {formatearFechaSQL(fechaSeleccionada)}
-                </h3>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-                  {turnosFiltrados.length > 0 ? (
-                    turnosFiltrados.map((turno, index) => (
-                      <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />
-                    ))
-                  ) : (
-                    <p className="col-span-full text-slate-400 font-bold italic py-10">No hay horarios para este día.</p>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
+          
+          {fechaSeleccionada && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+              {turnosFiltrados.map((turno, index) => <Turno key={turno.id} turno={turno} index={index} enviarTurno={handleSelectTurno} />)}
+            </div>
+          )}
         </main>
       </div>
     </div>
