@@ -63,7 +63,7 @@ const SearchModal = () => {
           ×
         </button>
 
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 mx-w-7xl mx-auto w-full">
           {/* Header con más aire */}
           <div className="text-center p-8 pt-16">
             <h2 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight">
@@ -78,7 +78,7 @@ const SearchModal = () => {
               <div className="bg-slate-200/60 p-2 rounded-3xl flex gap-2 border border-slate-200">
                 <button
                   onClick={() => { setSearchType("profesionales"); setPage(1); }}
-                  className={`flex items-center gap-3 px-10 py-4 rounded-2xl text-lg transition-all duration-300 ${searchType === "profesionales" ? "bg-white shadow-xl text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-700"}`}
+                  className={`flex items-center gap-3 px-10 py-4 rounded-2xl transition-all duration-300 ${searchType === "profesionales" ? "bg-white shadow-xl text-indigo-700 font-bold" : "text-slate-500 hover:text-slate-700"}`}
                 >
                   <FaUserDoctor className="text-xl" /> Profesionales
                 </button>
