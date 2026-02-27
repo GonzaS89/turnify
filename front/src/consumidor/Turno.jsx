@@ -24,7 +24,7 @@ const Turno = ({ turno, index, enviarTurno }) => {
         }
         className={`
           group relative w-full h-28 flex flex-col items-center justify-center
-          p-4 rounded-[1.5rem] transition-all duration-300 border-2
+          p-8 rounded-[1.5rem] transition-all duration-300 border-2
           ${isAvailable
             ? `
               bg-white border-slate-200 text-slate-800
