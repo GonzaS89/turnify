@@ -8,7 +8,7 @@ import CrearConsultorioModal from "../cliente/CrearConsultorioModal";
 import {
   FaCalendarAlt, FaShieldAlt, FaStethoscope, FaIdCard, FaChevronRight,
   FaClock, FaCheckCircle, FaPlus, FaShareAlt, FaCircleNotch,
-  FaExclamationTriangle, FaWhatsapp, FaCalendarDay
+  FaExclamationTriangle, FaWhatsapp, FaCalendarDay, FaChevronLeft
 } from "react-icons/fa";
 import { FaHouseMedical } from "react-icons/fa6";
 
@@ -25,6 +25,9 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
   const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
   const [showModalCrearConsultorio, setShowModalCrearConsultorio] = useState(false);
+  
+  // NUEVO ESTADO PARA NAVEGACIÓN
+  const [fechaVisualizada, setFechaVisualizada] = useState(new Date());
 
   const perfilID = perfil?.id;
   const perfilTipo = perfil.tipo;
@@ -43,7 +46,7 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   useEffect(() => {
     if (consultoriosObtenidos?.length > 0) {
       if (!ConsultorioSelecID) {
-        const primerId = consultoriosObtenidos[0].id;
+        const primerId = consultoriosObtenidos?.[0].id; // Ajuste menor de seguridad
         setConsultorioSelecID(primerId);
         localStorage.setItem("consultorioSeleccionadoId", primerId);
       }
@@ -53,27 +56,36 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
     }
   }, [consultoriosObtenidos, ConsultorioSelecID]);
 
-  // Hook de turnos (obtiene todos los estados)
+  // Hook de turnos
   const { turnos, isLoading: isLoadingTurnos } = useProfessionalConsultorioTurnos(medicoID, ConsultorioSelecID);
 
   useEffect(() => {
     if (medicoID) enviarMedicoID(medicoID);
   }, [medicoID, enviarMedicoID]);
 
-  // --- LÓGICA DE FILTRADO: SOLO RESERVADOS DE HOY ---
+  // --- LÓGICA DE FECHAS ---
   const todayStr = new Date().toLocaleDateString('en-CA');
+  const fechaVisualizadaStr = fechaVisualizada.toLocaleDateString('en-CA');
   
-  const turnosReservadosHoy = turnos?.filter(t => 
-    new Date(t.fecha).toLocaleDateString('en-CA') === todayStr && 
+  // Filtrado de la agenda según la fecha visualizada
+  const turnosFiltrados = turnos?.filter(t => 
+    new Date(t.fecha).toLocaleDateString('en-CA') === fechaVisualizadaStr && 
     t.estado === "reservado"
   ).sort((a, b) => a.hora.localeCompare(b.hora)) || [];
 
-  // Contadores para las StatCards (usando todos los turnos del hook)
+  // Contadores (siempre sobre el día de hoy, según requerimiento)
   const countByEstado = (estado) => turnos?.filter(t => 
     new Date(t.fecha).toLocaleDateString('en-CA') === todayStr && t.estado === estado
   ).length || 0;
 
-  const todayFormatted = new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
+  // Formato para mostrar fecha seleccionada
+  const fechaDisplay = fechaVisualizada.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, (c) => c.toUpperCase());
+
+  const cambiarDia = (dias) => {
+    const nuevaFecha = new Date(fechaVisualizada);
+    nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+    setFechaVisualizada(nuevaFecha);
+  };
 
   if (isLoadingProfesionales) return <LoadingCard />;
   if (errorProfesionales || !perfil) return <ErrorCard title="Error de Sistema" message={errorProfesionales?.message || "Error al cargar la interfaz."} />;
@@ -153,28 +165,34 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
               <StatCard label="Gestionar Agenda" value="AGENDA" icon={FaChevronRight} color="text-slate-900" onClick={() => navigate(`/micuenta/panelturnos/${ConsultorioSelecID}/${medicoID}`)} clickable />
             </div>
 
-            {/* HOJA DE RUTA: SOLO RESERVADOS */}
+            {/* HOJA DE RUTA: NAVEGABLE */}
             <section className="bg-white rounded-[3.5rem] p-10 shadow-xl border border-slate-100">
-              <div className="flex items-center justify-between mb-10 border-b border-slate-50 pb-8">
+              <div className="flex flex-col lg:flex-row items-center justify-between mb-10 border-b border-slate-50 pb-8 gap-6">
                 <div className="flex items-center gap-5">
                   <div className="bg-indigo-600 p-4 rounded-[1.5rem] text-white shadow-lg">
                     <FaCalendarDay size={24} />
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Agenda de Pacientes</h3>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Pendientes para hoy: {todayFormatted}</p>
+                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">
+                        {fechaDisplay}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => setShowModalListaTurnos(true)} className="px-6 py-3 bg-slate-50 text-slate-500 font-black rounded-xl text-[10px] uppercase hover:bg-indigo-50 transition-all border border-slate-100">
-                  Ver Historial / Futuros
-                </button>
+
+                {/* BOTONES NAVEGACION */}
+                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl">
+                    <button onClick={() => cambiarDia(-1)} className="p-3 hover:bg-white rounded-xl text-slate-400 hover:text-indigo-600 transition-all"><FaChevronLeft size={16} /></button>
+                    <button onClick={() => setFechaVisualizada(new Date())} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-indigo-600">Ver otras fechas</button>
+                    <button onClick={() => cambiarDia(1)} className="p-3 hover:bg-white rounded-xl text-slate-400 hover:text-indigo-600 transition-all"><FaChevronRight size={16} /></button>
+                </div>
               </div>
 
               {isLoadingTurnos ? (
                 <div className="py-20 text-center"><FaCircleNotch className="animate-spin text-indigo-600 mx-auto" size={40} /></div>
-              ) : turnosReservadosHoy.length > 0 ? (
+              ) : turnosFiltrados.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {turnosReservadosHoy.map((turno) => (
+                  {turnosFiltrados.map((turno) => (
                     <PacienteDiaCard key={turno.id} turno={turno} />
                   ))}
                 </div>
@@ -183,7 +201,7 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
                   <div className="max-w-xs mx-auto space-y-4">
                      <p className="text-slate-300 flex justify-center"><FaCalendarAlt size={40} /></p>
                      <p className="text-slate-400 font-black uppercase italic tracking-widest text-sm">
-                       No tenés pacientes reservados para hoy
+                       No hay pacientes reservados para este día
                      </p>
                   </div>
                 </div>
@@ -192,7 +210,6 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
           </>
         )}
 
-        {/* MODALES Y ASOCIACIONES */}
         <CrearConsultorioModal isOpen={showModalCrearConsultorio} onClose={() => setShowModalCrearConsultorio(false)} perfilID={perfilID} profesionalID={medicoID} perfilTipo={perfilTipo} onSuccess={fetchConsultorio} />
         {showModalListaTurnos && <ModalListaTurnos turnos={turnos} onClose={() => setShowModalListaTurnos(false)} />}
         {!medico && <AsociarProfesionalAPerfil perfilID={perfilID} perfil={perfil} onClose={() => {}} actualizarProfesionales={fetchProfesional} />}
@@ -202,46 +219,37 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   );
 };
 
-// COMPONENTE TARJETA DE PACIENTE (EXECUTIVE STYLE)
-const PacienteDiaCard = ({ turno }) => {
-  return (
-    <div className="p-6 rounded-[2.5rem] bg-white border border-indigo-100 shadow-md ring-1 ring-indigo-50 transition-all hover:shadow-xl hover:-translate-y-1">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className="bg-slate-900 px-4 py-2 rounded-2xl">
-            <span className="text-white font-black text-sm">{turno.hora.slice(0, 5)}</span>
-          </div>
-          <div>
-            <p className="text-slate-900 font-black text-sm uppercase tracking-tighter leading-none mb-1">
-              {turno.apellido_paciente}, {turno.nombre_paciente}
-            </p>
-            <p className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{turno.cobertura || 'Particular'}</p>
-          </div>
+// COMPONENTES AUXILIARES SE MANTIENEN IGUALES...
+const PacienteDiaCard = ({ turno }) => (
+  <div className="p-6 rounded-[2.5rem] bg-white border border-indigo-100 shadow-md ring-1 ring-indigo-50 transition-all hover:shadow-xl hover:-translate-y-1">
+    <div className="flex items-start justify-between mb-6">
+      <div className="flex items-center gap-4">
+        <div className="bg-slate-900 px-4 py-2 rounded-2xl">
+          <span className="text-white font-black text-sm">{turno.hora.slice(0, 5)}</span>
         </div>
-        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-      </div>
-
-      <div className="flex items-center justify-between pt-5 border-t border-slate-50">
-        <div className="flex flex-col">
-          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Identidad</span>
-          <span className="text-xs font-bold text-slate-600">DNI {turno.DNI}</span>
+        <div>
+          <p className="text-slate-900 font-black text-sm uppercase tracking-tighter leading-none mb-1">
+            {turno.apellido_paciente}, {turno.nombre_paciente}
+          </p>
+          <p className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">{turno.cobertura || 'Particular'}</p>
         </div>
-        {turno.telefono && (
-          <a 
-            href={`https://wa.me/${turno.telefono}`} 
-            target="_blank" 
-            rel="noreferrer" 
-            className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-          >
-            <FaWhatsapp size={14} /> WhatsApp
-          </a>
-        )}
       </div>
+      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
     </div>
-  );
-};
+    <div className="flex items-center justify-between pt-5 border-t border-slate-50">
+      <div className="flex flex-col">
+        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Identidad</span>
+        <span className="text-xs font-bold text-slate-600">DNI {turno.DNI}</span>
+      </div>
+      {turno.telefono && (
+        <a href={`https://wa.me/${turno.telefono}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+          <FaWhatsapp size={14} /> WhatsApp
+        </a>
+      )}
+    </div>
+  </div>
+);
 
-// COMPONENTES AUXILIARES
 const StatCard = ({ label, value, icon: Icon, color, onClick, clickable }) => (
   <div onClick={clickable ? onClick : undefined} className={`p-8 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm transition-all flex flex-col items-center justify-center ${clickable ? "cursor-pointer hover:border-indigo-500 hover:shadow-xl" : ""}`}>
     <Icon className={`${color} mb-4`} size={24} />

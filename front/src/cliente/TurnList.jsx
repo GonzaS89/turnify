@@ -1,19 +1,11 @@
 // src/components/TurnList.jsx
 import axios from "axios";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 
 // ICONOS
-import {
-  FaCalendarAlt,
-  FaTimes,
-  FaPlus,
-  FaArrowLeft,
-  FaTrashAlt,
-  FaRegClock,
-  FaUserMd
-} from "react-icons/fa";
+import { FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, FaRegClock } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import { BiLoaderCircle } from "react-icons/bi";
 
@@ -39,8 +31,10 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
+  
+  const [mesesAbiertos, setMesesAbiertos] = useState({});
 
-  // ===== NO TOCAR: TUS FUNCIONES DE FORMATEO ORIGINALES =====
+  // ===== FUNCIONES DE FORMATEO =====
   const parsearFechaLocal = (fechaStr) => {
     const [año, mes, dia] = fechaStr.split("-").map(Number);
     return new Date(año, mes - 1, dia);
@@ -52,13 +46,18 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const formatearSoloDia = (fecha) =>
     parsearFechaLocal(fecha).getDate().toString().padStart(2, "0");
 
+  // AQUI HE ACTUALIZADO LA LOGICA PARA INCLUIR EL MES
   const formatearFechaLarga = (fechaStr) => {
     const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
+    
     const date = new Date(Date.UTC(year, month - 1, day));
     const diaSemana = date.getUTCDay();
-    return `${dias[diaSemana]} ${day}`;
+    
+    return `${dias[diaSemana]} ${day} de ${meses[month - 1]}`;
   };
   // ==========================================================
 
@@ -86,14 +85,20 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
-  const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(b) - new Date(a));
+  const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(a) - new Date(b));
+
+  const mesesAgrupados = fechasOrdenadas.reduce((acc, fecha) => {
+    const mesNombre = parsearFechaLocal(fecha).toLocaleString("es-ES", { month: "long", year: "numeric" }).toUpperCase();
+    if (!acc[mesNombre]) acc[mesNombre] = [];
+    acc[mesNombre].push(fecha);
+    return acc;
+  }, {});
 
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
     enviarTurnoYOrden(turno, idx + 1);
   };
 
-  // ✅ ACCIÓN RESTAURADA: BORRADO INDIVIDUAL
   const handleBorrarTurno = (id) => {
     setIdTurnoSeleccionado(id);
     setShowModalBorrarTurno(true);
@@ -157,7 +162,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       
       <ToastContainer position="bottom-right" autoClose={1500} theme="colored" />
 
-      {/* HEADER PREMIUM GEMELO */}
       <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
         <div className="flex items-center gap-6">
           <button onClick={() => navigate("/micuenta")} className="p-3 hover:bg-white/10 rounded-full transition-all">
@@ -176,16 +180,10 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button 
-            onClick={handleActualizarTurnos}
-            className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white border border-white/5"
-          >
+          <button onClick={handleActualizarTurnos} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white border border-white/5">
             <TbRefresh size={22} className={isLoading ? "animate-spin" : ""} />
           </button>
-          <button 
-            onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)}
-            className="hidden md:flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-xl shadow-indigo-500/20"
-          >
+          <button onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)} className="hidden md:flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-xl shadow-indigo-500/20">
             <FaPlus /> Habilitar
           </button>
           <button onClick={() => navigate("/micuenta")} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
@@ -196,68 +194,69 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
-        {/* SIDEBAR DE FECHAS GEMELO */}
         <aside className="lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-sm">
-          <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <div>
-              <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado de</h3>
-              <p className="text-slate-800 font-black text-xl tracking-tight uppercase">Fechas</p>
-            </div>
-            <div className="bg-slate-900 text-white px-3 py-1 rounded-lg font-black text-[10px]">
-              {fechasOrdenadas.length} DÍAS
-            </div>
+          <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado por</h3>
+            <p className="text-slate-800 font-black text-xl tracking-tight uppercase">Meses</p>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
-            {fechasOrdenadas.length === 0 ? (
-              <div className="text-center py-20 px-4">
-                <FaRegClock className="mx-auto text-slate-200 mb-4" size={40} />
-                <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest leading-relaxed">Sin turnos generados</p>
-              </div>
-            ) : (
-              fechasOrdenadas.map((fecha) => {
-                const turnosDia = turnosAgrupados[fecha];
-                const ocupados = turnosDia.filter((t) => t.estado === "reservado").length;
-                const disponibles = turnosDia.length - ocupados - turnosDia.filter((t) => t.estado === "finalizado").length;
-                const isSelected = fecha === fechaSeleccionada;
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            {Object.entries(mesesAgrupados).map(([mes, fechas]) => (
+              <div key={mes} className="border border-slate-100 rounded-[1.5rem] overflow-hidden">
+                <button
+                  onClick={() => setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }))}
+                  className="w-full p-5 bg-slate-50 flex items-center justify-between text-slate-800 font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-colors"
+                >
+                  {mes}
+                  <span className="text-slate-400 text-lg">{mesesAbiertos[mes] ? "−" : "+"}</span>
+                </button>
+                
+                {mesesAbiertos[mes] && (
+                  <div className="p-4 space-y-3 bg-white">
+                    {fechas.map((fecha) => {
+                      const turnosDia = turnosAgrupados[fecha];
+                      const ocupados = turnosDia.filter((t) => t.estado === "reservado").length;
+                      const disponibles = turnosDia.length - ocupados - turnosDia.filter((t) => t.estado === "finalizado").length;
+                      const isSelected = fecha === fechaSeleccionada;
 
-                return (
-                  <button
-                    key={fecha}
-                    onClick={() => setFechaSeleccionada(fecha)}
-                    className={`w-full p-5 rounded-[1.5rem] border-2 transition-all flex items-center justify-between ${
-                      isSelected 
-                        ? "border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-100" 
-                        : "border-slate-50 bg-white hover:border-indigo-100"
-                    }`}
-                  >
-                    <div className="text-left">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                        {obtenerDiaDeLaSemanaCorto(fecha)}
-                      </p>
-                      <p className={`text-xl font-black tracking-tighter capitalize ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
-                        {formatearSoloDia(fecha)} / {fecha.split("-")[1]}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase ${
-                        disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}>
-                        {disponibles} Libres
-                      </span>
-                    </div>
-                  </button>
-                );
-              })
-            )}
+                      return (
+                        <button
+                          key={fecha}
+                          onClick={() => setFechaSeleccionada(fecha)}
+                          className={`w-full p-5 rounded-[1.5rem] border-2 transition-all flex items-center justify-between ${
+                            isSelected 
+                              ? "border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-100" 
+                              : "border-slate-50 bg-white hover:border-indigo-100"
+                          }`}
+                        >
+                          <div className="text-left">
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
+                              {obtenerDiaDeLaSemanaCorto(fecha)}
+                            </p>
+                            <p className={`text-2xl font-black tracking-tighter capitalize ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                              {formatearSoloDia(fecha)} / {fecha.split("-")[1]}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg uppercase ${
+                              disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                            }`}>
+                              {disponibles} Libres
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </aside>
 
-        {/* CONTENEDOR DE TURNOS GEMELO */}
         <main className="flex-1 overflow-y-auto p-6 md:p-12 lg:p-16 custom-scrollbar">
           {fechaSeleccionada ? (
             <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
-              
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-2">
@@ -276,7 +275,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                 </button>
               </div>
 
-              {/* LISTADO DE TURNOS */}
               <div className="space-y-4 pb-10">
                 {turnosDeLaFecha
                   .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
@@ -315,7 +313,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         </main>
       </div>
 
-      {/* MODALES */}
       {showModalBorrarTurno && (
         <BorrarTurno 
           idTurno={IdTurnoSeleccionado} 
