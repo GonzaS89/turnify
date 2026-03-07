@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 
 // ICONOS
-import { FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, FaRegClock } from "react-icons/fa";
+import { FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, FaChevronLeft } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import { BiLoaderCircle } from "react-icons/bi";
 
@@ -31,10 +31,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
-  
   const [mesesAbiertos, setMesesAbiertos] = useState({});
 
-  // ===== FUNCIONES DE FORMATEO =====
+  // FUNCIONES DE FORMATEO
   const parsearFechaLocal = (fechaStr) => {
     const [año, mes, dia] = fechaStr.split("-").map(Number);
     return new Date(año, mes - 1, dia);
@@ -46,25 +45,17 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const formatearSoloDia = (fecha) =>
     parsearFechaLocal(fecha).getDate().toString().padStart(2, "0");
 
-  // AQUI HE ACTUALIZADO LA LOGICA PARA INCLUIR EL MES
   const formatearFechaLarga = (fechaStr) => {
     const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
     const [datePart] = fechaStr.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-    
     const date = new Date(Date.UTC(year, month - 1, day));
-    const diaSemana = date.getUTCDay();
-    
-    return `${dias[diaSemana]} ${day} de ${meses[month - 1]}`;
+    return `${dias[date.getUTCDay()]} ${day} de ${meses[month - 1]}`;
   };
-  // ==========================================================
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTrigger((prev) => prev + 1);
-    }, 300000);
+    const interval = setInterval(() => setRefreshTrigger((prev) => prev + 1), 300000);
     return () => clearInterval(interval);
   }, []);
 
@@ -155,98 +146,82 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     );
   }
 
+  // ESTADO: NO HAY TURNOS
+  if (!isLoading && turnos.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+        <button onClick={() => navigate("/micuenta")} className="absolute top-6 left-6 p-3 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200">
+            <FaArrowLeft size={20} />
+        </button>
+        <div className="bg-slate-50 p-8 rounded-full mb-6">
+          <FaCalendarAlt size={60} className="text-slate-300" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-800 uppercase mb-2">Sin turnos configurados</h2>
+        <p className="text-slate-500 mb-8 max-w-sm">No hay fechas ni turnos registrados en este consultorio. Empieza habilitando nuevos horarios para tus pacientes.</p>
+        <button 
+          onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)}
+          className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all"
+        >
+          <FaPlus /> Habilitar Turnos
+        </button>
+      </div>
+    );
+  }
+
   const turnosDeLaFecha = turnosAgrupados[fechaSeleccionada] || [];
 
   return (
     <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in font-sans text-slate-900">
-      
       <ToastContainer position="bottom-right" autoClose={1500} theme="colored" />
 
-      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
-        <div className="flex items-center gap-6">
-          <button onClick={() => navigate("/micuenta")} className="p-3 hover:bg-white/10 rounded-full transition-all">
-            <FaArrowLeft className="text-2xl" />
+      {/* HEADER CON FLECHA DE REGRESO */}
+      <header className="bg-slate-900 text-white p-4 md:px-12 flex items-center justify-between shadow-2xl z-20 shrink-0">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate("/micuenta")} className="p-2 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-xl" />
           </button>
-          <div className="flex items-center gap-5">
-            <div className="bg-indigo-600 p-4 rounded-2xl hidden md:block shadow-lg shadow-indigo-500/20">
-              <FaCalendarAlt className="text-3xl text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">Agenda</h2>
-              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2 italic">
-                {tipoConsultorio === "propio" ? nombreMedico : direccion}
-              </p>
-            </div>
+          <div>
+            <h2 className="text-xl font-black uppercase">Agenda</h2>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button onClick={handleActualizarTurnos} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white border border-white/5">
-            <TbRefresh size={22} className={isLoading ? "animate-spin" : ""} />
+        <div className="flex items-center gap-2">
+          <button onClick={handleActualizarTurnos} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+            <TbRefresh size={20} className={isLoading ? "animate-spin" : ""} />
           </button>
-          <button onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)} className="hidden md:flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-xl shadow-indigo-500/20">
-            <FaPlus /> Habilitar
+          <button 
+            onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)} 
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase rounded-xl shadow-lg"
+          >
+            <FaPlus /> <span className="hidden md:inline">Habilitar</span>
           </button>
-          <button onClick={() => navigate("/micuenta")} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
+          <button onClick={() => navigate("/micuenta")} className="text-slate-400 hover:text-white text-2xl p-2 transition-colors">
             <FaTimes />
           </button>
         </div>
       </header>
 
+      {/* LAYOUT RESPONSIVO */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
-        <aside className="lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-sm">
-          <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado por</h3>
-            <p className="text-slate-800 font-black text-xl tracking-tight uppercase">Meses</p>
+        {/* ASIDE */}
+        <aside className={`${fechaSeleccionada ? "hidden lg:flex" : "flex"} lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden`}>
+          <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <p className="text-slate-800 font-black text-xl uppercase tracking-tight">Meses</p>
           </div>
-
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
             {Object.entries(mesesAgrupados).map(([mes, fechas]) => (
               <div key={mes} className="border border-slate-100 rounded-[1.5rem] overflow-hidden">
-                <button
-                  onClick={() => setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }))}
-                  className="w-full p-5 bg-slate-50 flex items-center justify-between text-slate-800 font-black text-sm uppercase tracking-widest hover:bg-slate-100 transition-colors"
-                >
-                  {mes}
-                  <span className="text-slate-400 text-lg">{mesesAbiertos[mes] ? "−" : "+"}</span>
+                <button onClick={() => setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }))} className="w-full p-4 bg-slate-50 flex items-center justify-between text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">
+                  {mes} <span>{mesesAbiertos[mes] ? "−" : "+"}</span>
                 </button>
-                
                 {mesesAbiertos[mes] && (
-                  <div className="p-4 space-y-3 bg-white">
-                    {fechas.map((fecha) => {
-                      const turnosDia = turnosAgrupados[fecha];
-                      const ocupados = turnosDia.filter((t) => t.estado === "reservado").length;
-                      const disponibles = turnosDia.length - ocupados - turnosDia.filter((t) => t.estado === "finalizado").length;
-                      const isSelected = fecha === fechaSeleccionada;
-
-                      return (
-                        <button
-                          key={fecha}
-                          onClick={() => setFechaSeleccionada(fecha)}
-                          className={`w-full p-5 rounded-[1.5rem] border-2 transition-all flex items-center justify-between ${
-                            isSelected 
-                              ? "border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-100" 
-                              : "border-slate-50 bg-white hover:border-indigo-100"
-                          }`}
-                        >
-                          <div className="text-left">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-2">
-                              {obtenerDiaDeLaSemanaCorto(fecha)}
-                            </p>
-                            <p className={`text-2xl font-black tracking-tighter capitalize ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
-                              {formatearSoloDia(fecha)} / {fecha.split("-")[1]}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg uppercase ${
-                              disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                            }`}>
-                              {disponibles} Libres
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                  <div className="p-3 space-y-2 bg-white">
+                    {fechas.map((f) => (
+                      <button key={f} onClick={() => setFechaSeleccionada(f)} className="w-full p-4 rounded-xl border border-slate-100 text-left hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
+                        <p className="text-xs font-black text-slate-400 uppercase">{obtenerDiaDeLaSemanaCorto(f)}</p>
+                        <p className="text-lg font-black text-slate-800">{formatearSoloDia(f)} / {f.split("-")[1]}</p>
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -254,80 +229,58 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-12 lg:p-16 custom-scrollbar">
+        {/* MAIN */}
+        <main className={`${fechaSeleccionada ? "flex" : "hidden lg:flex"} flex-1 flex-col overflow-y-auto p-4 md:p-16 custom-scrollbar`}>
           {fechaSeleccionada ? (
-            <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-                    <span className="text-indigo-600 font-black uppercase text-[10px] tracking-widest">Vista Detallada</span>
-                  </div>
-                  <h3 className="text-4xl font-black text-slate-800 tracking-tighter capitalize leading-tight">
-                    {formatearFechaLarga(fechaSeleccionada)}
-                  </h3>
-                </div>
+            <div className="max-w-5xl mx-auto space-y-6 w-full animate-fade-in">
+              {/* Botón Volver Mobile */}
+              <button onClick={() => setFechaSeleccionada(null)} className="lg:hidden flex items-center gap-2 text-indigo-600 font-black text-xs uppercase mb-2">
+                <FaChevronLeft /> Volver al calendario
+              </button>
+
+              <div className="flex items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                <h3 className="text-2xl font-black text-slate-800 capitalize tracking-tighter">{formatearFechaLarga(fechaSeleccionada)}</h3>
                 <button 
-                  onClick={() => setShowModalBorrarTodosLosTurnos(true)}
-                  className="px-6 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border-2 border-red-100"
+                  onClick={() => setShowModalBorrarTodosLosTurnos(true)} 
+                  className="px-4 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border-2 border-red-100"
                 >
-                  <FaTrashAlt /> Vaciar Día
+                  <FaTrashAlt /> <span className="hidden md:inline">Vaciar Día</span>
                 </button>
               </div>
 
-              <div className="space-y-4 pb-10">
+              <div className="space-y-3 pb-20">
                 {turnosDeLaFecha
                   .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
                   .map((turno, idx) => (
                     <TurnoInterno 
-                      key={turno.id} 
-                      turno={turno} 
-                      id={turno.id} 
-                      idx={idx} 
-                      estado={turno.estado} 
-                      hora={turno.hora} 
-                      paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} 
-                      DNI={turno.DNI} 
-                      cobertura={turno.cobertura} 
-                      duracion={turno.duracion} 
-                      telefono={turno.telefono} 
-                      tapButtonAsignar={tapButtonAsignar} 
-                      handleBorrarTurno={handleBorrarTurno} 
-                      handleModificarEstadoTurno={handleModificarEstadoTurno} 
-                      handleLiberarTurno={handleLiberarTurno} 
-                      coberturaElegida={coberturaElegida} 
-                      liberando={liberandoIds.has(turno.id)}
-                      finalizando={finalizandoIds.has(turno.id)}
+                      key={turno.id} turno={turno} id={turno.id} idx={idx} estado={turno.estado} 
+                      hora={turno.hora} paciente={`${turno.apellido_paciente}, ${turno.nombre_paciente}`} 
+                      DNI={turno.DNI} cobertura={turno.cobertura} duracion={turno.duracion} 
+                      telefono={turno.telefono} tapButtonAsignar={tapButtonAsignar} 
+                      handleBorrarTurno={handleBorrarTurno} handleModificarEstadoTurno={handleModificarEstadoTurno} 
+                      handleLiberarTurno={handleLiberarTurno} coberturaElegida={coberturaElegida} 
+                      liberando={liberandoIds.has(turno.id)} finalizando={finalizandoIds.has(turno.id)}
                     />
                   ))}
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-8 animate-pulse">
-              <div className="bg-slate-100 p-16 rounded-[4rem] border-4 border-dashed border-slate-200 shadow-inner">
-                <FaCalendarAlt size={80} className="opacity-10 text-slate-400" />
-              </div>
-              <p className="text-3xl font-black text-slate-400 tracking-tighter uppercase leading-none text-center">Selecciona una fecha</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-300 animate-pulse">
+              <FaCalendarAlt size={60} className="mb-4 opacity-20" />
+              <p className="text-xl font-black uppercase">Selecciona una fecha</p>
             </div>
           )}
         </main>
       </div>
 
       {showModalBorrarTurno && (
-        <BorrarTurno 
-          idTurno={IdTurnoSeleccionado} 
-          onClose={() => setShowModalBorrarTurno(false)} 
-          actualizarTurnos={handleActualizarTurnos} 
-        />
+        <BorrarTurno idTurno={IdTurnoSeleccionado} onClose={() => setShowModalBorrarTurno(false)} actualizarTurnos={handleActualizarTurnos} />
       )}
       
       {showModalBorrarTodosLosTurnos && (
         <BorrarTodosLosTurnosModal 
-          idConsultorio={consultorioId} 
-          idProfesional={profesionalId} 
-          fecha={fechaSeleccionada} 
-          onClose={() => setShowModalBorrarTodosLosTurnos(false)} 
-          actualizarTurnos={handleActualizarTurnos} 
+          idConsultorio={consultorioId} idProfesional={profesionalId} fecha={fechaSeleccionada} 
+          onClose={() => setShowModalBorrarTodosLosTurnos(false)} actualizarTurnos={handleActualizarTurnos} 
           resetearFecha={() => setFechaSeleccionada(null)} 
         />
       )}
@@ -335,7 +288,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       `}</style>
     </div>
   );
