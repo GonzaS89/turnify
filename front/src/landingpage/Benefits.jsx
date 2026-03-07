@@ -133,7 +133,7 @@ const Benefits = () => {
           <Benefit
             icono={<FaUserShield />}
             titulo="Seguridad"
-            contenido="Protección total de los datos de tus pacientes con estándares de encriptación de última generación."
+            contenido="Protección total de los datos de tus pacientes."
           />
           <Benefit
             icono={<FaPlus className="text-white" />}

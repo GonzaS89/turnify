@@ -8,6 +8,7 @@ import { HiEye, HiEyeOff } from 'react-icons/hi';
 const Login = ({ closeLogin }) => {
   const { isLoading: profilesLoading, error: fetchError } = useAllPerfiles();
   const navigate = useNavigate();
+  
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -43,7 +44,7 @@ const Login = ({ closeLogin }) => {
         setIsSubmitting(false);
         navigate('/micuenta');
         closeLogin?.();
-      }, 1500);
+      }, 1000);
       
     } catch (err) {
       setLoginError(err.response?.data?.message || 'Credenciales inválidas.');
@@ -52,55 +53,58 @@ const Login = ({ closeLogin }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="relative bg-white rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] p-10 sm:p-14 w-full max-w-lg border border-slate-100 animate-fade-in-up">
+    // Se mantiene 'fixed inset-0' para el overlay, pero agregamos 'overflow-y-auto' 
+    // por si el contenido excede la altura en pantallas muy pequeñas.
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="relative bg-white rounded-[2rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] p-8 sm:p-12 w-full max-w-md border border-slate-100 animate-fade-in-up my-auto">
         
-        {/* Botón de cerrar Premium */}
+        {/* Botón Cerrar */}
         <button
           onClick={closeLogin}
-          className="absolute top-8 right-8 p-3 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-300"
+          className="absolute top-6 right-6 p-2 rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all duration-300"
           aria-label="Cerrar"
         >
-          <FaTimes size={20} />
+          <FaTimes size={18} />
         </button>
 
-        {/* Header con Identidad de Marca */}
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-white shadow-xl shadow-indigo-100">
-            <FaShieldAlt size={36} />
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-indigo-600 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 text-white shadow-xl shadow-indigo-100">
+            <FaShieldAlt size={28} />
           </div>
 
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-3 italic">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tighter mb-1 italic">
             TURNATE<span className="text-indigo-600 not-italic">.</span>
           </h2>
-          <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs">
+          <p className="text-slate-500 font-bold uppercase tracking-[0.15em] text-[10px]">
             Acceso Profesionales
           </p>
         </div>
 
-        {/* Mensajes de Error con Fuente Grande */}
+        {/* Error Message */}
         {(loginError || fetchError) && (
-          <div className="mb-8 p-5 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-base font-bold flex items-center gap-3 animate-shake">
-            <span className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0" />
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold flex items-center gap-3 animate-shake">
+            <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
             {loginError || fetchError?.message}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-8">
+        <form onSubmit={handleLogin} className="flex flex-col gap-6">
+          
           {/* Input Usuario */}
           <div>
-            <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
               Usuario
             </label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-                <FaUser size={20} />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                <FaUser size={16} />
               </div>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-xl text-slate-800 transition-all placeholder:text-slate-300"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-lg text-slate-800 transition-all placeholder:text-slate-300"
                 placeholder="Nombre de usuario"
                 required
                 disabled={isSubmitting}
@@ -110,19 +114,19 @@ const Login = ({ closeLogin }) => {
 
           {/* Input Password */}
           <div>
-            <label className="block text-sm font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
               Contraseña
             </label>
             <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
-                <FaLock size={20} />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                <FaLock size={16} />
               </div>
 
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-16 pr-14 py-5 bg-slate-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-xl text-slate-800 transition-all placeholder:text-slate-300"
+                className="w-full pl-12 pr-12 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-lg text-slate-800 transition-all placeholder:text-slate-300"
                 placeholder="••••••••"
                 required
                 disabled={isSubmitting}
@@ -131,50 +135,44 @@ const Login = ({ closeLogin }) => {
               <button
                 type="button"
                 onClick={() => setShowPassword(prev => !prev)}
-                className="absolute inset-y-0 right-0 pr-6 flex items-center text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-600 transition-colors"
               >
-                {showPassword ? <HiEye size={24} /> : <HiEyeOff size={24} />}
+                {showPassword ? <HiEye size={20} /> : <HiEyeOff size={20} />}
               </button>
             </div>
           </div>
 
-          {/* Botón de Ingreso Potente */}
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting || profilesLoading}
-            className={`
-              w-full py-6 rounded-[1.5rem] font-black text-lg uppercase tracking-[0.2em] text-white shadow-2xl transition-all duration-300 transform active:scale-95
-              ${isSubmitting 
-                ? "bg-slate-300 cursor-not-allowed" 
-                : "bg-slate-900 hover:bg-indigo-600 hover:scale-[1.02] shadow-slate-200"}
-            `}
+            className={`w-full py-4 mt-2 rounded-2xl font-black text-sm uppercase tracking-[0.1em] text-white transition-all transform active:scale-[0.98] 
+            ${isSubmitting ? "bg-slate-400 cursor-not-allowed" : "bg-slate-900 hover:bg-indigo-600"}`}
           >
             {isSubmitting ? (
-              <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-2">
                 <FaCircleNotch className="animate-spin" />
-                <span>Validando...</span>
+                Validando...
               </div>
             ) : (
               "Iniciar Sesión"
             )}
           </button>
 
-          {/* Registro con estilo limpio */}
-          <div className="text-center mt-6">
+          <div className="text-center">
             <a
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-indigo-600 font-black uppercase tracking-tighter hover:text-slate-900 transition-colors"
+              className="text-[11px] text-indigo-600 font-black uppercase tracking-tighter hover:text-slate-900 transition-colors"
             >
               ¿No tenés cuenta? Registrate acá
             </a>
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-slate-50 text-center text-slate-400 font-black text-[10px] uppercase tracking-[0.4em] opacity-50">
-          © 2026 Turnate • Executive Professional
+        <div className="mt-8 pt-6 border-t border-slate-50 text-center text-slate-400 font-black text-[9px] uppercase tracking-[0.3em] opacity-50">
+          © 2026 Turnate
         </div>
       </div>
     </div>
