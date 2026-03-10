@@ -35,6 +35,8 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const { consultorios: consultoriosObtenidos, fetchConsultorio } = useObtenerConsultorioxIdPerfil(perfilID);
   const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionales, error: errorProfesionales, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
 
+  console.log(consultoriosObtenidos)
+
   const medico = profesionalesObtenidos?.[0] || null;
   const medicoID = medico?.id;
 

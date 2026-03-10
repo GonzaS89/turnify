@@ -552,6 +552,33 @@ app.get("/api/consultoriosxidperfil/:perfilId", async (req, res) => {
   }
 });
 
+// OBTENER CONSULTORIOS X ID PROFESIONAL //
+
+app.get("/api/consultoriosxidprofesional/:profesionalId", async (req, res) => {
+  const { profesionalId } = req.params;
+
+  const consulta = `SELECT 
+  c.id, 
+  c.direccion,
+  loc.nombre AS localidad,
+  c.tipo 
+  from profesional_consultorio AS pc
+  JOIN 
+  consultorios AS c ON c.id = pc.consultorio_id
+  JOIN
+  localidades AS loc ON loc.id = c.localidad
+  WHERE
+  pc.consultorio_id = ?`;
+
+  try {
+    const [resultados] = await pool.execute(consulta, [profesionalId]);
+    res.json(resultados);
+  } catch (error) {
+    console.error("Error al obtener consultorios", error);
+    res.status(500).send("Error interno del servidor al obtener consultorios");
+  }
+});
+
 // OBTENER PROFESIONAL X ID PERFIL
 
 app.get("/api/profesionalxidperfil/:perfilId", async (req, res) => {
