@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoMdMenu } from 'react-icons/io';
 import { IoClose } from 'react-icons/io5';
 import { FaUserShield, FaChevronRight } from 'react-icons/fa';
@@ -8,20 +8,18 @@ import { Link, animateScroll as scroll } from 'react-scroll';
 export const Header = ({ openLogin }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-    // Bloquear scroll del body cuando el menú está abierto
-    if (!isMobileMenuOpen) {
+  // Manejo del scroll del body
+  useEffect(() => {
+    if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-  };
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isMobileMenuOpen]);
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-    document.body.style.overflow = 'unset';
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const scrollToTop = () => {
     scroll.scrollToTop({ duration: 800, smooth: "easeInOutQuart" });
@@ -29,19 +27,19 @@ export const Header = ({ openLogin }) => {
   };
 
   const menuItems = [
-    { to: 'info', label: 'Cómo funciona', offset: -150 },
-    { to: 'beneficios', label: 'Beneficios', offset: -150 },
-    { to: 'videos', label: 'Videos', offset: -150 },
-    { to: 'preguntas-frecuentes', label: 'FAQ', offset: -150 },
+    { to: 'info', label: 'Cómo funciona', offset: -80 },
+    { to: 'beneficios', label: 'Beneficios', offset: -80 },
+    { to: 'videos', label: 'Videos', offset: -80 },
+    { to: 'preguntas-frecuentes', label: 'FAQ', offset: -80 },
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] bg-white/95 border-b border-slate-100 py-4 transition-all duration-300 backdrop-blur-md">
-      <div className="container mx-auto px-6 md:px-12 flex items-center justify-between max-w-7xl">
+    <header className="fixed top-0 left-0 right-0 z-[100] bg-white/95 border-b border-slate-100 py-3 md:py-4 transition-all duration-300 backdrop-blur-md">
+      <div className="container mx-auto px-5 md:px-12 flex items-center justify-between max-w-7xl">
         
-        {/* Logo */}
-        <div onClick={scrollToTop} className="flex-shrink-0 cursor-pointer">
-          <img src={logo} alt="Turnate Logo" className="w-20 md:w-24 h-auto transition-transform hover:scale-105" />
+        {/* Logo Principal (Siempre visible) */}
+        <div onClick={scrollToTop} className="flex-shrink-0 cursor-pointer relative z-[130]">
+          <img src={logo} alt="Turnate Logo" className="w-16 md:w-24 h-auto transition-transform hover:scale-105" />
         </div>
 
         {/* Navegación Desktop */}
@@ -68,49 +66,43 @@ export const Header = ({ openLogin }) => {
         </nav>
 
         {/* Botón Menú Móvil */}
-        <button onClick={toggleMobileMenu} className="md:hidden p-2 text-slate-900 z-[110]">
-          {isMobileMenuOpen ? <IoClose size={32} /> : <IoMdMenu size={32} />}
+        <button 
+          onClick={toggleMobileMenu} 
+          className="md:hidden p-2 text-slate-900 z-[130] relative"
+          aria-label="Menu"
+        >
+          {isMobileMenuOpen ? <IoClose size={32} className="text-indigo-600" /> : <IoMdMenu size={32} />}
         </button>
       </div>
 
-      {/* --- MENÚ MÓVIL CORREGIDO --- */}
+      {/* --- MENÚ MÓVIL FULL WIDTH --- */}
       <div
-        className={`fixed inset-0 z-[105] md:hidden transition-all duration-500 ${
-          isMobileMenuOpen ? 'visible' : 'invisible'
+        className={`fixed inset-0 z-[105] md:hidden transition-opacity duration-300 ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Overlay oscuro */}
-        <div 
-          className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-500 ${
-            isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
-          }`}
-          onClick={closeMobileMenu}
-        />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeMobileMenu} />
 
-        {/* Contenedor del Menú */}
+        {/* Contenedor Full Width ajustado */}
         <div
-          className={`absolute top-0 right-0 h-screen w-[85%] max-w-sm bg-white shadow-2xl transition-transform duration-500 ease-in-out flex flex-col ${
-            isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          className={`absolute top-0 left-0 w-full bg-white shadow-2xl transition-transform duration-500 ease-in-out rounded-b-[2.5rem] overflow-hidden ${
+            isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
           }`}
         >
-          {/* Header del Menú Móvil */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-50">
-            <img src={logo} className="w-20 h-auto" alt="Logo" onClick={scrollToTop} />
-            <button onClick={closeMobileMenu} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
-              <IoClose size={30} />
-            </button>
-          </div>
+          {/* Espaciador superior para no tapar el logo del header (aprox 80px) */}
+          <div className="h-[75px] md:h-[85px]" />
 
-          {/* Enlaces del Menú Móvil */}
-          <nav className="flex-1 px-6 py-8 overflow-y-auto">
-            <ul className="space-y-2">
+          {/* Navegación directamente */}
+          <nav className="px-8 pb-10 pt-2">
+            <ul className="flex flex-col">
               <li>
                 <button
                   onClick={scrollToTop}
-                  className="flex items-center justify-between w-full text-slate-900 font-black text-xl uppercase tracking-tighter py-5 border-b border-slate-50 hover:text-indigo-600 transition-all"
+                  className="flex items-center justify-between w-full text-slate-900 font-bold text-lg uppercase tracking-tight py-5 border-b border-slate-50 active:bg-slate-50 transition-colors"
                 >
                   Inicio
-                  <FaChevronRight size={14} className="text-slate-300" />
+                  <FaChevronRight size={14} className="text-indigo-500/50" />
                 </button>
               </li>
 
@@ -122,29 +114,29 @@ export const Header = ({ openLogin }) => {
                     duration={600}
                     offset={item.offset}
                     onClick={closeMobileMenu}
-                    className="flex items-center justify-between text-slate-900 font-black text-xl uppercase tracking-tighter py-5 border-b border-slate-50 hover:text-indigo-600 transition-all"
+                    className="flex items-center justify-between text-slate-900 font-bold text-lg uppercase tracking-tight py-5 border-b border-slate-50 active:bg-slate-50 cursor-pointer transition-colors"
                   >
                     {item.label}
-                    <FaChevronRight size={14} className="text-slate-300" />
+                    <FaChevronRight size={14} className="text-indigo-500/50" />
                   </Link>
                 </li>
               ))}
+
+              {/* Botón Acceso Afiliados */}
+              <li className="pt-8">
+                <button
+                  onClick={() => {
+                    openLogin(true);
+                    closeMobileMenu();
+                  }}
+                  className="w-full py-5 bg-indigo-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-200 flex items-center justify-center gap-3 active:scale-[0.97] transition-all"
+                >
+                  <FaUserShield size={20} />
+                  Acceso Afiliados
+                </button>
+              </li>
             </ul>
           </nav>
-
-          {/* Botón de Acción en la parte inferior */}
-          <div className="p-8 bg-slate-50">
-            <button
-              onClick={() => {
-                openLogin(true);
-                closeMobileMenu();
-              }}
-              className="w-full py-5 bg-indigo-600 text-white font-black text-sm uppercase tracking-[0.2em] rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-transform"
-            >
-              <FaUserShield size={18} />
-              Acceso Afiliados
-            </button>
-          </div>
         </div>
       </div>
     </header>
