@@ -1,4 +1,3 @@
-// src/components/AsociarProfesionalAPerfil.jsx
 import { useState, useEffect } from "react";
 import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
@@ -13,15 +12,16 @@ import {
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
 
 const AsociarProfesionalAPerfil = ({
   onClose,
   perfilID,
   idsProfesionalesVinculados,
   refrescarListaProfesionales,
+  profesionalVinculado,
   perfil,
-  actualizarProfesionales,
-  onSuccess
+  actualizarProfesionales
 }) => {
   const { profesionales, isLoading, error: hookError } = useAllProfesionals();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -29,6 +29,7 @@ const AsociarProfesionalAPerfil = ({
   const [mensajeError, setMensajeError] = useState(null);
   const [vinculando, setVinculando] = useState(false);
 
+  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Bloqueo de scroll al montar el modal
@@ -58,47 +59,37 @@ const AsociarProfesionalAPerfil = ({
 
       setTimeout(() => {
         setVinculando(false);
-        // --- SEGURIDAD: Validación para evitar el TypeError ---
-        if (typeof refrescarListaProfesionales === "function") {
-          refrescarListaProfesionales();
+        refrescarListaProfesionales();
+        if (perfil?.tipo === "Particular") {
+          onClose();
         }
-        if (onSuccess) onSuccess(); 
-        onClose();
-      }, 1000);
+      }, 1500);
 
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Error al conectar con el servidor";
+      const errorMsg = err.response?.data?.message || "Error de conexión";
       setMensajeError(errorMsg);
-      toast.error(`Error: ${errorMsg}`);
+      toast.error("Error al asociar profesional");
       setVinculando(false);
     }
   };
 
-  const handleCreateSuccess = async () => {
-    // 1. Actualización de estados
-    if (typeof actualizarProfesionales === "function") {
-      actualizarProfesionales();
-    }
-    
-    // 2. Validación de refresco
-    if (typeof refrescarListaProfesionales === "function") {
-      refrescarListaProfesionales();
-    }
-    
-    if (onSuccess) {
-      await onSuccess(); 
-    }
-
+  const handleCreateSuccess = () => {
+    if (typeof actualizarProfesionales === "function") actualizarProfesionales();
+    if (perfil?.tipo === "Particular") window.location.reload();
+    refrescarListaProfesionales();
     toast.success("Profesional creado y vinculado");
     setShowCreateModal(false);
-    onClose(); // Cerramos el modal principal
   };
 
   return (
     <>
-      {/* OVERLAY sin onClick para impedir cierre accidental al tocar fuera */}
-      <div className="fixed inset-0 w-screen h-[100dvh] bg-slate-900/95 backdrop-blur-md z-[9998] transition-all duration-500"></div>
+      {/* OVERLAY PRINCIPAL: Cierra siempre al hacer clic fuera */}
+      <div 
+        className="fixed inset-0 w-screen h-[100dvh] bg-slate-900/95 backdrop-blur-md z-[9998] transition-all duration-500"
+        onClick={onClose}
+      ></div>
 
+      {/* CONTENEDOR MODAL PRINCIPAL */}
       <div className="fixed inset-0 w-full h-[100dvh] z-[9999] flex items-center justify-center p-4 pointer-events-none">
         <div 
           className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-[0_35px_100px_-15px_rgba(0,0,0,0.5)] w-full max-w-xl max-h-[90dvh] overflow-y-auto pointer-events-auto animate-fade-in-up border border-slate-100"
