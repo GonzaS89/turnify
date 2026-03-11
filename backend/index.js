@@ -331,20 +331,17 @@ WHERE c.id = 1034 AND t.estado = 'reservado'`;
 
 // OBTENER CONSULTORIOS POR ID PROFESIONAL //
 
-app.get("/api/consultorios/:id", async (req, res) => {
+app.get("/api/consultorioxidprofesional/:id", async (req, res) => {
   const { id } = req.params;
   const query = `
   SELECT
-      c.id,
       c.tipo,
-      c.direccion,
       c.nombre,
-      c.hora_inicio AS inicio,
-      c.hora_cierre AS cierre,
+      c.direccion,
       l.nombre AS localidad
-  FROM profesional_consultorio AS pc 
-  JOIN consultorios AS c ON c.id = pc.consultorio_id
-  JOIN profesionales AS p ON p.id = pc.profesional_id 
+      FROM profesional_consultorio AS pc 
+      JOIN consultorios AS c ON c.id = pc.consultorio_id
+    JOIN profesionales AS p ON p.id = pc.profesional_id 
   JOIN localidades AS l ON l.id = c.localidad
   WHERE p.id = ?
   `;

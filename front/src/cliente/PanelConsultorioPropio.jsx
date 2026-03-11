@@ -21,6 +21,7 @@ import { FaHouseMedical } from "react-icons/fa6";
 import useObtenerProfesionalxIdPerfil from "../../customHooks/useObtenerProfesionalxIdPerfil";
 import useObtenerConsultorioxIdPerfil from "../../customHooks/useObtenerConsultorioxIdPerfil";
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
+import useObtenerConsultoriosxIdProfesional from "../../customHooks/useObtenerConsultoriosxIdProfesional";
 
 const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
@@ -32,13 +33,20 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const perfilID = perfil?.id;
   const perfilTipo = perfil.tipo;
 
-  const { consultorios: consultoriosObtenidos, fetchConsultorio } = useObtenerConsultorioxIdPerfil(perfilID);
+  
   const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionales, error: errorProfesionales, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
-
-  console.log(consultoriosObtenidos)
 
   const medico = profesionalesObtenidos?.[0] || null;
   const medicoID = medico?.id;
+
+  // const { consultorios: consultoriosObtenidos, fetchConsultorio } = useObtenerConsultorioxIdPerfil(perfilID);
+  const { consultorios: consultoriosObtenidos, isLoading: isLoadingConsultorios, error: errorConsultorios, fetchConsultorio } = useObtenerConsultoriosxIdProfesional(medicoID);
+
+  console.log(consultoriosObtenidos)
+
+
+
+  
 
   // Lógica para abrir modal de asociación si no hay médico
   useEffect(() => {
@@ -137,6 +145,8 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
                     <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center text-indigo-500"><FaHouseMedical size={12} /></div>
                     <div className="flex-1 text-left min-w-0">
                       <p className="font-black text-[10px] uppercase truncate">{c.nombre}</p>
+                      <p className="font-black text-[10px] uppercase truncate">{c.direccion}</p>
+                      <p className="font-black text-[10px] uppercase truncate">{c.localidad}</p>
                     </div>
                   </button>
                 ))}
