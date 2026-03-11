@@ -1,11 +1,13 @@
-// src/components/TurnList.jsx
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 
 // ICONOS
-import { FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, FaChevronLeft } from "react-icons/fa";
+import { 
+  FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, 
+  FaChevronLeft, FaChevronDown, FaSortAmountDown, FaSortAmountUp 
+} from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import { BiLoaderCircle } from "react-icons/bi";
 
@@ -31,9 +33,12 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [showModalBorrarTodosLosTurnos, setShowModalBorrarTodosLosTurnos] = useState(false);
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
+  
+  // NUEVOS ESTADOS DE UI
   const [mesesAbiertos, setMesesAbiertos] = useState({});
+  const [ordenAsc, setOrdenAsc] = useState(true);
 
-  // FUNCIONES DE FORMATEO
+  // FUNCIONES DE FORMATEO (LÓGICA ORIGINAL)
   const parsearFechaLocal = (fechaStr) => {
     const [año, mes, dia] = fechaStr.split("-").map(Number);
     return new Date(año, mes - 1, dia);
@@ -66,9 +71,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const { profesional } = useProfesionalxId(profesionalId);
   const { consultorio } = useConsultorioxId(consultorioId);
 
-  const { direccion } = consultorio?.[0] || {};
   const nombreMedico = `${profesional?.[0]?.nombre || ""} ${profesional?.[0]?.apellido || ""}`.trim();
 
+  // AGRUPACIÓN ORIGINAL
   const turnosAgrupados = turnos.reduce((acc, turno) => {
     const [datePart] = turno.fecha.split("T");
     if (!acc[datePart]) acc[datePart] = [];
@@ -76,14 +81,34 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
-  const fechasOrdenadas = Object.keys(turnosAgrupados).sort((a, b) => new Date(a) - new Date(b));
+  const fechasBase = Object.keys(turnosAgrupados);
 
-  const mesesAgrupados = fechasOrdenadas.reduce((acc, fecha) => {
+  // NUEVA LÓGICA DE AGRUPACIÓN POR MESES PARA SIDEBAR
+  const mesesMap = fechasBase.reduce((acc, fecha) => {
     const mesNombre = parsearFechaLocal(fecha).toLocaleString("es-ES", { month: "long", year: "numeric" }).toUpperCase();
     if (!acc[mesNombre]) acc[mesNombre] = [];
     acc[mesNombre].push(fecha);
     return acc;
   }, {});
+
+  const listaMeses = Object.keys(mesesMap).sort((a, b) => {
+    const dA = parsearFechaLocal(mesesMap[a][0]);
+    const dB = parsearFechaLocal(mesesMap[b][0]);
+    return ordenAsc ? dA - dB : dB - dA;
+  });
+
+  const toggleMes = (mes) => {
+    setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }));
+  };
+
+  const handleSelectFecha = (fecha, e) => {
+    setFechaSeleccionada(fecha);
+    e.currentTarget.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center'
+    });
+  };
 
   const tapButtonAsignar = (turno, idx) => {
     navigate(`/micuenta/formulario-usuario/${consultorioId}/${profesionalId}`);
@@ -149,7 +174,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   // ESTADO: NO HAY TURNOS
   if (!isLoading && turnos.length === 0) {
     return (
-      <div className="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+      <div className="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in font-sans">
         <button onClick={() => navigate("/micuenta")} className="absolute top-6 left-6 p-3 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200">
             <FaArrowLeft size={20} />
         </button>
@@ -174,14 +199,17 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in font-sans text-slate-900">
       <ToastContainer position="bottom-right" autoClose={1500} theme="colored" />
 
-      {/* HEADER CON FLECHA DE REGRESO */}
+      {/* HEADER */}
       <header className="bg-slate-900 text-white p-4 md:px-12 flex items-center justify-between shadow-2xl z-20 shrink-0">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate("/micuenta")} className="p-2 hover:bg-white/10 rounded-full transition-all">
             <FaArrowLeft className="text-xl" />
           </button>
           <div>
-            <h2 className="text-xl font-black uppercase">Agenda</h2>
+            <h2 className="text-xl font-black uppercase tracking-tighter">Agenda</h2>
+            <p className="text-indigo-400 font-bold uppercase text-[8px] tracking-[0.2em] italic truncate max-w-[150px] md:max-w-none">
+                Dr. {nombreMedico}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -200,28 +228,77 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         </div>
       </header>
 
-      {/* LAYOUT RESPONSIVO */}
+      {/* LAYOUT */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
-        {/* ASIDE */}
-        <aside className={`${fechaSeleccionada ? "hidden lg:flex" : "flex"} lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden`}>
+        {/* SIDEBAR */}
+        <aside className="w-full lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-sm shrink-0">
           <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-            <p className="text-slate-800 font-black text-xl uppercase tracking-tight">Meses</p>
+            <p className="text-slate-800 font-black text-xl uppercase tracking-tight">Calendario</p>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-            {Object.entries(mesesAgrupados).map(([mes, fechas]) => (
-              <div key={mes} className="border border-slate-100 rounded-[1.5rem] overflow-hidden">
-                <button onClick={() => setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }))} className="w-full p-4 bg-slate-50 flex items-center justify-between text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">
-                  {mes} <span>{mesesAbiertos[mes] ? "−" : "+"}</span>
-                </button>
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-white">
+            {listaMeses.map((mes) => (
+              <div key={mes} className="space-y-2 border-b border-slate-50 pb-4 last:border-0">
+                
+                {/* BOTÓN MES CONTRAIBLE CON CONTADOR Y ORDEN */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => toggleMes(mes)}
+                    className={`flex-1 flex items-center justify-between p-3.5 rounded-2xl transition-all ${
+                      mesesAbiertos[mes] ? "bg-slate-900 text-white shadow-lg" : "bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <FaChevronDown className={`text-[10px] transition-transform duration-300 ${mesesAbiertos[mes] ? "rotate-180" : "-rotate-90"}`} />
+                      <span className="font-black uppercase text-[10px] tracking-widest">{mes}</span>
+                    </div>
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${mesesAbiertos[mes] ? "bg-indigo-500 text-white" : "bg-white text-slate-500 border border-slate-200"}`}>
+                      {mesesMap[mes].length} d
+                    </span>
+                  </button>
+
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setOrdenAsc(!ordenAsc); }}
+                    className={`p-3.5 rounded-2xl transition-all shadow-md active:scale-90 ${
+                      ordenAsc ? "bg-indigo-600 text-white" : "bg-amber-500 text-white"
+                    }`}
+                    title={ordenAsc ? "Menor a Mayor" : "Mayor a Menor"}
+                  >
+                    {ordenAsc ? <FaSortAmountUp size={16} /> : <FaSortAmountDown size={16} />}
+                  </button>
+                </div>
+
+                {/* DÍAS CON SCROLL HORIZONTAL MOBILE */}
                 {mesesAbiertos[mes] && (
-                  <div className="p-3 space-y-2 bg-white">
-                    {fechas.map((f) => (
-                      <button key={f} onClick={() => setFechaSeleccionada(f)} className="w-full p-4 rounded-xl border border-slate-100 text-left hover:border-indigo-200 hover:bg-indigo-50/30 transition-all">
-                        <p className="text-xs font-black text-slate-400 uppercase">{obtenerDiaDeLaSemanaCorto(f)}</p>
-                        <p className="text-lg font-black text-slate-800">{formatearSoloDia(f)} / {f.split("-")[1]}</p>
-                      </button>
-                    ))}
+                  <div className="flex flex-row overflow-x-auto lg:flex-col lg:overflow-x-hidden gap-3 pt-2 animate-fade-in pl-1 pb-3 lg:pb-0 custom-scrollbar scroll-smooth">
+                    {mesesMap[mes]
+                      .sort((a, b) => ordenAsc ? new Date(a) - new Date(b) : new Date(b) - new Date(a))
+                      .map((f) => {
+                        const turnosDia = turnosAgrupados[f];
+                        const ocupados = turnosDia.filter((t) => t.estado === "reservado").length;
+                        const disponibles = turnosDia.length - ocupados - turnosDia.filter((t) => t.estado === "finalizado").length;
+                        const isSelected = f === fechaSeleccionada;
+
+                        return (
+                          <button
+                            key={f}
+                            onClick={(e) => handleSelectFecha(f, e)}
+                            className={`shrink-0 w-[110px] lg:w-full p-4 rounded-xl border-2 transition-all flex flex-col lg:flex-row items-center lg:justify-between gap-2 lg:gap-0 ${
+                              isSelected ? "border-indigo-600 bg-indigo-50/50 shadow-md scale-105 lg:scale-100" : "border-slate-50 bg-white hover:border-indigo-100"
+                            }`}
+                          >
+                            <div className="text-center lg:text-left">
+                              <p className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">{obtenerDiaDeLaSemanaCorto(f)}</p>
+                              <p className={`text-sm lg:text-base font-black tracking-tighter ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                                {formatearSoloDia(f)} / {f.split("-")[1]}
+                              </p>
+                            </div>
+                            <span className={`text-[8px] font-black px-2 py-1 rounded-lg uppercase ${disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                              {disponibles} Libres
+                            </span>
+                          </button>
+                        );
+                      })}
                   </div>
                 )}
               </div>
@@ -230,21 +307,24 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         </aside>
 
         {/* MAIN */}
-        <main className={`${fechaSeleccionada ? "flex" : "hidden lg:flex"} flex-1 flex-col overflow-y-auto p-4 md:p-16 custom-scrollbar`}>
+        <main className="flex-1 overflow-y-auto p-4 md:p-12 lg:p-16 custom-scrollbar bg-slate-50">
           {fechaSeleccionada ? (
             <div className="max-w-5xl mx-auto space-y-6 w-full animate-fade-in">
-              {/* Botón Volver Mobile */}
-              <button onClick={() => setFechaSeleccionada(null)} className="lg:hidden flex items-center gap-2 text-indigo-600 font-black text-xs uppercase mb-2">
-                <FaChevronLeft /> Volver al calendario
-              </button>
-
-              <div className="flex items-center justify-between bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                <h3 className="text-2xl font-black text-slate-800 capitalize tracking-tighter">{formatearFechaLarga(fechaSeleccionada)}</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 md:p-10 rounded-[2rem] border border-slate-200 shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                    <span className="text-indigo-600 font-black uppercase text-[10px] tracking-widest leading-none">Agenda Detallada</span>
+                  </div>
+                  <h3 className="text-xl md:text-3xl font-black text-slate-800 capitalize tracking-tighter leading-tight">
+                    {formatearFechaLarga(fechaSeleccionada)}
+                  </h3>
+                </div>
                 <button 
                   onClick={() => setShowModalBorrarTodosLosTurnos(true)} 
-                  className="px-4 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border-2 border-red-100"
+                  className="px-6 py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border-2 border-red-100 active:scale-95"
                 >
-                  <FaTrashAlt /> <span className="hidden md:inline">Vaciar Día</span>
+                  <FaTrashAlt /> <span className="hidden sm:inline">Vaciar Día</span>
                 </button>
               </div>
 
@@ -265,14 +345,20 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-300 animate-pulse">
-              <FaCalendarAlt size={60} className="mb-4 opacity-20" />
-              <p className="text-xl font-black uppercase">Selecciona una fecha</p>
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-6 animate-pulse p-4 text-center">
+              <div className="bg-slate-100 p-16 rounded-[4rem] border-4 border-dashed border-slate-200">
+                <FaCalendarAlt size={60} className="opacity-20 text-slate-400" />
+              </div>
+              <div>
+                <p className="text-2xl md:text-3xl font-black text-slate-400 tracking-tighter uppercase mb-2">Selecciona una fecha</p>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic opacity-60">Gestiona los horarios disponibles del mes</p>
+              </div>
             </div>
           )}
         </main>
       </div>
 
+      {/* MODALES */}
       {showModalBorrarTurno && (
         <BorrarTurno idTurno={IdTurnoSeleccionado} onClose={() => setShowModalBorrarTurno(false)} actualizarTurnos={handleActualizarTurnos} />
       )}
@@ -286,8 +372,9 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       )}
 
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       `}</style>
     </div>
   );

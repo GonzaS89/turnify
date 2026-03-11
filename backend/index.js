@@ -307,12 +307,7 @@ app.get("/api/turnosxidconsultorio/:idConsultorio", async (req, res) => {
     t.estado,
     p.nombre AS nombreProfesional,
     p.apellido AS apellidoProfesional,
-    p.especialidad,
-    CASE 
-        WHEN t.cobertura = 'particular' THEN '' 
-        WHEN cm.siglas IS NULL THEN ''
-        ELSE cm.siglas 
-    END AS cobertura
+    p.especialidad
 FROM turnos AS t
 JOIN profesionales AS p 
     ON p.id = t.profesional_id
@@ -320,7 +315,7 @@ JOIN consultorios AS c
     ON c.id = t.consultorio_id
 LEFT JOIN cobertura_medica AS cm 
     ON cm.id = t.cobertura
-WHERE c.id = 1034 AND t.estado = 'reservado'`;
+WHERE c.id = ? AND t.estado = 'reservado'`;
     const [resultado] = await pool.execute(query, [idConsultorio]);
     res.json(resultado);
   } catch (error) {

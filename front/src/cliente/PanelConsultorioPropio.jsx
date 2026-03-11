@@ -203,7 +203,7 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
                 </div>
                 <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
                   <button onClick={() => cambiarDia(-1)} className="p-2 hover:bg-white rounded-lg"><FaChevronLeft size={12} /></button>
-                  <button onClick={() => setFechaVisualizada(new Date())} className="px-3 text-[9px] font-black uppercase">Hoy</button>
+                  <button onClick={() => setFechaVisualizada(new Date())} className="px-3 text-[9px] font-black uppercase">Ver fechas</button>
                   <button onClick={() => cambiarDia(1)} className="p-2 hover:bg-white rounded-lg"><FaChevronRight size={12} /></button>
                 </div>
               </div>
