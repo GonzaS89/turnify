@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+// src/components/PanelCentroMedico.jsx
+import { useEffect, useState } from 'react';
 import { 
   FaUserMd, FaShieldAlt, FaCalendarPlus, FaBuilding, 
   FaInfoCircle, FaTimes, FaChartLine, FaCalendarDay, FaClock, FaWhatsapp 
@@ -40,53 +41,48 @@ const PanelCentroMedico = ({ perfilData: perfil, profesionalVinculado }) => {
     setHayConsultorios(consultorios.length > 0);
   }, [consultorios]);
 
-  const recibirProfesionalID = (id) => {
-    setProfesionalID(id);
-    setShowModalTurnos(true);
-  };
-
-  // if (isLoadingConsultorio) return <LoadingPanel />;
   if (errorConsultorio) return <ErrorPanel message={errorConsultorio} />;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 md:px-12 font-sans">
-      <div className="max-w-7xl mx-auto space-y-12">
+    <div className="min-h-screen bg-slate-50 py-6 md:py-10 px-3 md:px-12 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-12">
         
-        {/* ===== ENCABEZADO INSTITUCIONAL ===== */}
-        <header className="relative overflow-hidden bg-slate-900 rounded-[3rem] p-10 md:p-14 shadow-2xl text-white">
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        {/* ===== ENCABEZADO INSTITUCIONAL - ADAPTADO ===== */}
+        <header className="relative overflow-hidden bg-slate-900 rounded-[2rem] md:rounded-[3.5rem] p-6 md:p-14 shadow-2xl text-white">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 md:gap-10">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 bg-indigo-600 px-4 py-1.5 rounded-xl shadow-lg">
-                <FaBuilding className="text-white text-xs" />
-                <span className="text-white font-black text-[10px] uppercase tracking-[0.2em]">
+              <div className="inline-flex items-center gap-2 bg-indigo-600 px-3 py-1 rounded-xl shadow-lg">
+                <FaBuilding className="text-white text-[10px]" />
+                <span className="text-white font-black text-[9px] uppercase tracking-[0.2em]">
                   {tipo || 'Entidad Médica'}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none uppercase">
+              <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter leading-tight uppercase">
                 {nombre || "Centro Médico"}
               </h1>
-              <div className="flex items-center gap-4 text-indigo-300">
-                <span className="flex items-center gap-2 font-black text-[10px] uppercase tracking-widest bg-white/10 px-3 py-1 rounded-lg border border-white/5">
+              <div className="flex flex-wrap items-center gap-3 text-indigo-300">
+                <span className="flex items-center gap-2 font-black text-[9px] uppercase tracking-widest bg-white/10 px-3 py-1 rounded-lg border border-white/5">
                   <FaChartLine /> Gestión Activa
                 </span>
-                <p className="text-slate-400 font-bold italic text-sm tracking-tight">
-                  Panel de Control Administrativo
+                <p className="text-slate-400 font-bold italic text-xs tracking-tight">
+                  Panel Administrativo
                 </p>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-[2.5rem] min-w-[300px]">
-              <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Reloj del Sistema</p>
-              <p className="text-2xl font-black tracking-tight capitalize leading-tight">
+            <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] w-full lg:w-auto min-w-[250px]">
+              <p className="text-indigo-400 text-[9px] font-black uppercase tracking-[0.3em] mb-1">Fecha Actual</p>
+              <p className="text-lg md:text-2xl font-black tracking-tight capitalize leading-tight">
                 {currentDate}
               </p>
             </div>
           </div>
-          <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-500 rounded-full opacity-10 blur-[100px]"></div>
+          {/* Decoración */}
+          <div className="absolute -bottom-24 -right-24 w-64 h-64 md:w-96 md:h-96 bg-indigo-500 rounded-full opacity-10 blur-[80px] md:blur-[100px]"></div>
         </header>
 
         {!hayConsultorios ? (
-          <div className="bg-white rounded-[4rem] p-20 text-center shadow-xl border-2 border-dashed border-slate-200 animate-fade-in">
+          <div className="bg-white rounded-[2rem] md:rounded-[4rem] p-10 md:p-20 text-center shadow-xl border-2 border-dashed border-slate-200 animate-fade-in">
              <CrearCentroMedicoModal
               perfilId={perfilId}
               perfilTipo={perfil?.tipo}
@@ -96,49 +92,33 @@ const PanelCentroMedico = ({ perfilData: perfil, profesionalVinculado }) => {
             />
           </div>
         ) : (
-          <div className="space-y-12">
-            {/* TARJETAS DE ACCIÓN RÁPIDA - CORREGIDAS */}
-<section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-  <CardGestionProfesionales
-    seccion={`/micuenta/gestionprofesionales/${consultorioID}`}
-    icon={FaUserMd}
-    titulo="Equipo Médico"
-    subtitulo="Altas, bajas y gestión de especialidades."
-    numProfesionales={numProfesionales}
-    texto="médicos vinculados"
-    isLoading={isLoadingProfesionales}
-    onClick={() => setShowGestionMedicos(true)}
-    // Eliminamos los "!" y usamos clases de visibilidad clara
-    className="rounded-[3rem] p-10 bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300"
-  />
+          <div className="space-y-8 md:space-y-12">
+            {/* TARJETAS DE ACCIÓN RÁPIDA */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+              <CardGestionProfesionales
+                seccion={`/micuenta/gestionprofesionales/${consultorioID}`}
+                icon={FaUserMd}
+                titulo="Equipo Médico"
+                subtitulo="Altas, bajas y especialidades."
+                numProfesionales={numProfesionales}
+                texto="médicos vinculados"
+                isLoading={isLoadingProfesionales}
+                className="rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 bg-white border border-slate-200 shadow-sm"
+              />
 
-  <CardGestionCoberturas
-    seccion={`/micuenta/gestioncoberturas/${consultorioID}`}
-    titulo="Coberturas"
-    icon={FaShieldAlt}
-    subtitulo="Configuración de obras sociales y prepagas."
-    emoji="🛡️"
-    texto="Configurar"
-    // Eliminamos los "!" y aseguramos fondo blanco con texto oscuro
-    className="rounded-[3rem] p-10 bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300"
-  />
-</section>
+              <CardGestionCoberturas
+                seccion={`/micuenta/gestioncoberturas/${consultorioID}`}
+                titulo="Coberturas"
+                icon={FaShieldAlt}
+                subtitulo="Configuración de prepagas."
+                emoji="🛡️"
+                texto="Configurar"
+                className="rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 bg-white border border-slate-200 shadow-sm"
+              />
+            </section>
 
             {/* PANEL DE ACTIVIDAD INTEGRADO */}
             <ActividadDiaPanel turnos={turnos} isLoading={isLoadingTurnos} />
-
-            {/* MODALES DE GESTIÓN */}
-            {showModalTurnos && (
-              <div className="bg-white rounded-[3rem] shadow-2xl border border-indigo-100 overflow-hidden">
-                <div className="bg-slate-900 px-8 py-5 flex justify-between items-center text-white">
-                  <h2 className="text-xl font-black uppercase">Agenda del Profesional</h2>
-                  <button onClick={() => setShowModalTurnos(false)}><FaTimes size={24} /></button>
-                </div>
-                <div className="p-8">
-                  <TurnListCentroMedico profesionalId={profesionalID} consultorioId={consultorioID} onClose={() => setShowModalTurnos(false)} />
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -147,18 +127,15 @@ const PanelCentroMedico = ({ perfilData: perfil, profesionalVinculado }) => {
 };
 
 // ==========================================================
-// COMPONENTE ACTIVIDAD DEL DÍA (ITERANDO POR TURNOS)
+// COMPONENTE ACTIVIDAD DEL DÍA - ADAPTADO
 // ==========================================================
 
 const ActividadDiaPanel = ({ turnos, isLoading }) => {
-  // Obtenemos fecha de hoy en formato local YYYY-MM-DD
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  // Agrupamos turnos por nombre del profesional
   const turnosPorMedico = turnos?.reduce((acc, t) => {
-    const fechaTurno = t.fecha.split('T')[0]; // Extrae "2026-02-25" de la cadena ISO
-    
+    const fechaTurno = t.fecha.split('T')[0];
     if (fechaTurno === today) {
       const nombreCompleto = `${t.nombreProfesional} ${t.apellidoProfesional}`;
       if (!acc[nombreCompleto]) acc[nombreCompleto] = [];
@@ -167,20 +144,20 @@ const ActividadDiaPanel = ({ turnos, isLoading }) => {
     return acc;
   }, {});
 
-  if (isLoading) return <div className="p-10 text-center text-slate-400 font-black uppercase text-xs">Cargando actividad diaria...</div>;
+  if (isLoading) return <div className="p-10 text-center text-slate-400 font-black uppercase text-[10px]">Cargando...</div>;
 
   return (
-    <div className="bg-white rounded-[3rem] p-10 shadow-sm border border-slate-200 space-y-8">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-6">
-        <div className="flex items-center gap-4">
-          <div className="bg-emerald-500 p-3 rounded-2xl">
-            <FaCalendarDay className="text-white text-xl" />
+    <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-sm border border-slate-200 space-y-6 md:space-y-8">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4 md:pb-6">
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="bg-emerald-500 p-2.5 md:p-3 rounded-xl md:rounded-2xl">
+            <FaCalendarDay className="text-white text-lg md:text-xl" />
           </div>
-          <h3 className="text-2xl font-black text-slate-800 uppercase">Actividad del Día</h3>
+          <h3 className="text-lg md:text-2xl font-black text-slate-800 uppercase leading-none">Actividad del Día</h3>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {turnosPorMedico && Object.keys(turnosPorMedico).length > 0 ? (
           Object.keys(turnosPorMedico).map((medico) => (
             <ProfesionalActividadCard 
@@ -190,7 +167,7 @@ const ActividadDiaPanel = ({ turnos, isLoading }) => {
             />
           ))
         ) : (
-          <div className="col-span-full py-16 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 text-slate-400 font-black uppercase italic">
+          <div className="col-span-full py-12 md:py-16 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-400 font-black uppercase italic text-xs px-4">
             No hay actividad para hoy ({today})
           </div>
         )}
@@ -203,43 +180,44 @@ const ProfesionalActividadCard = ({ nombreMedico, turnos }) => {
   const turnosOrdenados = [...turnos].sort((a, b) => a.hora.localeCompare(b.hora));
 
   return (
-    <div className="bg-slate-50 rounded-[2.5rem] border border-slate-100 overflow-hidden hover:shadow-md transition-all">
-      <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
+    <div className="bg-slate-50 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 overflow-hidden">
+      <div className="p-4 md:p-6 bg-white border-b border-slate-100 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="bg-indigo-50 p-2.5 rounded-xl text-indigo-600"><FaUserMd size={20} /></div>
-          <div>
-            <p className="font-black text-slate-800 text-sm uppercase leading-none">{nombreMedico}</p>
-            <p className="text-indigo-400 font-bold text-[9px] uppercase tracking-widest mt-1">
+          <div className="bg-indigo-50 p-2 md:p-2.5 rounded-lg md:rounded-xl text-indigo-600 shrink-0">
+            <FaUserMd size={18} />
+          </div>
+          <div className="min-w-0">
+            <p className="font-black text-slate-800 text-xs md:text-sm uppercase leading-tight truncate">{nombreMedico}</p>
+            <p className="text-indigo-400 font-bold text-[8px] md:text-[9px] uppercase tracking-widest mt-0.5 truncate">
               {turnos[0]?.especialidad}
             </p>
           </div>
         </div>
-        <span className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black text-[10px] uppercase">
-          {turnos.length} Pacientes
+        <span className="bg-indigo-600 text-white px-2 py-1 rounded-md font-black text-[8px] md:text-[10px] uppercase shrink-0">
+          {turnos.length} <span className="hidden sm:inline">Pacientes</span>
         </span>
       </div>
 
-      <div className="p-4 max-h-80 overflow-y-auto custom-scrollbar space-y-3">
+      <div className="p-3 md:p-4 max-h-80 overflow-y-auto custom-scrollbar space-y-2 md:space-y-3">
         {turnosOrdenados.map((turno) => (
-          <div key={turno.id} className="bg-white p-4 rounded-2xl flex items-center justify-between border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="bg-slate-900 px-3 py-2 rounded-xl">
-                <span className="text-white font-black text-xs">{turno.hora.slice(0, 5)}</span>
+          <div key={turno.id} className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl flex items-center justify-between border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-3 md:gap-4 min-w-0">
+              <div className="bg-slate-900 px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl shrink-0">
+                <span className="text-white font-black text-[10px] md:text-xs">{turno.hora.slice(0, 5)}</span>
               </div>
-              <div>
-                <p className="text-slate-800 font-black text-xs uppercase mb-1">
+              <div className="min-w-0">
+                <p className="text-slate-800 font-black text-[10px] md:text-xs uppercase mb-0.5 truncate">
                   {turno.apellido_paciente}, {turno.nombre_paciente}
                 </p>
-                <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest">
-                  <p className="text-slate-400">DNI: {turno.DNI}</p>
-                  <span className="text-slate-200">•</span>
-                  <p className="text-indigo-500">{turno.cobertura == '' ? 'Particular' : turno.cobertura}</p>
+                <div className="flex items-center gap-2 text-[8px] md:text-[9px] font-bold uppercase tracking-tight">
+                  <p className="text-slate-400 hidden xs:block">DNI: {turno.DNI}</p>
+                  <p className="text-indigo-500 truncate">{turno.cobertura === '' ? 'Particular' : turno.cobertura}</p>
                 </div>
               </div>
             </div>
             {turno.telefono && (
-              <a href={`https://wa.me/${turno.telefono}`} target="_blank" rel="noreferrer" className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all">
-                <FaWhatsapp size={18} />
+              <a href={`https://wa.me/${turno.telefono}`} target="_blank" rel="noreferrer" className="p-2 md:p-2.5 bg-emerald-50 text-emerald-600 rounded-lg md:rounded-xl hover:bg-emerald-600 hover:text-white transition-all shrink-0 ml-2">
+                <FaWhatsapp size={16} />
               </a>
             )}
           </div>
@@ -248,7 +226,5 @@ const ProfesionalActividadCard = ({ nombreMedico, turnos }) => {
     </div>
   );
 };
-
-// ... LoadingPanel y ErrorPanel se mantienen iguales al final del archivo
 
 export default PanelCentroMedico;

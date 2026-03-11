@@ -81,6 +81,8 @@ const GenerarTurnosModal = () => {
         }),
       });
 
+      console.log(consultorioIdParsed)
+
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Error');
 

@@ -40,16 +40,6 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [liberando, setLiberando] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
 
-  const datesListRef = useRef(null);
-
-  // Refresco automático cada 5 minutos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTrigger((prev) => prev + 1);
-    }, 300000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleActualizarTurnos = () => setRefreshTrigger((prev) => prev + 1);
 
   const { turnos, isLoading } = useProfessionalConsultorioTurnos(profesionalId, consultorioId, refreshTrigger);
@@ -130,39 +120,43 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   return (
     <div className="fixed inset-0 bg-white z-[300] flex flex-col h-screen w-full overflow-hidden animate-fade-in font-sans">
       
-      {/* HEADER PREMIUM */}
-      <header className="bg-slate-900 text-white p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
-        <div className="flex items-center gap-6">
-          <button onClick={() => navigate(-1)} className="p-3 hover:bg-white/10 rounded-full transition-all">
-            <FaArrowLeft className="text-2xl" />
+      {/* HEADER PREMIUM - RESPONSIVE */}
+      <header className="bg-slate-900 text-white p-4 md:p-6 md:px-12 flex items-center justify-between shadow-2xl z-20">
+        <div className="flex items-center gap-3 md:gap-6">
+          <button onClick={() => navigate(-1)} className="p-2 md:p-3 hover:bg-white/10 rounded-full transition-all">
+            <FaArrowLeft className="text-xl md:text-2xl" />
           </button>
-          <div className="flex items-center gap-5">
-            <div className="bg-indigo-600 p-4 rounded-2xl hidden md:block shadow-lg">
-              <FaCalendarAlt className="text-3xl text-white" />
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="bg-indigo-600 p-3 md:p-4 rounded-2xl hidden sm:block shadow-lg">
+              <FaCalendarAlt className="text-2xl md:text-3xl text-white" />
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase">Agenda Profesional</h2>
-              <p className="text-indigo-400 font-bold uppercase text-[10px] md:text-xs tracking-[0.2em] mt-2 italic">
+              <h2 className="text-lg md:text-3xl font-black tracking-tighter leading-none uppercase">Agenda</h2>
+              <p className="text-indigo-400 font-bold uppercase text-[8px] md:text-xs tracking-[0.2em] mt-1 md:mt-2 italic truncate max-w-[120px] md:max-w-none">
                 {tipoConsultorio === "propio" ? "Turnos del Centro" : `${medico?.titulo || ""} ${nombreMedico}`}
               </p>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-2 md:gap-4">
           <button 
             onClick={handleActualizarTurnos}
-            className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white"
+            className="p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white"
             title="Sincronizar"
           >
-            <TbRefresh size={22} className={isLoading ? "animate-spin" : ""} />
+            <TbRefresh size={20} className={isLoading ? "animate-spin" : ""} />
           </button>
+
+          {/* BOTÓN HABILITAR VISIBLE EN MOBILE */}
           <button 
             onClick={handleAgregarTurnoClick}
-            className="hidden md:flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-widest uppercase rounded-xl transition-all shadow-lg"
+            className="flex items-center gap-2 px-3 py-2 md:px-6 md:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] md:text-xs tracking-widest uppercase rounded-xl transition-all shadow-lg active:scale-95"
           >
-            <FaPlus /> Habilitar
+            <FaPlus /> <span className="hidden xs:block">Habilitar</span>
           </button>
-          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white text-4xl font-light p-2 transition-colors">
+
+          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white text-2xl md:text-4xl font-light p-1 md:p-2 transition-colors">
             <FaTimes />
           </button>
         </div>
@@ -170,23 +164,22 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
-        {/* SIDEBAR DE FECHAS */}
-        <aside className="lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 flex flex-col overflow-hidden shadow-sm">
-          <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        {/* SIDEBAR DE FECHAS - ADAPTADO CON SCROLL HORIZONTAL EN MOBILE */}
+        <aside className="w-full lg:w-1/3 xl:w-1/4 bg-white border-b lg:border-r border-slate-200 flex flex-col overflow-hidden shadow-sm shrink-0">
+          <div className="p-4 md:p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
             <div>
-              <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado de</h3>
-              <p className="text-slate-800 font-black text-xl tracking-tight uppercase">Fechas</p>
+              <h3 className="text-slate-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-1">Listado de</h3>
+              <p className="text-slate-800 font-black text-lg md:text-xl tracking-tight uppercase">Fechas</p>
             </div>
-            <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg font-black text-[10px]">
+            <div className="bg-indigo-100 text-indigo-700 px-2 py-0.5 md:px-3 md:py-1 rounded-lg font-black text-[9px] md:text-[10px]">
               {fechasOrdenadas.length} DÍAS
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
+          <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto p-4 md:p-6 gap-3 custom-scrollbar">
             {fechasOrdenadas.length === 0 ? (
-              <div className="text-center py-10 px-4">
-                <FaRegClock className="mx-auto text-slate-200 mb-4" size={40} />
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Sin turnos generados</p>
+              <div className="text-center py-6 px-4 w-full">
+                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin turnos</p>
               </div>
             ) : (
               fechasOrdenadas.map((fecha) => {
@@ -199,31 +192,26 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                   <button
                     key={fecha}
                     onClick={() => setFechaSeleccionada(fecha)}
-                    className={`w-full p-5 rounded-[1.5rem] border-2 transition-all flex items-center justify-between ${
+                    className={`shrink-0 lg:w-full p-4 md:p-5 rounded-[1.2rem] md:rounded-[1.5rem] border-2 transition-all flex flex-col lg:flex-row items-center justify-between gap-2 lg:gap-0 ${
                       isSelected 
                         ? "border-indigo-600 bg-indigo-50/50 shadow-lg shadow-indigo-100" 
                         : "border-slate-50 bg-white hover:border-indigo-100"
                     }`}
                   >
-                    <div className="text-left">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                    <div className="text-center lg:text-left">
+                      <p className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                         {new Date(fecha + "T12:00:00").toLocaleDateString("es-AR", { weekday: "short" })}
                       </p>
-                      <p className={`text-lg font-black tracking-tighter ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                      <p className={`text-sm md:text-lg font-black tracking-tighter ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
                         {new Date(fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase ${
+                    <div className="flex flex-col items-center lg:items-end gap-1">
+                      <span className={`text-[8px] md:text-[9px] font-black px-1.5 py-0.5 md:px-2 md:py-1 rounded-lg uppercase ${
                         disponibles > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                       }`}>
                         {disponibles} Libres
                       </span>
-                      <div className="flex gap-0.5">
-                        {turnosDia.slice(0, 5).map((t, i) => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${t.estado === 'disponible' ? 'bg-green-400' : 'bg-red-400'}`} />
-                        ))}
-                      </div>
                     </div>
                   </button>
                 );
@@ -232,31 +220,31 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           </div>
         </aside>
 
-        {/* CONTENEDOR DE TURNOS */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-12 lg:p-16 custom-scrollbar">
+        {/* CONTENEDOR DE TURNOS - RESPONSIVE */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-12 lg:p-16 custom-scrollbar">
           {fechaSeleccionada ? (
-            <div className="max-w-5xl mx-auto space-y-10 animate-fade-in">
+            <div className="max-w-5xl mx-auto space-y-6 md:space-y-10 animate-fade-in">
               {/* HEADER DE FECHA SELECCIONADA */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-1 md:mb-2">
                     <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-                    <span className="text-indigo-600 font-black uppercase text-[10px] tracking-widest">Vista Detallada</span>
+                    <span className="text-indigo-600 font-black uppercase text-[8px] md:text-[10px] tracking-widest">Agenda Detallada</span>
                   </div>
-                  <h3 className="text-4xl font-black text-slate-800 tracking-tighter capitalize leading-tight">
+                  <h3 className="text-xl md:text-4xl font-black text-slate-800 tracking-tighter capitalize leading-tight">
                     {new Date(fechaSeleccionada + "T12:00:00").toLocaleDateString("es-AR", { weekday: 'long', day: 'numeric', month: 'long' })}
                   </h3>
                 </div>
                 <button 
                   onClick={() => setShowModalBorrarTodosLosTurnos(true)}
-                  className="px-6 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-red-100"
+                  className="px-4 py-3 md:px-6 md:py-4 bg-red-50 text-red-600 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-red-100 active:scale-95"
                 >
-                  <FaTrashAlt /> Vaciar Día
+                  <FaTrashAlt /> <span className="sm:inline">Vaciar Día</span>
                 </button>
               </div>
 
               {/* LISTADO DE TURNOS */}
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {turnosDeLaFecha
                   .sort((a, b) => (a.hora || "").localeCompare(b.hora || ""))
                   .map((turno, idx) => (
@@ -284,13 +272,13 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-8 animate-pulse">
-              <div className="bg-slate-100 p-16 rounded-[4rem] border-4 border-dashed border-slate-200">
-                <FaCalendarAlt size={80} className="opacity-20 text-slate-400" />
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-6 md:space-y-8 animate-pulse p-4">
+              <div className="bg-slate-100 p-10 md:p-16 rounded-[2.5rem] md:rounded-[4rem] border-2 md:border-4 border-dashed border-slate-200">
+                <FaCalendarAlt size={50} className="opacity-20 text-slate-400" />
               </div>
               <div className="text-center space-y-2">
-                <p className="text-3xl font-black text-slate-400 tracking-tighter uppercase leading-none">Selecciona una fecha</p>
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest italic">Para visualizar la gestión de horarios</p>
+                <p className="text-xl md:text-3xl font-black text-slate-400 tracking-tighter uppercase leading-none">Selecciona una fecha</p>
+                <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase tracking-widest italic">Gestiona los horarios disponibles</p>
               </div>
             </div>
           )}
@@ -319,7 +307,7 @@ const TurnListCentroMedico = ({ tipoConsultorio, enviarTurnoYOrden }) => {
       <ToastContainer autoClose={1500} position="bottom-right" />
 
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       `}</style>

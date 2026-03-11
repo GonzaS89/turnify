@@ -33,9 +33,15 @@ const TurnSelectModal = ({ enviarTurnoYOrden, onClose }) => {
     fetchProfesionalId();
   }, [profesionalSlug]);
 
+
+
   const { profesional, isLoading: isLoadingProfesional } = useProfesionalxId(profesionalId || 0);
   const { consultorios, isLoading: isLoadingConsultorios } = useProfessionalConsultorios(profesionalId || 0);
   const [consultorioSelec, setConsultorioSelec] = useState(null);
+
+  console.log(consultorios)
+
+  
 
   useEffect(() => {
     if (!isLoadingConsultorios && Array.isArray(consultorios) && consultorios.length > 0) {

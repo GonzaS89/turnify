@@ -335,6 +335,7 @@ app.get("/api/consultorioxidprofesional/:id", async (req, res) => {
   const { id } = req.params;
   const query = `
   SELECT
+  c.id,
       c.tipo,
       c.nombre,
       c.direccion,

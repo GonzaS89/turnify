@@ -1,3 +1,4 @@
+// src/components/AsociarProfesionalAPerfil.jsx
 import { useState, useEffect } from "react";
 import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
@@ -18,8 +19,7 @@ const AsociarProfesionalAPerfil = ({
   onClose,
   perfilID,
   idsProfesionalesVinculados,
-  refrescarListaProfesionales,
-  profesionalVinculado,
+  onSuccess, // Cambiamos el nombre para que coincida con lo que manda el Panel
   perfil,
   actualizarProfesionales
 }) => {
@@ -29,7 +29,6 @@ const AsociarProfesionalAPerfil = ({
   const [mensajeError, setMensajeError] = useState(null);
   const [vinculando, setVinculando] = useState(false);
 
-  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Bloqueo de scroll al montar el modal
@@ -39,7 +38,7 @@ const AsociarProfesionalAPerfil = ({
   }, []);
 
   const handleSelect = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setMensajeError(null);
     setVinculando(true);
 
@@ -57,13 +56,20 @@ const AsociarProfesionalAPerfil = ({
 
       toast.success("Vínculo establecido con éxito");
 
+      // Lógica de cierre y refresco
       setTimeout(() => {
         setVinculando(false);
-        refrescarListaProfesionales();
-        if (perfil?.tipo === "Particular") {
-          onClose();
+        
+        // EJECUTAMOS EL CALLBACK DE ÉXITO (fetchProfesional en el padre)
+        if (typeof onSuccess === "function") {
+            onSuccess();
         }
-      }, 1500);
+        
+        // CERRAMOS EL MODAL
+        if (typeof onClose === "function") {
+            onClose();
+        }
+      }, 1000);
 
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Error de conexión";
@@ -74,16 +80,24 @@ const AsociarProfesionalAPerfil = ({
   };
 
   const handleCreateSuccess = () => {
-    if (typeof actualizarProfesionales === "function") actualizarProfesionales();
-    if (perfil?.tipo === "Particular") window.location.reload();
-    refrescarListaProfesionales();
     toast.success("Profesional creado y vinculado");
     setShowCreateModal(false);
+    
+    if (typeof actualizarProfesionales === "function") actualizarProfesionales();
+    
+    // Si viene del Panel, usamos onSuccess para refrescar y cerrar
+    if (typeof onSuccess === "function") {
+        onSuccess();
+    }
+    
+    if (typeof onClose === "function") {
+        onClose();
+    }
   };
 
   return (
     <>
-      {/* OVERLAY PRINCIPAL: Cierra siempre al hacer clic fuera */}
+      {/* OVERLAY PRINCIPAL */}
       <div 
         className="fixed inset-0 w-screen h-[100dvh] bg-slate-900/95 backdrop-blur-md z-[9998] transition-all duration-500"
         onClick={onClose}
@@ -149,7 +163,7 @@ const AsociarProfesionalAPerfil = ({
                           value={prof.id}
                           disabled={idsProfesionalesVinculados?.includes(prof.id)}
                         >
-                          {prof.nombre} {prof.apellido} {idsProfesionalesVinculados?.includes(prof.id) ? "— YA VINCULADO" : ""}
+                          {prof.nombre} {prof.apellido} MP. {prof.matricula} {prof.especialidad} {idsProfesionalesVinculados?.includes(prof.id) ? "— YA VINCULADO" : ""}
                         </option>
                       ))}
                     </select>

@@ -1,50 +1,64 @@
 // src/components/PanelConsultorioPropio.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import AsociarProfesionalAPerfil from "./AsociarProfesionalAPerfil";
 import CrearConsultorioModal from "../cliente/CrearConsultorioModal";
 
 // CARGA DE ICONOS
 import {
-  FaCalendarAlt, FaStethoscope, FaIdCard, FaChevronRight,
-  FaClock, FaCheckCircle, FaPlus, FaShareAlt, FaCircleNotch,
-  FaExclamationTriangle, FaWhatsapp, FaCalendarDay, FaChevronLeft
+  FaCalendarAlt, FaStethoscope, FaChevronRight,
+  FaClock, FaCheckCircle, FaPlus, FaCircleNotch,
+  FaWhatsapp, FaChevronLeft, FaCopy, FaExternalLinkAlt
 } from "react-icons/fa";
 import { FaHouseMedical } from "react-icons/fa6";
 
 // CARGA DE HOOKS
 import useObtenerProfesionalxIdPerfil from "../../customHooks/useObtenerProfesionalxIdPerfil";
-import useObtenerConsultorioxIdPerfil from "../../customHooks/useObtenerConsultorioxIdPerfil";
+import useObtenerConsultoriosxIdProfesional from "../../customHooks/useObtenerConsultoriosxIdProfesional";
 import useProfessionalConsultorioTurnos from "../../customHooks/useProfessionalConsultorioTurnos";
 
 // CARGA DE LAYOUTS
-import ModalListaTurnos from "../cliente/ModalListaTurnos";
 import { toast, ToastContainer } from "react-toastify";
 
 const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   const navigate = useNavigate();
-  const [showModalListaTurnos, setShowModalListaTurnos] = useState(false);
   const [showModalCrearConsultorio, setShowModalCrearConsultorio] = useState(false);
+  
+  // 1. ESTADO PARA EL MODAL DE ASOCIACIÓN
+  const [showModalAsociar, setShowModalAsociar] = useState(false);
   
   const [fechaVisualizada, setFechaVisualizada] = useState(new Date());
 
   const perfilID = perfil?.id;
   const perfilTipo = perfil.tipo;
 
-  
   const { profesional: profesionalesObtenidos, isLoading: isLoadingProfesionales, error: errorProfesionales, fetchProfesional } = useObtenerProfesionalxIdPerfil(perfilID);
 
   const medico = profesionalesObtenidos?.[0] || null;
   const medicoID = medico?.id;
-  const medicoSlug = medico?.slug;
+  const slug = medico?.slug || "";
 
-  const storedSelection = typeof window !== "undefined" ? localStorage.getItem("consultorioSeleccionadoId") : null;
-  const [ConsultorioSelecID, setConsultorioSelecID] = useState(storedSelection);
+  // 2. EFECTO: Control de visibilidad. Si aparece el médico, cerramos el modal.
+  useEffect(() => {
+    if (!isLoadingProfesionales) {
+      if (!medico) {
+        setShowModalAsociar(true);
+      } else {
+        setShowModalAsociar(false);
+      }
+    }
+  }, [medico, isLoadingProfesionales]);
+
+  const { consultorios: consultoriosObtenidos, isLoading: isLoadingConsultorios, fetchConsultorio } = useObtenerConsultoriosxIdProfesional(medicoID);
+
+  const [ConsultorioSelecID, setConsultorioSelecID] = useState(() => {
+    return typeof window !== "undefined" ? localStorage.getItem("consultorioSeleccionadoId") : null;
+  });
 
   useEffect(() => {
     if (consultoriosObtenidos?.length > 0) {
       if (!ConsultorioSelecID) {
-        const primerId = consultoriosObtenidos?.[0].id;
+        const primerId = consultoriosObtenidos[0].id;
         setConsultorioSelecID(primerId);
         localStorage.setItem("consultorioSeleccionadoId", primerId);
       }
@@ -59,6 +73,22 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
   useEffect(() => {
     if (medicoID) enviarMedicoID(medicoID);
   }, [medicoID, enviarMedicoID]);
+
+  // Manejador para copiar el link de turnos
+  const handleCopyLink = () => {
+    const url = `https://turnate.site/turnos/${slug}`;
+    navigator.clipboard.writeText(url);
+    toast.info("¡Enlace de turnos copiado!", {
+        icon: <FaCopy className="text-indigo-400" />
+    });
+  };
+
+  // Manejador de éxito al asociar profesional
+  const handleAsociacionExitosa = useCallback(async () => {
+    setShowModalAsociar(false);
+    await fetchProfesional();
+    toast.success("¡Perfil profesional vinculado correctamente!");
+  }, [fetchProfesional]);
 
   const todayStr = new Date().toLocaleDateString('en-CA');
   const fechaVisualizadaStr = fechaVisualizada.toLocaleDateString('en-CA');
@@ -89,31 +119,51 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
     <div className="min-h-screen py-4 sm:py-12 px-2 sm:px-6 bg-slate-50">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-12">
         
-        {/* ENCABEZADO - AJUSTADO PARA MOBILE */}
+        {/* ENCABEZADO */}
         <header className="bg-slate-900 text-white rounded-[1.5rem] sm:rounded-[3.5rem] shadow-2xl p-6 sm:p-14 relative overflow-hidden border border-slate-800">
           <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center justify-between">
-            
-            {/* PERFIL MÉDICO */}
             <div className="flex-1">
               <h1 className="text-2xl sm:text-5xl font-black italic mb-6 sm:mb-10 uppercase">
                 Panel de <span className="text-indigo-500 not-italic">Gestión</span>
               </h1>
               {medico && (
-                <div className="flex items-center gap-4 sm:gap-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
                   <div className="w-16 h-16 sm:w-24 sm:h-24 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-xl sm:text-3xl shadow-2xl shrink-0">
                     {medico.nombre.charAt(0)}{medico.apellido.charAt(0)}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h2 className="text-lg sm:text-3xl font-black mb-1">Dr. {medico.nombre} {medico.apellido}</h2>
-                    <div className="flex flex-col sm:flex-row gap-2 text-[8px] sm:text-[10px] uppercase font-black text-slate-400">
+                    <div className="flex flex-col sm:flex-row gap-2 text-[8px] sm:text-[10px] uppercase font-black text-slate-400 mb-4">
                       <span><FaStethoscope className="inline mr-1 text-indigo-400" /> {medico.especialidad}</span>
+                    </div>
+                    
+                    {/* BOTÓN LINK PARA PACIENTES */}
+                    <div className="inline-flex items-stretch bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+                        <div className="hidden sm:flex items-center px-4 py-2 bg-slate-950/50 border-r border-slate-700">
+                            <span className="text-[9px] font-black text-indigo-400 tracking-wider uppercase">Link Pacientes</span>
+                        </div>
+                        <button 
+                            onClick={() => window.open(`https://turnate.site/turnos/${slug}`, '_blank')}
+                            className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase hover:bg-slate-700 transition-colors border-r border-slate-700"
+                            title="Ver perfil público"
+                        >
+                            <FaExternalLinkAlt size={10} className="text-slate-400" />
+                            Ver
+                        </button>
+                        <button 
+                            onClick={handleCopyLink}
+                            className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase hover:bg-indigo-600 transition-colors bg-indigo-500/10 text-indigo-400 hover:text-white"
+                        >
+                            <FaCopy size={10} />
+                            Copiar Link
+                        </button>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* SEDES - COMPACTO PARA MOBILE */}
+            {/* SEDES */}
             <div className="w-full lg:w-[350px] bg-slate-800/40 p-4 sm:p-6 rounded-2xl border border-slate-700/50">
               <h3 className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-3 ml-1">Tus Sedes</h3>
               <div className="max-h-40 overflow-y-auto space-y-2 custom-scrollbar pr-1">
@@ -138,7 +188,6 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
 
         {!noHayConsultorios && (
           <>
-            {/* ESTADÍSTICAS */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               <StatCard label="Pacientes" value={countByEstado("reservado")} icon={FaCalendarAlt} color="text-indigo-500" />
               <StatCard label="Libres" value={countByEstado("disponible")} icon={FaClock} color="text-emerald-500" />
@@ -146,7 +195,6 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
               <StatCard label="Ver Agenda" value="IR" icon={FaChevronRight} color="text-slate-400" onClick={() => navigate(`/micuenta/panelturnos/${ConsultorioSelecID}/${medicoID}`)} clickable />
             </div>
 
-            {/* AGENDA */}
             <section className="bg-white rounded-[2rem] p-5 sm:p-10 shadow-lg border border-slate-100">
               <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
                 <div>
@@ -176,7 +224,28 @@ const PanelConsultorioPropio = ({ perfilData: perfil, enviarMedicoID }) => {
         )}
       </div>
 
-      <CrearConsultorioModal isOpen={showModalCrearConsultorio} onClose={() => setShowModalCrearConsultorio(false)} perfilID={perfilID} profesionalID={medicoID} perfilTipo={perfilTipo} onSuccess={fetchConsultorio} />
+      {/* 3. MODAL DE ASOCIACIÓN (OVERLAY BLOQUEANTE) */}
+      {showModalAsociar && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-2 max-w-2xl w-full shadow-2xl relative overflow-hidden">
+             <AsociarProfesionalAPerfil 
+               perfilID={perfilID} 
+               onSuccess={handleAsociacionExitosa} 
+             />
+          </div>
+        </div>
+      )}
+
+      {/* 4. MODAL DE CREAR CONSULTORIO */}
+      <CrearConsultorioModal 
+        isOpen={showModalCrearConsultorio} 
+        onClose={() => setShowModalCrearConsultorio(false)} 
+        perfilID={perfilID} 
+        profesionalID={medicoID} 
+        perfilTipo={perfilTipo} 
+        onSuccess={fetchConsultorio} 
+      />
+      
       <ToastContainer position="bottom-right" theme="dark" />
     </div>
   );

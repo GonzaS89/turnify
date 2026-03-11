@@ -26,7 +26,7 @@ const useProfessionalConsultorios = (professionalId) => {
             try {
                 // Realizamos la petición GET usando Axios
                 // Axios devuelve la respuesta en un objeto con una propiedad 'data'
-                const response = await axios.get(`${API_URL}/api/consultorios/${professionalId}`);
+                const response = await axios.get(`${API_URL}/api/consultorioxidprofesional/${professionalId}`);
 
                 // Los datos de la respuesta ya están disponibles y parseados en `response.data`
                 setConsultorios(response.data);
