@@ -148,6 +148,7 @@ const CentroExpandible = ({ centro, navigate }) => {
           <div>
             <h3 className="font-bold text-slate-800 text-lg">{centro.nombre}</h3>
             <p className="text-xs text-slate-400">{centro.direccion}</p>
+            <p className="text-xs text-slate-400 font-bold uppercase">{centro.localidad}</p>
           </div>
         </div>
         {isOpen ? <FaChevronUp className="text-indigo-600" /> : <FaChevronDown className="text-slate-300" />}
@@ -159,7 +160,14 @@ const CentroExpandible = ({ centro, navigate }) => {
             <div className="text-center text-sm text-indigo-600">Cargando staff...</div>
           ) : staff?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {staff.map(doc => <DoctorCard key={doc.id} doctor={doc} navigate={navigate} />)}
+              {staff.map(doc => (
+                <DoctorCard 
+                  key={doc.id} 
+                  doctor={doc} 
+                  navigate={navigate} 
+                  consultorioId={centro.id} 
+                />
+              ))}
             </div>
           ) : (
             <p className="text-center text-sm text-slate-400">Sin profesionales.</p>
@@ -170,7 +178,7 @@ const CentroExpandible = ({ centro, navigate }) => {
   );
 };
 
-const DoctorCard = ({ doctor, navigate }) => (
+const DoctorCard = ({ doctor, navigate, consultorioId }) => (
   <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
     <div className="flex items-center gap-4 mb-4">
       <div className="bg-slate-100 w-14 h-14 rounded-xl flex items-center justify-center text-slate-400">
@@ -182,7 +190,11 @@ const DoctorCard = ({ doctor, navigate }) => (
       </div>
     </div>
     <button 
-      onClick={(e) => { e.stopPropagation(); navigate(`/turnos/${doctor.slug || 'id-'+doctor.id}`); }} 
+      onClick={(e) => { 
+        e.stopPropagation(); 
+        const slug = doctor.slug || 'id-' + doctor.id;
+        navigate(`/turnos/${slug}`, { state: { initialConsultorioId: consultorioId } }); 
+      }} 
       className="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-all"
     >
       VER AGENDA

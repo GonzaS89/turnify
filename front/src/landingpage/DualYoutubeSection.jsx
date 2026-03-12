@@ -7,7 +7,7 @@ const DualYouTubeSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const videoConsultorios = "G5VylYGq3_k"; 
-  const videoCentros = "eEzls-hZghY";
+  const videoCentros = "ZzECmheggvo";
 
   const embedUrl = (id) =>
     `https://www.youtube.com/embed/${id}?autoplay=0&rel=0&showinfo=0&modestbranding=1`;
