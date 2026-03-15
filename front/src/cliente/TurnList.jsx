@@ -1,12 +1,12 @@
 import axios from "axios";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 
 // ICONOS
 import { 
   FaCalendarAlt, FaTimes, FaPlus, FaArrowLeft, FaTrashAlt, 
-  FaChevronLeft, FaChevronDown, FaSortAmountDown, FaSortAmountUp 
+  FaChevronDown, FaSortAmountDown, FaSortAmountUp 
 } from "react-icons/fa";
 import { TbRefresh } from "react-icons/tb";
 import { BiLoaderCircle } from "react-icons/bi";
@@ -34,11 +34,10 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
   const [liberandoIds, setLiberandoIds] = useState(new Set());
   const [finalizandoIds, setFinalizandoIds] = useState(new Set());
   
-  // NUEVOS ESTADOS DE UI
   const [mesesAbiertos, setMesesAbiertos] = useState({});
   const [ordenAsc, setOrdenAsc] = useState(true);
 
-  // FUNCIONES DE FORMATEO (LÓGICA ORIGINAL)
+  // --- LÓGICA DE FECHAS ORIGINAL ---
   const parsearFechaLocal = (fechaStr) => {
     const [año, mes, dia] = fechaStr.split("-").map(Number);
     return new Date(año, mes - 1, dia);
@@ -83,7 +82,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
 
   const fechasBase = Object.keys(turnosAgrupados);
 
-  // NUEVA LÓGICA DE AGRUPACIÓN POR MESES PARA SIDEBAR
+  // AGRUPACIÓN POR MESES
   const mesesMap = fechasBase.reduce((acc, fecha) => {
     const mesNombre = parsearFechaLocal(fecha).toLocaleString("es-ES", { month: "long", year: "numeric" }).toUpperCase();
     if (!acc[mesNombre]) acc[mesNombre] = [];
@@ -91,11 +90,31 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     return acc;
   }, {});
 
-  const listaMeses = Object.keys(mesesMap).sort((a, b) => {
-    const dA = parsearFechaLocal(mesesMap[a][0]);
-    const dB = parsearFechaLocal(mesesMap[b][0]);
-    return ordenAsc ? dA - dB : dB - dA;
-  });
+  // --- FILTRO PARA OCULTAR MESES ANTERIORES AL ACTUAL ---
+  const listaMeses = Object.keys(mesesMap)
+    .sort((a, b) => {
+      const dA = parsearFechaLocal(mesesMap[a][0]);
+      const dB = parsearFechaLocal(mesesMap[b][0]);
+      return ordenAsc ? dA - dB : dB - dA;
+    })
+    .filter((mesNombre) => {
+      const hoy = new Date();
+      // Creamos una fecha del primer día del mes actual para comparar meses/años
+      const primerDiaMesActual = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      
+      const fechaReferenciaGrupo = parsearFechaLocal(mesesMap[mesNombre][0]);
+      const primerDiaMesGrupo = new Date(fechaReferenciaGrupo.getFullYear(), fechaReferenciaGrupo.getMonth(), 1);
+
+      return primerDiaMesGrupo >= primerDiaMesActual;
+    });
+
+  // EFECTO PARA ABRIR EL MES ACTUAL POR DEFECTO
+  useEffect(() => {
+    if (listaMeses.length > 0 && Object.keys(mesesAbiertos).length === 0) {
+      const mesActualKey = listaMeses[0]; 
+      setMesesAbiertos({ [mesActualKey]: true });
+    }
+  }, [listaMeses]);
 
   const toggleMes = (mes) => {
     setMesesAbiertos(prev => ({ ...prev, [mes]: !prev[mes] }));
@@ -171,7 +190,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
     );
   }
 
-  // ESTADO: NO HAY TURNOS
   if (!isLoading && turnos.length === 0) {
     return (
       <div className="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in font-sans">
@@ -182,7 +200,7 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           <FaCalendarAlt size={60} className="text-slate-300" />
         </div>
         <h2 className="text-2xl font-black text-slate-800 uppercase mb-2">Sin turnos configurados</h2>
-        <p className="text-slate-500 mb-8 max-w-sm">No hay fechas ni turnos registrados en este consultorio. Empieza habilitando nuevos horarios para tus pacientes.</p>
+        <p className="text-slate-500 mb-8 max-w-sm">No hay fechas ni turnos registrados en este consultorio.</p>
         <button 
           onClick={() => navigate(`/micuenta/generarturnos/${consultorioId}/${profesionalId}`)}
           className="flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all"
@@ -228,7 +246,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
         </div>
       </header>
 
-      {/* LAYOUT */}
       <div className="flex flex-col lg:flex-row flex-1 overflow-hidden bg-slate-50">
         
         {/* SIDEBAR */}
@@ -239,8 +256,6 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-white">
             {listaMeses.map((mes) => (
               <div key={mes} className="space-y-2 border-b border-slate-50 pb-4 last:border-0">
-                
-                {/* BOTÓN MES CONTRAIBLE CON CONTADOR Y ORDEN */}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => toggleMes(mes)}
@@ -262,13 +277,11 @@ const TurnList = ({ tipoConsultorio, enviarTurnoYOrden }) => {
                     className={`p-3.5 rounded-2xl transition-all shadow-md active:scale-90 ${
                       ordenAsc ? "bg-indigo-600 text-white" : "bg-amber-500 text-white"
                     }`}
-                    title={ordenAsc ? "Menor a Mayor" : "Mayor a Menor"}
                   >
                     {ordenAsc ? <FaSortAmountUp size={16} /> : <FaSortAmountDown size={16} />}
                   </button>
                 </div>
 
-                {/* DÍAS CON SCROLL HORIZONTAL MOBILE */}
                 {mesesAbiertos[mes] && (
                   <div className="flex flex-row overflow-x-auto lg:flex-col lg:overflow-x-hidden gap-3 pt-2 animate-fade-in pl-1 pb-3 lg:pb-0 custom-scrollbar scroll-smooth">
                     {mesesMap[mes]
