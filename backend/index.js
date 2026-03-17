@@ -324,6 +324,23 @@ WHERE c.id = ? AND t.estado = 'reservado'`;
   }
 });
 
+
+// OBTENER PERFILES Y PROFESIONALES VINCULADOS //
+
+app.get("/api/perfilesyprofesionalesvinculados", async (req, res) => {
+  try {
+    const query = `
+      SELECT * from perfiles_profesionales
+    `;
+
+    const [resultado] = await pool.execute(query);
+    res.json(resultado);
+  } catch (error) {
+    console.error("Error al obtener perfiles y profesionales vinculados:", error);
+    res.status(500).send("Error al obtener perfiles y profesionales vinculados");
+  }
+});
+
 // OBTENER CONSULTORIOS POR ID PROFESIONAL //
 
 app.get("/api/consultorioxidprofesional/:id", async (req, res) => {

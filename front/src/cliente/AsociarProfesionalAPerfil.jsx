@@ -1,7 +1,8 @@
 // src/components/AsociarProfesionalAPerfil.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import CrearYVincularProfesionalAPerfil from "./CrearYVincularProfesionalAPerfil";
 import useAllProfesionals from "../../customHooks/useAllProfesionals";
+import useAllPerfilesProfesionalesVinculados from "../../customHooks/useAllPerfilesProfesionalesVinculados";
 import axios from "axios";
 import {
   FaUserMd,
@@ -13,17 +14,17 @@ import {
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router";
 
 const AsociarProfesionalAPerfil = ({
   onClose,
   perfilID,
-  idsProfesionalesVinculados,
-  onSuccess, // Cambiamos el nombre para que coincida con lo que manda el Panel
+  onSuccess,
   perfil,
   actualizarProfesionales
 }) => {
-  const { profesionales, isLoading, error: hookError } = useAllProfesionals();
+  const { profesionales, isLoading: loadingProfs, error: errorProfs } = useAllProfesionals();
+  const { perfilesProfesionales, isLoading: loadingVinculados, error: errorVinculados } = useAllPerfilesProfesionalesVinculados();
+  
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProfesional, setSelectedProfesional] = useState("");
   const [mensajeError, setMensajeError] = useState(null);
@@ -36,6 +37,17 @@ const AsociarProfesionalAPerfil = ({
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = "unset"; };
   }, []);
+
+  // 1. FILTRADO: Obtenemos solo los profesionales que NO están en perfilesProfesionales
+  const profesionalesDisponibles = useMemo(() => {
+    if (!profesionales || !perfilesProfesionales) return profesionales || [];
+    
+    // Extraemos los IDs ya vinculados
+    const idsVinculados = perfilesProfesionales.map(p => p.profesional_id);
+    
+    // Retornamos solo los que NO coinciden con esos IDs
+    return profesionales.filter(prof => !idsVinculados.includes(prof.id));
+  }, [profesionales, perfilesProfesionales]);
 
   const handleSelect = async (e) => {
     if (e) e.preventDefault();
@@ -56,19 +68,10 @@ const AsociarProfesionalAPerfil = ({
 
       toast.success("Vínculo establecido con éxito");
 
-      // Lógica de cierre y refresco
       setTimeout(() => {
         setVinculando(false);
-        
-        // EJECUTAMOS EL CALLBACK DE ÉXITO (fetchProfesional en el padre)
-        if (typeof onSuccess === "function") {
-            onSuccess();
-        }
-        
-        // CERRAMOS EL MODAL
-        if (typeof onClose === "function") {
-            onClose();
-        }
+        if (typeof onSuccess === "function") onSuccess();
+        if (typeof onClose === "function") onClose();
       }, 1000);
 
     } catch (err) {
@@ -82,18 +85,13 @@ const AsociarProfesionalAPerfil = ({
   const handleCreateSuccess = () => {
     toast.success("Profesional creado y vinculado");
     setShowCreateModal(false);
-    
     if (typeof actualizarProfesionales === "function") actualizarProfesionales();
-    
-    // Si viene del Panel, usamos onSuccess para refrescar y cerrar
-    if (typeof onSuccess === "function") {
-        onSuccess();
-    }
-    
-    if (typeof onClose === "function") {
-        onClose();
-    }
+    if (typeof onSuccess === "function") onSuccess();
+    if (typeof onClose === "function") onClose();
   };
+
+  const isLoading = loadingProfs || loadingVinculados;
+  const globalError = errorProfs || errorVinculados || mensajeError;
 
   return (
     <>
@@ -132,17 +130,17 @@ const AsociarProfesionalAPerfil = ({
           </div>
 
           <div className="p-6 sm:p-14 space-y-8 bg-white">
-            {(mensajeError || hookError) && (
+            {globalError && (
               <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 font-bold text-sm sm:text-lg flex items-center gap-4 animate-shake">
                 <FaExclamationCircle size={24} className="flex-shrink-0" />
-                <span>{mensajeError || hookError}</span>
+                <span>{globalError}</span>
               </div>
             )}
 
             {isLoading ? (
               <div className="py-16 text-center bg-slate-50 rounded-[2rem] border border-slate-100 font-black">
                 <FaCircleNotch className="animate-spin text-indigo-600 mx-auto mb-4" size={40} />
-                <p className="text-slate-400 uppercase tracking-widest text-[10px]">Cargando...</p>
+                <p className="text-slate-400 uppercase tracking-widest text-[10px]">Cargando datos...</p>
               </div>
             ) : (
               <div className="space-y-8">
@@ -157,15 +155,15 @@ const AsociarProfesionalAPerfil = ({
                       className="w-full px-6 py-5 sm:px-8 sm:py-6 pl-14 bg-slate-50 border-2 border-transparent rounded-[1.5rem] sm:rounded-[1.8rem] focus:bg-white focus:border-indigo-600 focus:outline-none font-bold text-lg text-slate-800 transition-all appearance-none cursor-pointer"
                     >
                       <option value="" disabled>Seleccionar de la lista</option>
-                      {profesionales?.map((prof) => (
-                        <option
-                          key={prof.id}
-                          value={prof.id}
-                          disabled={idsProfesionalesVinculados?.includes(prof.id)}
-                        >
-                          {prof.nombre} {prof.apellido} MP. {prof.matricula} {prof.especialidad} {idsProfesionalesVinculados?.includes(prof.id) ? "— YA VINCULADO" : ""}
-                        </option>
-                      ))}
+                      {profesionalesDisponibles.length > 0 ? (
+                        profesionalesDisponibles.map((prof) => (
+                          <option key={prof.id} value={prof.id}>
+                            {prof.nombre} {prof.apellido} - MP {prof.matricula}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>No hay más profesionales disponibles</option>
+                      )}
                     </select>
                     <FaUserMd className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" size={20} />
                   </div>
