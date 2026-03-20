@@ -166,7 +166,7 @@ app.get("/api/turnosxfecha/:fecha", async (req, res) => {
   try {
     const query = `SELECT  
     t.id,
-    t.nombre_paciente AS paciente,
+    CONCAT(t.nombre_paciente, " ", t.apellido_paciente) AS paciente,
     t.DNI,
     t.telefono,
     t.fecha, 
